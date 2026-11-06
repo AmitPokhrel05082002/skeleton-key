@@ -5,7 +5,7 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 ## Milestones
 | Week | Goal | Status |
 |---|---|---|
-| Nov 6 | Kiro credits requested, repo + license, steering, schema | 🟡 schema + steering done; credits, repo pending |
+| Nov 6 | Kiro credits requested, repo + license, steering, schema | 🟡 schema, steering, public repo (MIT) done; credits pending |
 | Nov 6–12 | Engine spec (in Kiro), backend core, validator, routing | ⬜ |
 | Nov 13–19 | Angular shell + renderers, app #1 (grievance) | ⬜ |
 | Nov 20–26 | App #2 (timed), PBT, polish, first deploy | ⬜ |
@@ -13,7 +13,7 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 
 ## Submission checklist
 - [ ] Kiro credits requested (deadline Dec 1, 12:00 PM PT)
-- [ ] Public GitHub repo, license shown in About
+- [x] Public GitHub repo, license shown in About
 - [ ] `.kiro/` committed and not ignored
 - [ ] `app-grievance/` and `app-assets/` as separate folders
 - [ ] Both apps live over HTTPS, test logins in the Devpost form

@@ -3,13 +3,13 @@
 _Last updated: 2026-11-06_
 
 ## Current state
-- Repo folder created (not yet a git repo, not yet on GitHub).
+- Public repo: https://github.com/AmitPokhrel05082002/skeleton-key (MIT license, branch `main`). Project name: **Skeleton Key**, Java package `dev.skeletonkey`.
 - `schema/app-definition.schema.json` v1 drafted. `examples/grievance.app.json` passes it, and 9 broken variants fail it (Ajv, draft 2020-12).
 - Steering written: `.kiro/steering/{product,tech,structure,app-definition}.md`. `app-definition.md` pulls the schema in with `#[[file:...]]`.
 - No Kiro spec yet. No code yet.
 
 ## Next action
-1. Create the GitHub repo **with a license** (Add license → MIT or Apache-2.0), then push this folder.
+1. Request Kiro credits if not done yet (deadline Dec 1, 12:00 PM PT).
 2. Open the folder in Kiro → Specs → new spec "workflow-engine". Prompt Kiro with: *"Build the skeleton backend
    described by the steering docs: metadata loading, the publish-time validator, the dynamic records API and the
    workflow routing pipeline. Must-have scope only."* Let Kiro write requirements.md → design.md → tasks.md and

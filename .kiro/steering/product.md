@@ -4,7 +4,7 @@ inclusion: always
 
 # Product
 
-A lean low-code **skeleton for workflow apps**. An app is data, not code: one versioned JSON
+**Skeleton Key** is a lean low-code **skeleton for workflow apps**. An app is data, not code: one versioned JSON
 app definition (see `app-definition.md`) describes roles, entities, forms, views and workflows.
 The skeleton runs any valid definition without new code.
 

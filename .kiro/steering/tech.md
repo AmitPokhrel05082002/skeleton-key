@@ -5,7 +5,7 @@ inclusion: always
 # Tech stack and conventions
 
 ## Backend (`skeleton/backend`)
-- Java 21, Spring Boot 3.x, Maven. Package root `dev.skeleton` (rename once the project name is final).
+- Java 21, Spring Boot 3.x, Maven. Package root `dev.skeletonkey`.
 - Config in **`application.properties` only**, never YAML. Secrets come from environment variables (`${DB_PASSWORD}`).
 - PostgreSQL 16. Schema changes go through Flyway (`db/migration/V{n}__desc.sql`). Business records are stored in a
   `data JSONB` column, so a new field in an app definition never needs a migration.

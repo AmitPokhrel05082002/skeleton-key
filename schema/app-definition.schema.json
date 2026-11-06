@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/REPLACE_ME/schema/app-definition.schema.json",
+  "$id": "https://github.com/AmitPokhrel05082002/skeleton-key/schema/app-definition.schema.json",
   "title": "App Definition",
   "description": "One JSON document describes a whole app: roles, entities, forms, views and workflows. Structural rules live here; cross-reference rules (codes exist, steps reachable, joins match) are enforced by the publish-time validator.",
   "type": "object",

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "app": {
+    "code": "GRIEVANCE",
+    "name": "Citizen Grievance Tracker",
+    "description": "Residents report civic problems; staff triage, review and resolve them within an SLA.",
+    "branding": { "primaryColor": "#7c3aed", "theme": "dark" }
+  },
+  "roles": [
+    { "code": "PUBLIC", "label": "Citizen (anonymous)", "public": true },
+    { "code": "CLERK", "label": "Help-desk clerk" },
+    { "code": "OFFICER", "label": "Department officer" },
+    { "code": "INSPECTOR", "label": "Field inspector" },
+    { "code": "SUPERVISOR", "label": "Supervisor" }
+  ],
+  "entities": [
+    {
+      "code": "GRIEVANCE",
+      "label": "Grievance",
+      "titleField": "subject",
+      "referencePrefix": "GRV",
+      "fields": [
+        { "code": "subject", "label": "Subject", "type": "TEXT", "required": true, "maxLength": 120 },
+        { "code": "details", "label": "Details", "type": "TEXTAREA", "required": true },
+        { "code": "category", "label": "Category", "type": "SELECT", "required": true,
+          "options": [
+            { "value": "ROAD", "label": "Roads & footpaths" },
+            { "value": "WATER", "label": "Water supply" },
+            { "value": "WASTE", "label": "Waste collection" },
+            { "value": "OTHER", "label": "Other" }
+          ] },
+        { "code": "location", "label": "Location", "type": "LOCATION" },
+        { "code": "photo", "label": "Photo", "type": "FILE", "accept": "image/*", "maxFiles": 3 },
+        { "code": "contactEmail", "label": "Email for updates", "type": "EMAIL", "required": true },
+        { "code": "urgent", "label": "Safety risk?", "type": "BOOLEAN", "default": false },
+        { "code": "inspectionNotes", "label": "Inspection notes", "type": "TEXTAREA" },
+        { "code": "resolutionNotes", "label": "Resolution", "type": "TEXTAREA" }
+      ]
+    }
+  ],
+  "forms": [
+    {
+      "code": "REPORT_ISSUE",
+      "label": "Report an issue",
+      "entity": "GRIEVANCE",
+      "public": true,
+      "startsWorkflow": "GRIEVANCE_FLOW",
+      "sections": [
+        { "title": "What happened?", "fields": ["subject", "category", "details", "urgent"] },
+        { "title": "Where and evidence", "columns": 2, "fields": ["location", "photo"] },
+        { "title": "Stay informed", "fields": ["contactEmail"] }
+      ]
+    }
+  ],
+  "views": [
+    { "code": "BOARD", "label": "Board", "type": "KANBAN", "entity": "GRIEVANCE",
+      "roles": ["SUPERVISOR", "OFFICER"], "columns": ["$reference", "subject", "category", "$assignee", "$dueAt"] },
+    { "code": "ALL", "label": "All grievances", "type": "TABLE", "entity": "GRIEVANCE",
+      "roles": ["SUPERVISOR"], "columns": ["$reference", "subject", "category", "$status", "$assignee", "$dueAt"],
+      "filters": ["category", "$status", "urgent"], "defaultSort": { "field": "$createdAt", "direction": "DESC" } },
+    { "code": "INBOX", "label": "My tasks", "type": "MY_TASKS", "entity": "GRIEVANCE",
+      "roles": ["CLERK", "OFFICER", "INSPECTOR", "SUPERVISOR"], "columns": ["$reference", "subject", "$step", "$dueAt"] }
+  ],
+  "workflows": [
+    {
+      "code": "GRIEVANCE_FLOW",
+      "version": 1,
+      "label": "Grievance handling",
+      "entity": "GRIEVANCE",
+      "startStep": "TRIAGE",
+      "initialStatus": "Received",
+      "statuses": [
+        { "label": "Received", "category": "OPEN", "color": "#64748b" },
+        { "label": "Under review", "category": "IN_PROGRESS", "color": "#f59e0b" },
+        { "label": "Inspection", "category": "IN_PROGRESS", "color": "#f97316" },
+        { "label": "Resolved", "category": "DONE", "color": "#22c55e" },
+        { "label": "Rejected", "category": "REJECTED", "color": "#ef4444" }
+      ],
+      "steps": [
+        {
+          "code": "TRIAGE", "label": "Triage", "type": "TASK",
+          "assignee": { "strategy": "LEAST_LOADED", "role": "CLERK" },
+          "slaHours": 24, "remindBeforeHours": 4, "escalateTo": "SUPERVISOR",
+          "fields": { "category": "required", "urgent": "optional", "photo": "readonly" },
+          "actions": [
+            { "code": "VERIFY", "label": "Verify", "roles": ["CLERK"], "to": "REVIEW",
+              "status": "Under review", "style": "primary", "remarks": "optional" },
+            { "code": "REJECT", "label": "Reject", "roles": ["CLERK"], "to": "END_REJECTED",
+              "status": "Rejected", "style": "danger", "remarks": "required",
+              "confirm": "Reject this grievance? The citizen will be notified." }
+          ],
+          "onExit": [
+            { "do": "NOTIFY", "template": "status_changed", "to": ["FIELD:contactEmail"] }
+          ]
+        },
+        {
+          "code": "REVIEW", "label": "Department review", "type": "APPROVAL",
+          "assignee": { "strategy": "ROLE_QUEUE", "role": "OFFICER" },
+          "slaHours": 48, "escalateTo": "SUPERVISOR",
+          "fields": { "resolutionNotes": "optional" },
+          "actions": [
+            { "code": "APPROVE", "label": "Accept", "roles": ["OFFICER"], "to": "RESOLVE",
+              "status": "Under review", "style": "primary" },
+            { "code": "REJECT", "label": "Reject", "roles": ["OFFICER"], "to": "END_REJECTED",
+              "status": "Rejected", "style": "danger", "remarks": "required" }
+          ]
+        },
+        {
+          "code": "SITE_VISIT", "label": "Site inspection", "type": "TASK",
+          "assignee": { "strategy": "ROUND_ROBIN", "role": "INSPECTOR" },
+          "slaHours": 72, "escalateTo": "SUPERVISOR",
+          "skipWhen": { "==": [{ "var": "data.urgent" }, true] },
+          "fields": { "inspectionNotes": "required", "photo": "optional" },
+          "actions": [
+            { "code": "DONE", "label": "Inspection done", "roles": ["INSPECTOR"], "to": "RESOLVE",
+              "status": "Under review", "style": "primary", "attachment": "optional" }
+          ]
+        },
+        {
+          "code": "RESOLVE", "label": "Resolve", "type": "TASK",
+          "assignee": { "strategy": "ROLE_QUEUE", "role": "OFFICER" },
+          "slaHours": 120, "escalateTo": "SUPERVISOR",
+          "fields": { "resolutionNotes": "required", "inspectionNotes": "readonly" },
+          "actions": [
+            { "code": "RESOLVE", "label": "Mark resolved", "roles": ["OFFICER"], "to": "END_RESOLVED",
+              "status": "Resolved", "style": "primary", "attachment": "optional" }
+          ],
+          "onExit": [
+            { "do": "NOTIFY", "template": "resolved", "to": ["FIELD:contactEmail", "ROLE:SUPERVISOR"] }
+          ]
+        },
+        { "code": "END_RESOLVED", "label": "Resolved", "type": "END", "outcome": "Resolved" },
+        { "code": "END_REJECTED", "label": "Rejected", "type": "END", "outcome": "Rejected" }
+      ],
+      "transitions": [
+        {
+          "from": "REVIEW", "on": "APPROVE", "to": "SITE_VISIT", "priority": 10,
+          "when": { "in": [{ "var": "data.category" }, ["ROAD", "WATER"]] }
+        }
+      ]
+    }
+  ]
+}

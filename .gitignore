@@ -1,0 +1,27 @@
+# Private notes - never commit
+CLAUDE.md
+.claude/
+
+# NOTE: .kiro/ must NEVER be listed here (hackathon rule).
+
+# Java / Maven
+target/
+*.class
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.env.local

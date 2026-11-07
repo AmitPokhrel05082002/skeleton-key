@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.5</version>
+    <version>3.5.16</version>
     <relativePath/>
   </parent>
 
@@ -20,15 +20,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Shared schema; the Dockerfile places it at the same relative location. -->
     <schema.dir>${project.basedir}/../../schema</schema.dir>
-    <flyway.version>10.20.1</flyway.version>
-    <postgresql.version>42.7.4</postgresql.version>
-    <jackson-bom.version>2.17.2</jackson-bom.version>
-    <assertj.version>3.26.3</assertj.version>
-    <testcontainers.version>1.20.3</testcontainers.version>
-    <networknt.version>1.5.1</networknt.version>
-    <jsonlogic.version>1.0.7</jsonlogic.version>
-    <jjwt.version>0.12.6</jjwt.version>
-    <jqwik.version>1.9.1</jqwik.version>
+    <networknt.version>1.5.9</networknt.version>
+    <jsonlogic.version>1.1.0</jsonlogic.version>
+    <jjwt.version>0.12.7</jjwt.version>
+    <jqwik.version>1.9.3</jqwik.version>
   </properties>
 
   <dependencies>
@@ -55,23 +50,19 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
-      <version>${flyway.version}</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-database-postgresql</artifactId>
-      <version>${flyway.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson-bom.version}</version>
     </dependency>
     <dependency>
       <groupId>com.networknt</groupId>
@@ -115,7 +106,6 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -127,19 +117,16 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

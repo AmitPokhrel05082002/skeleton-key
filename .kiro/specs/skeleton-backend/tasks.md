@@ -7,14 +7,14 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
 ## Tasks
 
 - [ ] 1. Foundation: schema, project scaffold, migrations, web basics
-  - [ ] 1.1 Verify the schema changes and mark complete
+  - [x] 1.1 Verify the schema changes and mark complete
     - The schema changes are already in the repo; no schema edits are expected
     - Verify `workflow.version` is absent from `schema/app-definition.schema.json`
     - Verify `status` is an optional string property on Step and on Transition
     - Verify `examples/grievance.app.json` still validates against the schema
     - _Requirements: 5.9, 3.7, 10.14, 1.10_
 
-  - [ ] 1.2 Create the Maven project scaffold in `skeleton/backend/`
+  - [x] 1.2 Create the Maven project scaffold in `skeleton/backend/`
     - Create `skeleton/backend/pom.xml` for Spring Boot 3 / Java 21 with exact pinned versions (no ranges) for: spring-boot starters (web, security, jdbc, validation, actuator, test), PostgreSQL driver, `flyway-core` and `flyway-database-postgresql`, `com.networknt:json-schema-validator`, Jackson, `io.github.jamsesso:json-logic-java`, jjwt, `net.jqwik:jqwik`, Testcontainers, AssertJ
     - Add the Maven wrapper (`mvnw`, `mvnw.cmd`, `.mvn/wrapper/`) in `skeleton/backend/`
     - Use Spring JDBC (`JdbcClient`) for persistence, not JPA

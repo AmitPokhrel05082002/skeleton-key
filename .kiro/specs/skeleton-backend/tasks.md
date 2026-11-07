@@ -6,7 +6,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
 
 ## Tasks
 
-- [ ] 1. Foundation: schema, project scaffold, migrations, web basics
+- [x] 1. Foundation: schema, project scaffold, migrations, web basics
   - [x] 1.1 Verify the schema changes and mark complete
     - The schema changes are already in the repo; no schema edits are expected
     - Verify `workflow.version` is absent from `schema/app-definition.schema.json`
@@ -31,7 +31,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Add a custom Flyway `FailureAnalyzer` that names the failed migration
     - _Requirements: 20.2, 20.5, 20.8, 12.7, 7.17_
 
-  - [ ] 1.4 Implement web foundations
+  - [x] 1.4 Implement web foundations
     - `RequestIdFilter` (X-Request-Id in MDC and error bodies)
     - `ApiExceptionHandler` mapping `RouterException`, `ValidationFailed`, `NotFound`, `Conflict`, `OptimisticLockingFailureException` (409 `CONCURRENT_MODIFICATION`), access and authentication errors to the JSON error shape
     - Jackson `InstantSerializer` with `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`

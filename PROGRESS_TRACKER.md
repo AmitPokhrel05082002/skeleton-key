@@ -40,3 +40,5 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 | 2026-11-07 | Kiro IDE (Spec task) | Task 1.3 Flyway V1 schema + failure analyzer | Review found record.status duplicate (dual-storage risk), single history status column, nullable instance columns |
 | 2026-11-07 | Kiro IDE | Fixed V1 in place per review (status only on instance, from/to status, time_in_step_ms, NOT NULLs, kind CHECK) | Compiles |
 | 2026-11-07 | Claude Code | Applied V1 to a throwaway local PostgreSQL 17 cluster and tested 8 behaviours (append-only trigger on UPDATE/DELETE, kind CHECK, time CHECK, NOT NULL, one instance per record, no record.status) | All 8 pass; cluster deleted |
+| 2026-11-07 | Kiro IDE (Spec task) | Task 1.4 web foundations (request id, error handler, UTC ms instants, OpenAPI, 405) + 5 MockMvc tests | Pass |
+| 2026-11-07 | Claude Code | Review fixes: migrated jqwik.properties to junit-platform.properties (old file was ignored, tries=100 had no effect); RouterException 500s no longer leak internal messages; springdoc 2.8.9 -> 2.8.17 | Clean build, 5/5 pass, no SEVERE warning |

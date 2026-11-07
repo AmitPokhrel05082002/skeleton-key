@@ -24,6 +24,7 @@
     <jsonlogic.version>1.1.0</jsonlogic.version>
     <jjwt.version>0.12.7</jjwt.version>
     <jqwik.version>1.9.3</jqwik.version>
+    <springdoc.version>2.8.17</springdoc.version>
   </properties>
 
   <dependencies>
@@ -73,6 +74,11 @@
       <groupId>io.github.jamsesso</groupId>
       <artifactId>json-logic-java</artifactId>
       <version>${jsonlogic.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>

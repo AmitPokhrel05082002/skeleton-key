@@ -36,6 +36,25 @@
         "chatSessionId": "sess_e50be04c-8bed-4bd5-8be3-3db94693c22e",
         "timestamp": 1794049458512
       }
+    ],
+    "1.4 Implement web foundations": [
+      {
+        "executionId": "2f83993a-a4c0-44c4-a79e-45d42ab6b3a3",
+        "chatSessionId": "sess_d8f94771-d847-4da3-82a8-fac7237cf747",
+        "timestamp": 1794049786070
+      },
+      {
+        "executionId": "2f83993a-a4c0-44c4-a79e-45d42ab6b3a3",
+        "chatSessionId": "sess_d8f94771-d847-4da3-82a8-fac7237cf747",
+        "timestamp": 1794049924831
+      }
+    ],
+    "1. Foundation: schema, project scaffold, migrations, web basics": [
+      {
+        "executionId": "2f83993a-a4c0-44c4-a79e-45d42ab6b3a3",
+        "chatSessionId": "sess_d8f94771-d847-4da3-82a8-fac7237cf747",
+        "timestamp": 1794049925041
+      }
     ]
   }
 }

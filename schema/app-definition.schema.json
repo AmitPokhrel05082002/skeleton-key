@@ -242,6 +242,7 @@
         "label": { "$ref": "#/$defs/label" },
         "type": { "enum": ["TASK", "APPROVAL", "AUTO", "PARALLEL", "JOIN", "SUBWORKFLOW", "END"] },
         "assignee": { "$ref": "#/$defs/assignee" },
+        "status": { "$ref": "#/$defs/label", "description": "Default status label when this step is entered, used if neither the selected transition nor the action sets one. Not allowed on END (use outcome)." },
         "skipWhen": { "$ref": "#/$defs/expression", "description": "Evaluated on entry. If true the step is recorded as skipped and routing continues." },
         "slaHours": { "type": "number", "exclusiveMinimum": 0 },
         "remindBeforeHours": { "type": "number", "exclusiveMinimum": 0, "description": "Reminder to the assignee this many hours before the SLA is due." },
@@ -274,7 +275,7 @@
         { "if": { "properties": { "type": { "const": "PARALLEL" } } }, "then": { "required": ["branches", "join"] } },
         { "if": { "properties": { "type": { "const": "JOIN" } } }, "then": { "required": ["mode"] } },
         { "if": { "properties": { "type": { "const": "SUBWORKFLOW" } } }, "then": { "required": ["workflow"] } },
-        { "if": { "properties": { "type": { "const": "END" } } }, "then": { "required": ["outcome"], "not": { "required": ["actions"] } } }
+        { "if": { "properties": { "type": { "const": "END" } } }, "then": { "required": ["outcome"], "not": { "anyOf": [ { "required": ["actions"] }, { "required": ["status"] } ] } } }
       ]
     },
 
@@ -324,7 +325,8 @@
         "to": { "$ref": "#/$defs/code" },
         "on": { "$ref": "#/$defs/code", "description": "Only applies to this action code. Omit to apply to any action leaving from." },
         "when": { "$ref": "#/$defs/expression" },
-        "priority": { "type": "integer", "minimum": 0, "default": 100, "description": "Lower runs first." }
+        "priority": { "type": "integer", "minimum": 0, "default": 100, "description": "Lower runs first." },
+        "status": { "$ref": "#/$defs/label", "description": "Status label set when this transition is taken. Wins over the action's and the target step's status." }
       }
     },
 

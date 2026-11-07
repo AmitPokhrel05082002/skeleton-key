@@ -19,8 +19,12 @@ This document defines the **behaviour** the schema cannot express. The engine, v
 ## Statuses
 - Statuses are labels declared per workflow, each with a category (`OPEN`, `IN_PROGRESS`, `DONE`, `REJECTED`).
   There are no status enums in Java or TypeScript.
-- On start the status is `initialStatus`, or the first `OPEN` status if that is not set. An action's `status` sets the
-  label; reaching an `END` step sets its `outcome`.
+- On start the status is `initialStatus`, or the first `OPEN` status if that is not set.
+- On entering a non-END step the status is, first match wins: the selected transition's `status`, the action's
+  `status`, the target step's `status`, otherwise the current status is kept. A skipped step applies no status; the
+  rule is applied again for the step finally entered. Reaching an `END` step sets its `outcome`.
+- Every declared status must be settable by an action, transition, step, `initialStatus` or END `outcome`
+  (validator rule `UNSET_STATUS`). Status is stored only on the workflow instance, never copied into record data.
 
 ## Routing (one pipeline for every action)
 1. Load the instance and its pinned workflow version.

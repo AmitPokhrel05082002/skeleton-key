@@ -133,7 +133,7 @@
       ],
       "transitions": [
         {
-          "from": "REVIEW", "on": "APPROVE", "to": "SITE_VISIT", "priority": 10,
+          "from": "REVIEW", "on": "APPROVE", "to": "SITE_VISIT", "priority": 10, "status": "Inspection",
           "when": { "in": [{ "var": "data.category" }, ["ROAD", "WATER"]] }
         }
       ]

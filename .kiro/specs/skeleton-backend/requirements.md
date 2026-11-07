@@ -4,7 +4,7 @@
 
 The Skeleton Backend is the Spring Boot engine (Java package `dev.skeletonkey`) that runs an application described entirely by one versioned JSON App Definition. It loads definitions that conform to `schema/app-definition.schema.json`, validates them at publish time, exposes a metadata-driven records API backed by PostgreSQL JSONB, and routes workflow instances through steps via a single action pipeline, with version pinning and an audit history. It also provides an instance view endpoint, a definition read endpoint for the UI (including a public-safe subset), and startup seeding of users from a seed file.
 
-Versioning applies to the WHOLE App_Definition document, identified by app code and version number. A Workflow_Instance pins to one document version plus a workflow code. The `workflow.version` property will be removed from `schema/app-definition.schema.json`; the Definition_Loader and the Validator must not depend on it.
+Versioning applies to the WHOLE App_Definition document, identified by app code and version number. A Workflow_Instance pins to one document version plus a workflow code. The `workflow.version` property will be removed from `schema/app-definition.schema.json`; the Definition_Loader and the Validator must not depend on it. The schema will also be updated to add an optional `status` property to Steps and Transitions; this spec assumes that schema change.
 
 Scope is the must-have tier only. Out of scope: Angular frontend, form and workflow builders, parallel/join execution, sub-workflows, SLA scheduler and escalation, notifications, webhooks, tenant overrides, file upload storage, and the two example apps. The schema keeps these constructs structurally valid, and the Validator checks them where they appear, but the Router does not execute them in this spec.
 
@@ -23,9 +23,9 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 - **Router**: The component that executes workflow actions through the Routing_Pipeline.
 - **Routing_Pipeline**: The ordered stages for every action: permission check, field and remarks validation, handler run, transition selection, step entry, end detection.
 - **Workflow_Instance**: A running workflow bound to one Record and pinned to one Definition_Version plus a workflow code.
-- **Step**: A node of a workflow of type TASK, APPROVAL, AUTO or END within this spec's executable scope.
+- **Step**: A node of a workflow of type TASK, APPROVAL, AUTO or END within this spec's executable scope, with an optional `status` label applied on entry (see Requirement 10.14).
 - **Action**: A button on a Step, with allowed roles, optional target step, optional status label, and remarks and attachment rules.
-- **Transition**: A rule with from, to, optional on-action, optional condition and a priority that overrides an Action's target.
+- **Transition**: A rule with from, to, optional on-action, optional condition, an optional `status` label and a priority that overrides an Action's target.
 - **Expression**: A JSONLogic expression evaluated against the context `{ data, instance, user }`.
 - **Status_Label**: A label declared in the workflow `statuses` list, with a category of OPEN, IN_PROGRESS, DONE or REJECTED.
 - **History_Entry**: An immutable audit row recording one action or system event on a Workflow_Instance. Every History_Entry has exactly one kind from the following set.
@@ -38,6 +38,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 - **Plugin_Handler**: A Java bean implementing the handler interface, referenced by name in an Action, event or AUTO Step.
 - **Principal**: The authenticated user (user id and role codes) or the anonymous public role.
 - **Publish**: The operation that validates a Definition_Version and sets its status to PUBLISHED.
+- **Auto_Publish**: The startup step that publishes newly stored DRAFT Definition_Versions, controlled by the property `skeletonkey.definitions.auto-publish` (default true).
 - **Instance_View**: The response of the instance view endpoint, holding the current Step, status, available Actions of the caller and effective field rules.
 - **Public_Subset**: The part of a PUBLISHED App_Definition that is needed to render public forms: each public form, its fields, option lists and labels, and nothing else.
 - **Seed_File**: A JSON file at a configured path that lists users, their role codes, their credentials and an `active` flag.
@@ -59,8 +60,10 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 7. WHEN a stored Definition_Version is read, THE Definition_Loader SHALL return a document that is JSON-equal to the submitted document, where object key order and insignificant whitespace are ignored and array order, string values, and numeric values are preserved exactly.
 8. IF a read request references a Definition_Version identifier that does not exist, THEN THE Definition_Loader SHALL respond with HTTP status 404 and return no document.
 9. FOR ALL schema-valid App_Definitions, serializing then parsing then serializing SHALL produce a document that is JSON-equal to the original (round-trip property).
-10. WHEN the Skeleton_Backend loads `examples/grievance.app.json`, THE Skeleton_Backend SHALL accept it with zero schema violations and store it as a DRAFT Definition_Version.
+10. WHEN the Skeleton_Backend loads `examples/grievance.app.json`, THE Skeleton_Backend SHALL accept it with zero schema violations and store it as a DRAFT Definition_Version (subject to Auto_Publish under criterion 12).
 11. WHEN the Skeleton_Backend is restarted twice with the same definition files in the startup directory, THE Skeleton_Backend SHALL create no additional Definition_Version at either restart.
+12. WHERE `skeletonkey.definitions.auto-publish` is true (the default), WHEN startup loading completes, THE Skeleton_Backend SHALL run the Validator on each DRAFT Definition_Version newly stored in this startup run and publish it IF the Validator reports no violations; IF the Validator reports violations, THEN THE Skeleton_Backend SHALL leave that Definition_Version in DRAFT and log the violations with the file name and the Definition_Version identifier. Auto_Publish SHALL write the publish audit entry of Requirement 12.10 in the same way as a manual Publish, and SHALL NOT publish Definition_Versions skipped by the Content_Hash check of criterion 5.
+13. WHERE `skeletonkey.definitions.auto-publish` is false, THE Skeleton_Backend SHALL leave every Definition_Version loaded at startup in DRAFT.
 
 ### Requirement 2: Validate Structure and References at Publish Time
 
@@ -96,7 +99,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 4. IF a Step cannot be reached from `startStep` by following Action targets, Transitions and the next-step-in-order fallback, THEN THE Validator SHALL report one unreachable-step violation per such Step, identifying the workflow and the Step code.
 5. IF an Action `to` or a Transition `from` or `to` names a Step that does not exist in the workflow, THEN THE Validator SHALL report one dangling-transition violation per offending reference, identifying the workflow, the owning Action or Transition, and the missing Step code.
 6. IF a Transition `on` names an Action code that does not exist on the `from` Step, THEN THE Validator SHALL report one violation per Transition, identifying the workflow, the `from` Step and the missing Action code.
-7. IF an Action `status`, a workflow `initialStatus` or an END `outcome` names a label not present in the workflow `statuses`, THEN THE Validator SHALL report one violation per offending reference, identifying the workflow, the referencing element and the missing label.
+7. IF an Action `status`, a Transition `status`, a Step `status`, a workflow `initialStatus` or an END `outcome` names a label not present in the workflow `statuses`, THEN THE Validator SHALL report one violation per offending reference, identifying the workflow, the referencing element and the missing label.
 8. IF an Action or Step assignee names a role that does not exist, or an assignee `field` is not a USER field of the workflow entity, THEN THE Validator SHALL report one dangling-reference violation per offending assignee, identifying the workflow, the referencing element and the invalid role or field name.
 9. IF a Step `fields` entry or a `skipWhen`, `when` or `copyFields` reference names a field that does not exist on the workflow entity, THEN THE Validator SHALL report one dangling-reference violation per offending reference, identifying the workflow, the referencing element and the missing field name.
 10. IF a Step of type TASK or APPROVAL is not an END and has no Action whose target can be resolved by an Action `to`, a Transition or a following Step, THEN THE Validator SHALL report one dead-end violation per such Step, identifying the workflow and the Step code.
@@ -105,6 +108,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 13. IF a Step of type PARALLEL has a `branches` or `join` entry that names a Step not existing in the workflow, THEN THE Validator SHALL report one dangling-transition violation per missing Step.
 14. IF a Step of type JOIN is named as `join` by zero PARALLEL Steps or by more than one PARALLEL Step, THEN THE Validator SHALL report one violation per such JOIN, identifying the workflow, the JOIN Step code and the number of naming PARALLEL Steps.
 15. WHEN the app definition is published, IF a workflow contains a Step of type PARALLEL, JOIN or SUBWORKFLOW, THEN THE Validator SHALL report one unsupported-step violation per such Step, because the Router does not execute these types in this release, and SHALL reject the publish.
+16. IF a Status_Label declared in a workflow `statuses` list is not settable by at least one Action `status`, Transition `status`, Step `status`, the workflow `initialStatus` (or the first OPEN status in declared order when `initialStatus` is absent) or END `outcome` of that workflow, THEN THE Validator SHALL report one violation with rule code UNSET_STATUS per such label, identifying the workflow and the label.
 
 ### Requirement 4: Validate Expressions and Handlers
 
@@ -232,7 +236,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 11. WHEN the target Step is of type AUTO, THE Router SHALL invoke its Plugin_Handler on entry and then route onward from it as if an Action with no code had completed.
 12. IF the Plugin_Handler of an AUTO Step fails, THEN THE Router SHALL reject the action with HTTP status 500 and leave the Workflow_Instance unchanged.
 13. WHEN the target Step is of type END, THE Router SHALL set the status to the Status_Label named by the END `outcome`, mark the Workflow_Instance as ended, clear the assignee and clear the due time.
-14. WHEN an Action declares `status` and the target Step is not END, THE Router SHALL set the instance status to that Status_Label before entering the target Step.
+14. WHEN a Workflow_Instance enters a target Step that is not END, THE Router SHALL determine the instance status by this precedence: the `status` of the selected Transition, otherwise the `status` of the Action, otherwise the `status` of the target Step, otherwise the current status is kept. A skipped Step applies no `status` of its own; the precedence is applied again for the Step that is finally entered, using the Transition selected for that move. WHEN the target Step is END, the status comes from the END `outcome` as in criterion 13.
 15. WHEN a Workflow_Instance has ended, THE Router SHALL reject further action requests with HTTP status 409 and leave the Workflow_Instance unchanged.
 
 ### Requirement 11: Field Rules per Step
@@ -265,7 +269,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 7. THE Skeleton_Backend SHALL provide no operation that updates or deletes a History_Entry, and SHALL reject any such request with an error indicating the operation is not supported, leaving the entry unchanged.
 8. WHEN the History_Entries of a Workflow_Instance are read repeatedly with no new entries written between reads, THE Skeleton_Backend SHALL return identical entries in identical order on every read.
 9. FOR ALL Workflow_Instances, considering only the History_Entries of kind START, ACTION and SKIPPED in order, the to-Step of each such entry SHALL equal the from-Step of the following such entry (continuity property); History_Entries of kind EVENT_DEFERRED, EVENT_FAILED and EXPRESSION_ERROR SHALL be excluded from this chain.
-10. WHEN a Principal creates or updates a Record or publishes a Definition_Version, THE Skeleton_Backend SHALL write an audit log entry holding actor id, operation (create, update or publish), target identifier and event time in UTC, in the same transaction as the operation.
+10. WHEN a Principal creates or updates a Record or publishes a Definition_Version, or WHEN Auto_Publish publishes a Definition_Version (actor id: a reserved system actor identifier), THE Skeleton_Backend SHALL write an audit log entry holding actor id, operation (create, update or publish), target identifier and event time in UTC, in the same transaction as the operation.
 11. IF writing an audit log entry fails, THEN THE Skeleton_Backend SHALL roll back the operation and return an error indicating the audit write failed.
 12. THE Skeleton_Backend SHALL store and return all time values in UTC using ISO 8601 format with millisecond precision.
 
@@ -320,7 +324,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 
 #### Acceptance Criteria
 
-1. WHEN an authenticated Principal requests the App_Definition of an app, THE Skeleton_Backend SHALL return the highest-numbered PUBLISHED Definition_Version restricted to the forms and views whose `roles` contain at least one role of the Principal and the entities those forms and views reference.
+1. WHEN an authenticated Principal requests the App_Definition of an app, THE Skeleton_Backend SHALL return the highest-numbered PUBLISHED Definition_Version restricted to the forms and views that either declare no `roles` or declare `roles` containing at least one role of the Principal, plus the entities those forms and views reference. A form or view that declares no `roles` is available to any authenticated Principal. A form with `public` set to true remains governed by criterion 4 for callers with no JWT.
 2. WHEN an authenticated Principal requests a specific version number of an app, THE Skeleton_Backend SHALL return that Definition_Version restricted as in criterion 1 IF its status is PUBLISHED.
 3. IF the requested app code or version number does not exist, THEN THE Skeleton_Backend SHALL respond with HTTP status 404; IF the requested Definition_Version is not PUBLISHED, THEN THE Skeleton_Backend SHALL respond with HTTP status 409.
 4. WHEN a caller with no JWT requests the Public_Subset of an app, THE Skeleton_Backend SHALL return, for each form with `public` set to true in the highest-numbered PUBLISHED Definition_Version, the form, its fields, the option lists of those fields and their labels, without requiring authentication.
@@ -382,10 +386,10 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 
 #### Acceptance Criteria
 
-1. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL read the following properties from `application.properties`: database URL, JWT secret, JWT expiry in seconds, startup definition directory, seed file path and maximum page size.
+1. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL read the following properties from `application.properties`: the database URL (`spring.datasource.url`, with the standard `spring.datasource.*` properties for credentials) and the application properties under the prefix `skeletonkey.*`: JWT secret, JWT expiry in seconds, startup definition directory, seed file path, maximum page size and `skeletonkey.definitions.auto-publish` (boolean, default true when absent).
 2. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL apply all pending versioned database migrations, in ascending version order, to create and update the tables that hold definitions, records, instances, history, audit log and users.
 3. IF a required configuration property is missing or empty at startup, THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming each missing property; the seed file path is optional and is excluded from this criterion.
-4. IF a configuration property has an invalid value at startup (JWT expiry or maximum page size not a positive integer, or JWT secret shorter than 32 characters), THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the property and the reason it is invalid.
+4. IF a configuration property has an invalid value at startup (JWT expiry or maximum page size not a positive integer, JWT secret shorter than 32 characters, or `skeletonkey.definitions.auto-publish` not equal to true or false), THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the property and the reason it is invalid.
 5. IF a database migration fails at startup, THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the failed migration, and SHALL leave previously applied migrations intact.
 6. IF a request fails, THEN THE Skeleton_Backend SHALL return a JSON error body containing the HTTP status, an error code, a message, a request identifier and, for validation failures, a list of field-level violations each naming the field and the rule violated.
 7. WHEN a user runs `docker-compose up` in the project root with Docker available, THE Skeleton_Backend SHALL start together with a PostgreSQL service and accept requests.

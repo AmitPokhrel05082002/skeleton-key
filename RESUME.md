@@ -9,7 +9,7 @@ _Last updated: 2026-11-06_
 - No Kiro spec yet. No code yet.
 
 ## Next action
-1. Request Kiro credits if not done yet (deadline Dec 1, 12:00 PM PT).
+1. Credits received (4,000, expire Dec 31). Track usage in Kiro → Settings → Account & plan.
 2. Open the folder in Kiro → Specs → new spec "workflow-engine". Prompt Kiro with: *"Build the skeleton backend
    described by the steering docs: metadata loading, the publish-time validator, the dynamic records API and the
    workflow routing pipeline. Must-have scope only."* Let Kiro write requirements.md → design.md → tasks.md and

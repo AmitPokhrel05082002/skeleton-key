@@ -201,11 +201,10 @@
 
     "workflow": {
       "type": "object",
-      "required": ["code", "version", "entity", "startStep", "statuses", "steps"],
+      "required": ["code", "entity", "startStep", "statuses", "steps"],
       "additionalProperties": false,
       "properties": {
         "code": { "$ref": "#/$defs/code" },
-        "version": { "type": "integer", "minimum": 1 },
         "label": { "$ref": "#/$defs/label" },
         "entity": { "$ref": "#/$defs/code" },
         "startStep": { "$ref": "#/$defs/code" },

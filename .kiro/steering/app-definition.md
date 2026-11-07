@@ -13,8 +13,8 @@ A complete example lives in `examples/grievance.app.json`.
 This document defines the **behaviour** the schema cannot express. The engine, validator and tests must follow it exactly.
 
 ## Versioning
-- A workflow is identified by `(code, version)`. Published versions are immutable: editing creates version + 1.
-- A running instance is pinned to the version it started with until it ends.
+- The **whole app definition document** is versioned, identified by `(app code, version)`. The version number is assigned by the backend on store and is not part of the JSON. Published versions are immutable: editing creates version + 1.
+- A running instance is pinned to one document version plus its workflow code until it ends.
 
 ## Statuses
 - Statuses are labels declared per workflow, each with a category (`OPEN`, `IN_PROGRESS`, `DONE`, `REJECTED`).

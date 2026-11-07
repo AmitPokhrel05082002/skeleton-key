@@ -64,7 +64,6 @@
   "workflows": [
     {
       "code": "GRIEVANCE_FLOW",
-      "version": 1,
       "label": "Grievance handling",
       "entity": "GRIEVANCE",
       "startStep": "TRIAGE",

@@ -24,3 +24,4 @@ _Last updated: 2026-11-06_
 - Tenant override is not part of the definition (deployment concern, "Nice" tier).
 - Expressions: JSONLogic only.
 - Versioning is per whole app definition document (app code + version, assigned by the backend). `workflow.version` removed from the schema.
+- Frontend spec must include a minimal drag-and-drop form builder (add field, pick type, reorder, live preview) writing the same JSON; JSON editor stays as the fallback. It is a key 20-second demo moment.

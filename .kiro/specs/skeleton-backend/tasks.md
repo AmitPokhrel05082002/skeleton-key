@@ -24,7 +24,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Configure Surefire so jqwik properties run in `mvn test` and print the seed on failure; Testcontainers integration tests live under `skeleton/backend/src/test`
     - _Requirements: 20.1, 20.3, 20.4, 20.7, 18.9, 18.10_
 
-  - [ ] 1.3 Write Flyway migration `V1__init.sql`
+  - [x] 1.3 Write Flyway migration `V1__init.sql`
     - Tables: `definition_version`, `app_user`, `user_role`, `record` (with GIN index), `reference_counter`, `workflow_instance` (with `lock_version`), `assignment_cursor`, `history_entry`, `audit_log`
     - Add the trigger that rejects UPDATE and DELETE on `history_entry`
     - Status columns are plain `varchar`, no enum types

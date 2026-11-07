@@ -24,6 +24,18 @@
         "chatSessionId": "sess_165291b7-6bce-41cf-8c8f-2d9647ffe7bb",
         "timestamp": 1794048842349
       }
+    ],
+    "1.3 Write Flyway migration `V1__init.sql`": [
+      {
+        "executionId": "9baec58c-26e9-4037-a670-1a22b3138553",
+        "chatSessionId": "sess_e50be04c-8bed-4bd5-8be3-3db94693c22e",
+        "timestamp": 1794049291142
+      },
+      {
+        "executionId": "9baec58c-26e9-4037-a670-1a22b3138553",
+        "chatSessionId": "sess_e50be04c-8bed-4bd5-8be3-3db94693c22e",
+        "timestamp": 1794049458512
+      }
     ]
   }
 }

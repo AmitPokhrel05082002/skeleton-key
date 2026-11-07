@@ -37,3 +37,6 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 | 2026-11-07 | Claude Code | Aligned design.md wording to JDBC-only, moved compose file to repo root in structure.md, re-validated example | Spec consistent |
 | 2026-11-07 | Kiro IDE (Spec task) | Task 1.1 verified schema; task 1.2 Maven scaffold in skeleton/backend, compose at root, no committed secrets | Build passes (no tests yet) |
 | 2026-11-07 | Claude Code + Kiro | Kiro had pinned year-old versions from memory; checked Maven Central, Kiro updated to Boot 3.5.16, json-logic 1.1.0, networknt 1.5.9, jjwt 0.12.7, jqwik 1.9.3, Boot-managed Flyway 11.7.2 / PG 42.7.11 / Testcontainers 1.21.4 | Resolved versions verified with dependency:list |
+| 2026-11-07 | Kiro IDE (Spec task) | Task 1.3 Flyway V1 schema + failure analyzer | Review found record.status duplicate (dual-storage risk), single history status column, nullable instance columns |
+| 2026-11-07 | Kiro IDE | Fixed V1 in place per review (status only on instance, from/to status, time_in_step_ms, NOT NULLs, kind CHECK) | Compiles |
+| 2026-11-07 | Claude Code | Applied V1 to a throwaway local PostgreSQL 17 cluster and tested 8 behaviours (append-only trigger on UPDATE/DELETE, kind CHECK, time CHECK, NOT NULL, one instance per record, no record.status) | All 8 pass; cluster deleted |

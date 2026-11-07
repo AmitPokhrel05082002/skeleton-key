@@ -195,7 +195,7 @@ Pure function `validate(Entity, Map<String,Object> payload, Mode CREATE|UPDATE) 
 | GET | `/api/apps/{app}/entities/{entity}/records/{id}` | 404 if missing or not visible. |
 | PUT/PATCH | same | 409 if record has a workflow instance; otherwise validated update. |
 | GET | `/api/apps/{app}/entities/{entity}/records?page&size&sort&{filters}&view=` | Page (1-based), default size 20, max from config (<=100). |
-| POST | `/api/apps/{app}/forms/{form}/submit` | Public forms allowed without JWT; starts workflow when `startsWorkflow` is set (Req 8.1). |
+| POST | `/api/apps/{app}/forms/{form}/submit` | Public form: no JWT needed (caller treated as public role). Non-public form: 401 without JWT; any authenticated Principal when the form has no `roles`, otherwise the Principal must hold at least one of them (else 403). Starts workflow when `startsWorkflow` is set (Req 6.5, 6.6, 8.1). |
 
 Listing builds SQL with `data ->> :field` for equality filters (parameter-bound, field names validated against the entity and system columns first, which also prevents injection). Scope MINE / ASSIGNED_TO_ME / MY_ROLE_QUEUE adds a server-side predicate that is AND-ed after client filters, so a client cannot widen it (Req 7.14).
 
@@ -268,7 +268,7 @@ public record HandlerResult(Map<String,Object> fieldChanges) { static HandlerRes
 - `POST /api/auth/login` -> BCrypt `matches`; unknown user, wrong password and inactive user all return the same 401 body, and the unknown-user branch still performs a BCrypt check against a dummy hash to keep timing similar. Validation (blank, > 256 chars) -> 400 naming the field.
 - JWT: HS256 via `io.jsonwebtoken` (jjwt) or Nimbus; claims `sub` (user id), `roles`, `exp`. Secret and expiry from properties.
 - `JwtAuthFilter` sets the Spring Security context; missing/expired/tampered token on a protected route -> 401 via `AuthenticationEntryPoint`; insufficient role -> 403.
-- Anonymous routes: login, `GET /api/public/apps/{app}`, `POST` on public forms (authorization decided in the service by the form's `public` flag, so the filter chain permits the route and the service returns 401 for non-public forms without a JWT, Req 6.6).
+- Anonymous routes: login, `GET /api/public/apps/{app}`, `POST` on form submit. The filter chain permits the submit route without a JWT; the service decides from the form definition (Req 6.5, 6.6): public form -> accepted as public role; non-public form without JWT -> 401; non-public form with no `roles` -> any authenticated Principal may submit; non-public form with `roles` -> the Principal must hold at least one of them, otherwise 403 and no Record is stored.
 
 ### Instance_View and Definition read
 
@@ -577,7 +577,7 @@ Unit / example tests (JUnit 5, AssertJ):
 - Auto-publish (1.12, 1.13): with `auto-publish=true`, a clean newly stored DRAFT is published through the same path as manual Publish with the system actor in the audit entry; a DRAFT with violations stays DRAFT and the violations are logged with file name and version id; a hash-skipped file is not published; with `auto-publish=false` every loaded DRAFT stays DRAFT.
 - Definition read (16.1-16.3, 16.6, 16.7): forms and views without `roles` are returned to any authenticated user; with `roles` only to intersecting principals; 404/409/401 cases.
 - Wrapper tests for ExpressionEngine: allow-list rejection before delegation, JsonNode to Map/List conversion, dot-path `var`, boolean-only event `when` (14.4).
-- Public vs non-public form submission with and without JWT (6.5-6.7); BCrypt storage (6.8).
+- Form submission authorization (6.5-6.7): public form without JWT accepted; non-public form without JWT -> 401; non-public form with no `roles` accepted for any authenticated user; non-public form with `roles`: holder accepted, non-holder -> 403 with no Record stored. BCrypt storage (6.8).
 - Update rules for workflow-bound and workflow-free entities (7.15, 7.16); paging bounds 0, 1, 100, 101 (7.11).
 - Handler registry: a test context declaring two Plugin_Handler beans with the same bean name fails to start with `BeanDefinitionOverrideException` naming the bean (13.3; relies on Boot's default `spring.main.allow-bean-definition-overriding=false`); unknown handler (13.4).
 - NOTIFY/WEBHOOK deferral (14.10); seed file malformed -> non-zero exit (17.7); error body shape (20.6).

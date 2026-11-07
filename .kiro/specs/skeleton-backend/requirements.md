@@ -152,7 +152,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 3. IF the login request has a missing or empty user name or password, or either exceeds 256 characters, THEN THE Skeleton_Backend SHALL return HTTP status 400 with an error indicating which field failed validation, and SHALL NOT issue a JWT.
 4. IF a request to a protected endpoint carries a missing, expired or tampered JWT, THEN THE Skeleton_Backend SHALL return HTTP status 401 and SHALL NOT perform the requested action.
 5. WHERE a form has `public` set to true, THE Skeleton_Backend SHALL accept submissions to that form from a caller with no JWT, treating the caller as holding only the public role.
-6. IF a form has `public` set to false, THEN THE Skeleton_Backend SHALL accept submissions to that form only from a Principal holding at least one role listed in the form `roles`, and SHALL return HTTP status 401 for a caller with no JWT.
+6. IF a form has `public` set to false or has no `public` value, THEN THE Skeleton_Backend SHALL return HTTP status 401 for a submission from a caller with no JWT, SHALL accept a submission from any authenticated Principal when the form declares no `roles`, and SHALL, when the form declares `roles`, accept a submission only from a Principal holding at least one of those roles and return HTTP status 403 without storing a Record for an authenticated Principal holding none of those roles.
 7. IF a Principal with a valid JWT lacks the role required by an endpoint, THEN THE Skeleton_Backend SHALL return HTTP status 403 and SHALL leave stored records unchanged.
 8. THE Skeleton_Backend SHALL store passwords only as salted BCrypt hashes and SHALL NOT store or return the plain-text password in any response.
 

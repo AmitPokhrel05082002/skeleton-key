@@ -65,7 +65,7 @@ flowchart TB
   end
   Web --> App --> Domain
   App --> Ports
-  Ports -.JPA/JDBC.-> PG[(PostgreSQL)]
+  Ports -.JDBC.-> PG[(PostgreSQL)]
   Ports -.in-memory double.-> Test[Tests]
   Domain --> Plugins[Plugin_Handler beans]
 ```
@@ -84,7 +84,7 @@ dev.skeletonkey
     record      RecordValidator, ReferenceNumbers
     route       Router, RoutingContext, ActionOutcome, TransitionSelector, AssigneeResolver, FieldRuleResolver, EventRunner
     plugin      PluginHandler, HandlerResult
-  persistence   JPA entities and adapters for the ports; in-memory adapters live under src/test
+  persistence   JdbcClient adapters for the ports; in-memory adapters live under src/test
 ```
 
 ### Request flow: action
@@ -393,7 +393,7 @@ Status is a free `varchar`, not an enum type (Req 20.8). `time_in_step_ms` is co
 
 ### Ports
 
-`DefinitionRepository`, `RecordRepository`, `InstanceRepository` (with `findOpenTaskCounts(role)`), `HistoryRepository`, `AuditRepository`, `UserRepository`, `ReferenceCounter`, `AssignmentCursorRepository`. Each has a JPA/JDBC adapter and an in-memory twin in test sources used by Router properties (Req 19.9).
+`DefinitionRepository`, `RecordRepository`, `InstanceRepository` (with `findOpenTaskCounts(role)`), `HistoryRepository`, `AuditRepository`, `UserRepository`, `ReferenceCounter`, `AssignmentCursorRepository`. Each has a JDBC (JdbcClient) adapter and an in-memory twin in test sources used by Router properties (Req 19.9).
 
 ## Correctness Properties
 
@@ -602,7 +602,7 @@ Smoke tests: OpenAPI document served and lists records, definition, instance vie
 
 Libraries chosen (versions to be pinned exactly in pom.xml during implementation; no open ranges):
 
-- Spring Boot 3 (web, security, data/JDBC or JPA, validation, actuator), Java 21
+- Spring Boot 3 (web, security, JDBC via JdbcClient, validation, actuator), Java 21
 - PostgreSQL JDBC driver, Flyway (`flyway-core`, `flyway-database-postgresql`)
 - `com.networknt:json-schema-validator` (draft 2020-12)
 - Jackson (`jackson-databind`) for JSON

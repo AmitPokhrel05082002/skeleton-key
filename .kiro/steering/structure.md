@@ -11,7 +11,8 @@ examples/         sample app definitions used by tests and docs
 skeleton/
   backend/        Spring Boot engine: auth, metadata, dynamic records API, workflow engine, scheduler
   frontend/       Angular shell + NG-ZORRO renderers
-  docker/         compose file, proxy config
+  docker/         reverse-proxy config and other container files
+docker-compose.yml  at the repo root: runs the whole stack (builds skeleton/backend)
 app-grievance/    app #1: definition/, seed/, branding/, extension/ (one custom handler or widget)
 app-assets/       app #2: same layout as app #1
 ```

@@ -134,6 +134,66 @@
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794460090768
       }
+    ],
+    "3.2 Implement workflow graph rules": [
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460558114
+      },
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460988683
+      }
+    ],
+    "3.3 Implement expression and handler rules": [
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460558892
+      },
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460989266
+      }
+    ],
+    "7.1 Implement `FieldRuleResolver`, status resolution and `TransitionSelector`": [
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460559632
+      },
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460990265
+      }
+    ],
+    "7.2 Implement `AssigneeResolver`": [
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460560242
+      },
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460995925
+      }
+    ],
+    "7.3 Implement `PluginHandler`, `HandlerRegistry` and `EventRunner`": [
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460561184
+      },
+      {
+        "executionId": "02141e6d-b612-421a-9157-002608740dc9",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461122944
+      }
     ]
   }
 }

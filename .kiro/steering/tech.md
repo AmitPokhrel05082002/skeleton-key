@@ -12,7 +12,7 @@ inclusion: always
 - Security: Spring Security with stateless JWT. Authorisation is checked in the engine against the definition
   (roles per action, field rules per step), not only with `@PreAuthorize`.
 - Expressions: JSONLogic only (one evaluator, used for `when`, `skipWhen` and `SET_FIELD` values). No SpEL, no scripting.
-- Errors: one `@RestControllerAdvice` that returns RFC 7807 `ProblemDetail`.
+- Errors: one `@RestControllerAdvice` (`ApiExceptionHandler`) that returns the design's `ApiError` JSON: status, code, message, requestId, violations[] (field, rule, message), plus line/column for malformed JSON. 5xx bodies never contain internal detail.
 - API: REST under `/api/**`, OpenAPI via springdoc. Lists are paginated (`page`, `size`, `sort`) and filterable.
 - Tests: JUnit 5, Testcontainers for Postgres, **jqwik** for property-based tests of the validator and the engine.
 - Layering per feature package: `web` (controllers, DTOs) → `service` → `repository`. No business logic in controllers.

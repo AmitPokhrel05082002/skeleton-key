@@ -16,13 +16,24 @@ public class Validator {
         this.groups = List.copyOf(groups);
     }
 
-    /** Validator with the structural rule groups (collections, entities and fields, forms and views). */
-    public Validator() {
-        this(structuralGroups());
+    /**
+     * Full publish-time validator: structural groups plus expression and handler rules (Req 4).
+     * There is deliberately no no-arg constructor, so a publish path cannot skip the expression rules.
+     * Use {@code new Validator(structuralGroups())} only in tests that target structural rules alone.
+     */
+    public Validator(HandlerCatalog handlers) {
+        this(withExpressionRules(handlers));
+    }
+
+    private static List<RuleGroup> withExpressionRules(HandlerCatalog handlers) {
+        List<RuleGroup> all = new ArrayList<>(structuralGroups());
+        all.add(new ExpressionRules(handlers));
+        return all;
     }
 
     public static List<RuleGroup> structuralGroups() {
-        return List.of(new CollectionRules(), new EntityFieldRules(), new FormViewRules());
+        return List.of(new CollectionRules(), new EntityFieldRules(), new FormViewRules(),
+                new WorkflowGraphRules());
     }
 
     public ValidationReport validate(AppDefinition def) {

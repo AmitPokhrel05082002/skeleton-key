@@ -28,6 +28,14 @@ class WebFoundationsTest {
         @GetMapping("/router") String router() {
             throw new RouterException(403, "FIELD_NOT_WRITABLE", "no", List.of(new ApiViolation("a", "readonly")));
         }
+        @GetMapping("/syntax") String syntax() {
+            throw new dev.skeletonkey.domain.load.DefinitionSyntaxException("Unexpected token", 3, 14);
+        }
+        @GetMapping("/schema") String schema() {
+            throw new dev.skeletonkey.domain.load.DefinitionSchemaException(List.of(
+                    new dev.skeletonkey.domain.load.SchemaViolation("SCHEMA", "/app/code", "bad code"),
+                    new dev.skeletonkey.domain.load.SchemaViolation("SCHEMA", "/roles", "too short")));
+        }
         @GetMapping("/lock") String lock() { throw new OptimisticLockingFailureException("x"); }
         @GetMapping("/missing") String missing() { throw new NotFound("nope"); }
         @GetMapping("/history") String history() { return "ok"; }
@@ -53,6 +61,26 @@ class WebFoundationsTest {
                 .andExpect(jsonPath("$.requestId", is("req-1")))
                 .andExpect(jsonPath("$.violations", hasSize(1)))
                 .andExpect(jsonPath("$.violations[0].field", is("a")));
+    }
+
+    @Test
+    void definitionSyntaxExceptionIsMalformedJsonWithLineAndColumn() throws Exception {
+        mvc.perform(get("/syntax"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code", is("MALFORMED_JSON")))
+                .andExpect(jsonPath("$.line", is(3)))
+                .andExpect(jsonPath("$.column", is(14)));
+    }
+
+    @Test
+    void definitionSchemaExceptionListsViolations() throws Exception {
+        mvc.perform(get("/schema"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code", is("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.violations", hasSize(2)))
+                .andExpect(jsonPath("$.violations[0].rule", is("SCHEMA")))
+                .andExpect(jsonPath("$.violations[0].field", is("/app/code")))
+                .andExpect(jsonPath("$.violations[0].message", is("bad code")));
     }
 
     @Test

@@ -60,11 +60,11 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Collections (`DUPLICATE_CODE`, `MULTIPLE_PUBLIC_ROLES`), entities and fields, forms and views rules
     - _Requirements: 2.1, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12, 2.13, 2.14_
 
-  - [ ] 3.2 Implement workflow graph rules
+  - [x] 3.2 Implement workflow graph rules
     - All codes `BAD_START_STEP` to `UNSUPPORTED_STEP`, including `UNKNOWN_STATUS`, `UNSET_STATUS`, reachability BFS, dead ends, ambiguous priority, JOIN mismatch
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15, 3.16_
 
-  - [ ] 3.3 Implement expression and handler rules
+  - [x] 3.3 Implement expression and handler rules
     - `EXPR_PARSE`, `EXPR_OPERATOR`, `EXPR_VAR_ROOT`, `EXPR_FIELD`, `UNKNOWN_HANDLER`, `SET_FIELD_UNKNOWN`, plus `HandlerCatalog` interface
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
 
@@ -151,15 +151,15 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - _Requirements: 7.11, 7.13, 7.15, 7.16_
 
 - [ ] 7. Router
-  - [ ] 7.1 Implement `FieldRuleResolver`, status resolution and `TransitionSelector`
+  - [x] 7.1 Implement `FieldRuleResolver`, status resolution and `TransitionSelector`
     - Effective rule (unlisted is `readonly`), `resolveStatus` precedence, selection by priority (default 100) then declaration order, then Action `to`, then next step, with `EXPRESSION_ERROR` entries
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.14, 11.3, 15.4_
 
-  - [ ] 7.2 Implement `AssigneeResolver`
+  - [x] 7.2 Implement `AssigneeResolver`
     - ROLE_QUEUE, LEAST_LOADED, ROUND_ROBIN (returns `CursorUpdate`), INITIATOR, FROM_FIELD; active users only; no writes
     - _Requirements: 8.4, 8.5, 8.8, 17.6_
 
-  - [ ] 7.3 Implement `PluginHandler`, `HandlerRegistry` and `EventRunner`
+  - [x] 7.3 Implement `PluginHandler`, `HandlerRegistry` and `EventRunner`
     - `PluginHandler` and `HandlerResult`, registry from Spring beans keyed by bean name (rely on Boot's override protection for duplicates), `HandlerCatalog` adapter
     - `EventRunner` for SET_FIELD, HANDLER, NOTIFY and WEBHOOK (`EVENT_DEFERRED`), `EVENT_FAILED` handling
     - _Requirements: 13.1, 13.2, 13.3, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10_

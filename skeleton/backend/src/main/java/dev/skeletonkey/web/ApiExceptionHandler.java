@@ -1,5 +1,7 @@
 package dev.skeletonkey.web;
 
+import dev.skeletonkey.domain.load.DefinitionSchemaException;
+import dev.skeletonkey.domain.load.DefinitionSyntaxException;
 import dev.skeletonkey.domain.route.RouterException;
 import java.util.List;
 import org.slf4j.Logger;
@@ -35,6 +37,21 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ValidationFailed.class)
     ResponseEntity<ApiError> validation(ValidationFailed e) {
         return build(422, "VALIDATION_FAILED", e.getMessage(), e.violations());
+    }
+
+    @ExceptionHandler(DefinitionSyntaxException.class)
+    ResponseEntity<ApiError> malformedJson(DefinitionSyntaxException e) {
+        ApiError body = new ApiError(400, "MALFORMED_JSON", e.getMessage(), MDC.get(RequestIdFilter.MDC_KEY),
+                List.of(), e.line(), e.column());
+        return ResponseEntity.status(400).contentType(org.springframework.http.MediaType.APPLICATION_JSON).body(body);
+    }
+
+    @ExceptionHandler(DefinitionSchemaException.class)
+    ResponseEntity<ApiError> schemaViolations(DefinitionSchemaException e) {
+        List<ApiViolation> violations = e.violations().stream()
+                .map(v -> new ApiViolation(v.path(), v.rule(), v.message()))
+                .toList();
+        return build(422, "VALIDATION_FAILED", e.getMessage(), violations);
     }
 
     @ExceptionHandler(NotFound.class)

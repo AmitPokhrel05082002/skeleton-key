@@ -54,7 +54,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Allow-list rejection before delegation, conversion, dot-path `var`, boolean-only event `when`, library truthiness and missing-path behavior
     - _Requirements: 4.3, 14.4_
 
-- [ ] 3. Validator
+- [x] 3. Validator
   - [x] 3.1 Implement Validator infrastructure and structural rule groups
     - `Validator`, `Violation`, `ValidationReport` (sorted by path, rule, message), rule runner that runs all groups
     - Collections (`DUPLICATE_CODE`, `MULTIPLE_PUBLIC_ROLES`), entities and fields, forms and views rules
@@ -68,20 +68,20 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - `EXPR_PARSE`, `EXPR_OPERATOR`, `EXPR_VAR_ROOT`, `EXPR_FIELD`, `UNKNOWN_HANDLER`, `SET_FIELD_UNKNOWN`, plus `HandlerCatalog` interface
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
 
-  - [ ] 3.4 Create shared jqwik generators (test sources)
+  - [x] 3.4 Create shared jqwik generators (test sources)
     - `DefinitionArbitraries.validDefinition()` (1-20 roles, 1-10 entities, 2-30 steps, all field types, supported step types and assignee strategies, every status settable)
     - `Mutations.oneOfTenDefects`, `ExpressionArbitraries.anyJsonLogic` (depth 0-10), `PrincipalArbitraries`, `ActionSequenceArbitraries`
     - _Requirements: 18.1, 18.3, 19.1_
 
-  - [ ] 3.5 Write property test for valid definitions
+  - [x] 3.5 Write property test for valid definitions
     - **Property 4: Validator accepts every valid definition**
     - **Validates: Requirements 2.1, 2.3, 18.2**
 
-  - [ ] 3.6 Write property test for injected defects
+  - [x] 3.6 Write property test for injected defects
     - **Property 5: Validator detects each injected defect**
     - **Validates: Requirements 2.2, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12, 2.13, 2.14, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15, 4.3, 4.4, 4.5, 18.4**
 
-  - [ ] 3.7 Write property test for totality and determinism
+  - [x] 3.7 Write property test for totality and determinism
     - **Property 6: Validator is total, deterministic and order-insensitive**
     - **Validates: Requirements 2.4, 4.1, 4.2, 4.8, 18.5, 18.6, 18.7**
 
@@ -92,12 +92,12 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
 - [ ] 4. Checkpoint - Ensure validator tests pass
   - Ensure all validator tests pass, ask the user if questions arise.
 
-- [ ] 5. Definition loading and versioning
+- [x] 5. Definition loading and versioning
   - [x] 5.1 Implement `DefinitionLoader` parsing, schema check and hashing
     - Jackson parse with line and column from `JsonLocation` (400), networknt draft 2020-12 check mapped to JSON Pointer violations (422), canonical JSON and SHA-256 Content_Hash, `USE_BIG_DECIMAL_FOR_FLOATS`
     - _Requirements: 1.1, 1.2, 1.3, 1.7_
 
-  - [ ] 5.2 Implement `DefinitionService` with repository port
+  - [x] 5.2 Implement `DefinitionService` with repository port
     - `DefinitionRepository` port, JDBC adapter using `JdbcClient` and in-memory twin (test sources)
     - `submit`, `edit` (new DRAFT, 409 for in-place update of PUBLISHED), `read` (404), `publish` (Validator, 422, 409 if not DRAFT, audit entry), `latestPublished`; version = max + 1 with unique constraint and one retry
     - `DefinitionController` for submit, edit, read and publish
@@ -133,7 +133,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - JDBC adapters using `JdbcClient` and in-memory twins under test sources
     - _Requirements: 19.9, 12.7, 7.7_
 
-  - [ ] 6.4 Implement `RecordService` create, read and update, `AuditService` and `RecordController`
+  - [x] 6.4 Implement `RecordService` create, read and update, `AuditService` and `RecordController`
     - Create with atomic reference numbers, read (404 when the row is not visible), update (409 when the record has a workflow instance or the app is unpublished)
     - Update is allowed only for entities without a workflow (validated per 7.3-7.6); 409 for records with a workflow instance or an unpublished app
     - Audit entries written in the same transaction
@@ -164,7 +164,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - `EventRunner` for SET_FIELD, HANDLER, NOTIFY and WEBHOOK (`EVENT_DEFERRED`), `EVENT_FAILED` handling
     - _Requirements: 13.1, 13.2, 13.3, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10_
 
-  - [ ] 7.4 Implement Router guards and field, remarks and attachment validation
+  - [x] 7.4 Implement Router guards and field, remarks and attachment validation
     - Instance not ended, action exists on the current step, role check, action `when` guard, assignee or escalation check
     - Readonly field writes rejected with 403, remarks and attachment rules rejected with 422, required fields rejected with 422
     - `RouterException` thrown before any write
@@ -241,7 +241,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. Authentication and seeding
-  - [ ] 9.1 Implement JWT auth, login and security config
+  - [x] 9.1 Implement JWT auth, login and security config
     - `POST /api/auth/login` (BCrypt, dummy-hash timing on unknown user, identical 401 body, 400 validation naming the field), HS256 JWT with user id, roles, expiry, `JwtAuthFilter`, entry point 401, 403 handling, anonymous routes for login, public subset and form submit
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.7, 6.8, 17.5_
 

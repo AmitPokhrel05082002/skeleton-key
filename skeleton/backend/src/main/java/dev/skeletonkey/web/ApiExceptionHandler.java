@@ -54,6 +54,11 @@ public class ApiExceptionHandler {
         return build(422, "VALIDATION_FAILED", e.getMessage(), violations);
     }
 
+    @ExceptionHandler(BadRequest.class)
+    ResponseEntity<ApiError> badRequest(BadRequest e) {
+        return build(400, "BAD_REQUEST", e.getMessage(), e.violations());
+    }
+
     @ExceptionHandler(NotFound.class)
     ResponseEntity<ApiError> notFound(NotFound e) {
         return build(404, "NOT_FOUND", e.getMessage(), List.of());

@@ -1,5 +1,18 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "3.5 Write property test for valid definitions": {
+      "status": "passed",
+      "lastRunTimestamp": 1794465029011
+    },
+    "3.7 Write property test for totality and determinism": {
+      "status": "passed",
+      "lastRunTimestamp": 1794465079391
+    },
+    "3.6 Write property test for injected defects": {
+      "status": "passed",
+      "lastRunTimestamp": 1794465084493
+    }
+  },
   "executionHistory": {
     "1.1 Verify the schema changes and mark complete": [
       {
@@ -193,6 +206,116 @@
         "executionId": "02141e6d-b612-421a-9157-002608740dc9",
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794461122944
+      }
+    ],
+    "3.4 Create shared jqwik generators (test sources)": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461379539
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464935931
+      }
+    ],
+    "5.2 Implement `DefinitionService` with repository port": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461380276
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464936514
+      }
+    ],
+    "6.4 Implement `RecordService` create, read and update, `AuditService` and `RecordController`": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461380894
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464937724
+      }
+    ],
+    "7.4 Implement Router guards and field, remarks and attachment validation": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461381664
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464938292
+      }
+    ],
+    "9.1 Implement JWT auth, login and security config": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794461382649
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464938832
+      }
+    ],
+    "5. Definition loading and versioning": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464937177
+      }
+    ],
+    "3.5 Write property test for valid definitions": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464948144
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794465108944
+      }
+    ],
+    "3.6 Write property test for injected defects": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464948465
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794465109512
+      }
+    ],
+    "3.7 Write property test for totality and determinism": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794464948892
+      },
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794465222617
+      }
+    ],
+    "3. Validator": [
+      {
+        "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794465223013
       }
     ]
   }

@@ -39,7 +39,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - _Requirements: 20.6, 12.7, 12.12, 7.18, 9.13_
 
 - [ ] 2. Domain model and expression engine
-  - [ ] 2.1 Implement the immutable domain model and parser
+  - [x] 2.1 Implement the immutable domain model and parser
     - Records: `AppDefinition`, `Entity`, `Field`, `Workflow`, `Step`, `Action`, `Transition`, sealed `Event`, runtime `InstanceState`, `HistoryEntry`, `CursorUpdate`, `Principal`
     - `DefinitionParser` from `JsonNode` to the model (no `workflow.version` field), with a cache keyed by `(appCode, version)`
     - _Requirements: 5.9, 5.5, 20.8_

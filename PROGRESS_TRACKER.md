@@ -42,3 +42,5 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 | 2026-11-07 | Claude Code | Applied V1 to a throwaway local PostgreSQL 17 cluster and tested 8 behaviours (append-only trigger on UPDATE/DELETE, kind CHECK, time CHECK, NOT NULL, one instance per record, no record.status) | All 8 pass; cluster deleted |
 | 2026-11-07 | Kiro IDE (Spec task) | Task 1.4 web foundations (request id, error handler, UTC ms instants, OpenAPI, 405) + 5 MockMvc tests | Pass |
 | 2026-11-07 | Claude Code | Review fixes: migrated jqwik.properties to junit-platform.properties (old file was ignored, tries=100 had no effect); RouterException 500s no longer leak internal messages; springdoc 2.8.9 -> 2.8.17 | Clean build, 5/5 pass, no SEVERE warning |
+| 2026-11-12 | Kiro IDE (Spec task) | Task 2.1 immutable domain model, parser, cache + 4 tests; PowerShell-written BOMs broke compilation, Kiro stripped them | Model matches schema (step/transition status, no workflow.version, statuses are strings) |
+| 2026-11-12 | Claude Code | Verified model vs schema, no BOMs left, full suite 9/9; added "UTF-8 without BOM" rule to tech.md steering so it doesn't recur | Pass |

@@ -55,6 +55,18 @@
         "chatSessionId": "sess_d8f94771-d847-4da3-82a8-fac7237cf747",
         "timestamp": 1794049925041
       }
+    ],
+    "2.1 Implement the immutable domain model and parser": [
+      {
+        "executionId": "d27d7f2f-e5ec-49c3-b8c9-f0f1f55f140f",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794456942466
+      },
+      {
+        "executionId": "d27d7f2f-e5ec-49c3-b8c9-f0f1f55f140f",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794458484266
+      }
     ]
   }
 }

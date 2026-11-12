@@ -31,3 +31,7 @@ inclusion: always
 The developer works in **Windows CMD**. When giving shell commands use CMD syntax: `^` for line continuation,
 `findstr` instead of `grep`, `set VAR=value`, and escaped double quotes inside JSON (`"{\"a\":1}"`).
 Prefer `mvnw.cmd` and `npm`/`npx` commands that work the same on Windows and Linux.
+
+## File encoding
+Write every source file as **UTF-8 without BOM** and with LF line endings. In PowerShell 5.1 never use
+`Set-Content`/`Out-File` for source files (they add a BOM, which breaks `javac`); use the editor's file tools instead.

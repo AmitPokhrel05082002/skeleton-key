@@ -41,6 +41,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 - **Auto_Publish**: The startup step that publishes newly stored DRAFT Definition_Versions, controlled by the property `skeletonkey.definitions.auto-publish` (default true).
 - **Instance_View**: The response of the instance view endpoint, holding the current Step, status, available Actions of the caller and effective field rules.
 - **Public_Subset**: The part of a PUBLISHED App_Definition that is needed to render public forms: each public form, its fields, option lists and labels, and nothing else.
+- **Platform_Admin**: The role named by `skeletonkey.admin-role` (default `PLATFORM_ADMIN`). It is not declared in any App_Definition and is granted to users through the Seed_File.
 - **Seed_File**: A JSON file at a configured path that lists users, their role codes, their credentials and an `active` flag.
 
 ## Requirements
@@ -155,6 +156,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 6. IF a form has `public` set to false or has no `public` value, THEN THE Skeleton_Backend SHALL return HTTP status 401 for a submission from a caller with no JWT, SHALL accept a submission from any authenticated Principal when the form declares no `roles`, and SHALL, when the form declares `roles`, accept a submission only from a Principal holding at least one of those roles and return HTTP status 403 without storing a Record for an authenticated Principal holding none of those roles.
 7. IF a Principal with a valid JWT lacks the role required by an endpoint, THEN THE Skeleton_Backend SHALL return HTTP status 403 and SHALL leave stored records unchanged.
 8. THE Skeleton_Backend SHALL store passwords only as salted BCrypt hashes and SHALL NOT store or return the plain-text password in any response.
+9. THE Skeleton_Backend SHALL define the Platform_Admin role by the property `skeletonkey.admin-role` (default `PLATFORM_ADMIN`), outside every App_Definition, and WHEN a request to submit, edit, update, publish or read the raw document or info of a Definition_Version is made, THE Skeleton_Backend SHALL perform it only for a Principal holding the Platform_Admin role, and SHALL otherwise return HTTP status 403 with the common error body and change no Definition_Version; the reserved system actor of Auto_Publish is not affected, and the restricted read of Requirement 16.1 and 16.2 and the Public_Subset read are not governed by this criterion.
 
 ### Requirement 7: Dynamic Records API
 
@@ -386,10 +388,10 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 
 #### Acceptance Criteria
 
-1. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL read the following properties from `application.properties`: the database URL (`spring.datasource.url`, with the standard `spring.datasource.*` properties for credentials) and the application properties under the prefix `skeletonkey.*`: JWT secret, JWT expiry in seconds, startup definition directory, seed file path, maximum page size and `skeletonkey.definitions.auto-publish` (boolean, default true when absent).
+1. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL read the following properties from `application.properties`: the database URL (`spring.datasource.url`, with the standard `spring.datasource.*` properties for credentials) and the application properties under the prefix `skeletonkey.*`: JWT secret, JWT expiry in seconds, startup definition directory, seed file path, maximum page size, `skeletonkey.definitions.auto-publish` (boolean, default true when absent) and `skeletonkey.admin-role` (default `PLATFORM_ADMIN` when absent).
 2. WHEN the Skeleton_Backend starts, THE Skeleton_Backend SHALL apply all pending versioned database migrations, in ascending version order, to create and update the tables that hold definitions, records, instances, history, audit log and users.
 3. IF a required configuration property is missing or empty at startup, THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming each missing property; the seed file path is optional and is excluded from this criterion.
-4. IF a configuration property has an invalid value at startup (JWT expiry or maximum page size not a positive integer, JWT secret shorter than 32 characters, or `skeletonkey.definitions.auto-publish` not equal to true or false), THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the property and the reason it is invalid.
+4. IF a configuration property has an invalid value at startup (JWT expiry or maximum page size not a positive integer, JWT secret shorter than 32 characters, `skeletonkey.definitions.auto-publish` not equal to true or false, or `skeletonkey.admin-role` blank or not matching `^[A-Z][A-Z0-9_]{0,63}$`), THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the property and the reason it is invalid.
 5. IF a database migration fails at startup, THEN THE Skeleton_Backend SHALL stop startup with a non-zero exit code and a message naming the failed migration, and SHALL leave previously applied migrations intact.
 6. IF a request fails, THEN THE Skeleton_Backend SHALL return a JSON error body containing the HTTP status, an error code, a message, a request identifier and, for validation failures, a list of field-level violations each naming the field and the rule violated.
 7. WHEN a user runs `docker-compose up` in the project root with Docker available, THE Skeleton_Backend SHALL start together with a PostgreSQL service and accept requests.

@@ -11,6 +11,10 @@
     "3.6 Write property test for injected defects": {
       "status": "passed",
       "lastRunTimestamp": 1794465084493
+    },
+    "7.7 Write property test for transition selection": {
+      "status": "passed",
+      "lastRunTimestamp": 1794466626056
     }
   },
   "executionHistory": {
@@ -316,6 +320,80 @@
         "executionId": "33c63493-a78d-4781-835b-6b21d55b71e0",
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794465223013
+      }
+    ],
+    "6.5 Implement `RecordService` listing and extend `RecordController`": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466509021
+      },
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470775227
+      }
+    ],
+    "7.5 Implement Router handler run, onExit events and transition selection wiring": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466509267
+      },
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470776300
+      }
+    ],
+    "7.7 Write property test for transition selection": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466509529
+      },
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470776837
+      }
+    ],
+    "7.8 Write property test for status resolution": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466509770
+      },
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470777275
+      }
+    ],
+    "7.15 Write property test for role gating": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466509935
+      },
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470777732
+      }
+    ],
+    "9.3 Implement `SeedLoader`": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794466510221
+      }
+    ],
+    "6. Records": [
+      {
+        "executionId": "f66aad54-3834-4f2b-95d4-0df08a50b1c0",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794470775689
       }
     ]
   }

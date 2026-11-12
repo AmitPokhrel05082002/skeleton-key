@@ -268,6 +268,7 @@ public record HandlerResult(Map<String,Object> fieldChanges) { static HandlerRes
 - `POST /api/auth/login` -> BCrypt `matches`; unknown user, wrong password and inactive user all return the same 401 body, and the unknown-user branch still performs a BCrypt check against a dummy hash to keep timing similar. Validation (blank, > 256 chars) -> 400 naming the field.
 - JWT: HS256 via `io.jsonwebtoken` (jjwt) or Nimbus; claims `sub` (user id), `roles`, `exp`. Secret and expiry from properties.
 - `JwtAuthFilter` sets the Spring Security context; missing/expired/tampered token on a protected route -> 401 via `AuthenticationEntryPoint`; insufficient role -> 403.
+- Platform_Admin (Req 6.9): the role named by `skeletonkey.admin-role` (default `PLATFORM_ADMIN`) is not part of any App_Definition. `AdminGuard` (`app` package, constructed from `SkeletonProperties.adminRole()`) exposes `isAdmin(Principal)` and `require(Principal)`, which throws `AccessDeniedException` (mapped by `ApiExceptionHandler` to the 403 `ApiError`). `DefinitionController` calls `require` first on submit, edit, update, raw read, info and publish; the Principal passed to `DefinitionService.publish` is the admin. `DefinitionService` itself does not check, so Auto_Publish with `SYSTEM_ACTOR` is unaffected. The restricted definition read (Req 16.1, 16.2) and the Public_Subset are not guarded. Seed users may hold the admin role code; `SeedLoader` checks role codes only against the role code pattern, not against definitions.
 - Anonymous routes: login, `GET /api/public/apps/{app}`, `POST` on form submit. The filter chain permits the submit route without a JWT; the service decides from the form definition (Req 6.5, 6.6): public form -> accepted as public role; non-public form without JWT -> 401; non-public form with no `roles` -> any authenticated Principal may submit; non-public form with `roles` -> the Principal must hold at least one of them, otherwise 403 and no Record is stored.
 
 ### Instance_View and Definition read
@@ -303,13 +304,15 @@ skeletonkey.definitions.dir=
 skeletonkey.definitions.auto-publish=true
 skeletonkey.seed.file=
 skeletonkey.page.max-size=100
+skeletonkey.admin-role=PLATFORM_ADMIN
 ```
 
 ```java
 @ConfigurationProperties(prefix = "skeletonkey")
 @Validated
 public record SkeletonProperties(
-    @Valid Jwt jwt, @Valid Definitions definitions, @Valid Seed seed, @Valid Page page) {
+    @Valid Jwt jwt, @Valid Definitions definitions, @Valid Seed seed, @Valid Page page,
+    @NotBlank @Pattern(regexp = "^[A-Z][A-Z0-9_]{0,63}$") @DefaultValue("PLATFORM_ADMIN") String adminRole) {
   public record Jwt(@NotBlank @Size(min = 32) String secret, @Positive long expirySeconds) {}
   public record Definitions(@NotBlank String dir, @DefaultValue("true") boolean autoPublish) {}
   public record Seed(String file) {}                       // optional
@@ -317,7 +320,7 @@ public record SkeletonProperties(
 }
 ```
 
-Validation is done by Spring Boot, not by custom code. A missing or blank value, a non-numeric or non-positive number, a secret shorter than 32 characters, or a non-boolean `auto-publish` makes binding or Bean Validation fail; Boot's `BindFailureAnalyzer` and `ConstraintViolationException` analysis print the offending property names and reasons and the process exits non-zero (Req 20.3, 20.4). `auto-publish` is a typed `boolean`, so any value other than `true`/`false` fails binding. Page `maxSize` is additionally capped at 100 by `@Max(100)` so the Req 7.10 maximum cannot be exceeded. The datasource URL is validated by Boot's datasource auto-configuration; a missing URL fails startup with its standard message. The only custom `FailureAnalyzer` is for Flyway: it wraps migration failures and names the failed migration while leaving earlier migrations applied (Req 20.5). A custom `ConfigChecker` is not needed and is removed from the design. `docker-compose.yml` runs `postgres:16` plus the app with `restart: unless-stopped` and `-Xmx` capped.
+Validation is done by Spring Boot, not by custom code. A missing or blank value, a non-numeric or non-positive number, a secret shorter than 32 characters, or a non-boolean `auto-publish` makes binding or Bean Validation fail; Boot's `BindFailureAnalyzer` and `ConstraintViolationException` analysis print the offending property names and reasons and the process exits non-zero (Req 20.3, 20.4). `auto-publish` is a typed `boolean`, so any value other than `true`/`false` fails binding. `admin-role` defaults to `PLATFORM_ADMIN` and must match the app role code pattern, otherwise binding fails naming `adminRole`. Page `maxSize` is additionally capped at 100 by `@Max(100)` so the Req 7.10 maximum cannot be exceeded. The datasource URL is validated by Boot's datasource auto-configuration; a missing URL fails startup with its standard message. The only custom `FailureAnalyzer` is for Flyway: it wraps migration failures and names the failed migration while leaving earlier migrations applied (Req 20.5). A custom `ConfigChecker` is not needed and is removed from the design. `docker-compose.yml` runs `postgres:16` plus the app with `restart: unless-stopped` and `-Xmx` capped.
 
 ### Seed loader
 

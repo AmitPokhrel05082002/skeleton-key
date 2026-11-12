@@ -3,8 +3,15 @@ package dev.skeletonkey.record;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.skeletonkey.audit.AuditService;
+import dev.skeletonkey.domain.access.RowVisibility;
 import dev.skeletonkey.domain.model.Entity;
+import dev.skeletonkey.domain.model.Field;
 import dev.skeletonkey.domain.model.Principal;
+import dev.skeletonkey.domain.model.View;
+import dev.skeletonkey.persistence.RecordQuery;
+import dev.skeletonkey.web.BadRequest;
+import java.util.ArrayList;
+import java.util.Set;
 import dev.skeletonkey.persistence.InstanceRepository;
 import dev.skeletonkey.persistence.RecordRepository;
 import dev.skeletonkey.persistence.RecordRow;
@@ -34,6 +41,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class RecordService {
 
     private static final String TARGET_TYPE = "record";
+    static final int DEFAULT_SIZE = 20;
+    static final int MAX_SIZE = 100;
+    private static final Set<String> RESERVED = Set.of("page", "size", "sort", "view");
 
     private final PublishedDefinitions definitions;
     private final RecordRepository records;
@@ -128,17 +138,129 @@ public class RecordService {
                 .orElseThrow(() -> new NotFound("Entity '" + entityCode + "' not found"));
     }
 
-    private RecordRow visible(String appCode, String entityCode, UUID id, Principal caller) {
-        RecordRow row = records.findById(id)
-                .filter(r -> r.appCode().equals(appCode) && r.entityCode().equals(entityCode))
-                .filter(r -> isVisible(r, caller))
-                .orElseThrow(() -> new NotFound("Record not found"));
-        return row;
+    /** Lists records of an entity (Req 7.10-7.14). {@code params} holds page, size, sort, view and filters. */
+    @Transactional(readOnly = true)
+    public RecordPage list(String appCode, String entityCode, Map<String, String> params, Principal caller) {
+        PublishedApp app = published(appCode);
+        Entity entity = entity(app, entityCode);
+        List<ApiViolation> bad = new ArrayList<>();
+        int page = intParam(params, "page", 1, 1, Integer.MAX_VALUE, bad);
+        int size = intParam(params, "size", DEFAULT_SIZE, 1, MAX_SIZE, bad);
+
+        View view = null;
+        String viewCode = params.get("view");
+        if (viewCode != null) {
+            view = app.definition().views().stream()
+                    .filter(v -> v.code().equals(viewCode) && v.entity().equals(entityCode)
+                            && (v.roles().isEmpty() || caller.hasAnyRole(v.roles())))
+                    .findFirst().orElse(null);
+            if (view == null) {
+                bad.add(new ApiViolation("view", "UNKNOWN_VIEW", "Unknown view '" + viewCode + "'"));
+            }
+        }
+
+        Map<String, String> filters = new LinkedHashMap<>();
+        params.forEach((name, value) -> {
+            if (RESERVED.contains(name)) return;
+            if (entity.field(name).isEmpty()) {
+                bad.add(new ApiViolation(name, "UNKNOWN_FILTER", "Unknown filter field '" + name + "'"));
+            } else {
+                filters.put(name, value);
+            }
+        });
+
+        String sortText = params.get("sort");
+        RecordQuery.Sort sort = null;
+        if (sortText != null && !sortText.isBlank()) {
+            sort = parseSort(entity, sortText, bad);
+        } else if (view != null && view.defaultSort() != null) {
+            View.Sort d = view.defaultSort();
+            sort = parseSort(entity, d.field() + "," + (d.direction() == null ? "DESC" : d.direction()), bad);
+        } else {
+            sort = new RecordQuery.Sort(RecordQuery.SortKind.CREATED_AT, null, false, true);
+        }
+        if (!bad.isEmpty()) {
+            throw new BadRequest("Invalid list parameters", bad);
+        }
+
+        View.Scope scope = view == null || view.scope() == null ? View.Scope.ALL : view.scope();
+        RowVisibility visibility = RowVisibility.of(app.definition(), entityCode, caller);
+        RecordRepository.Page result = records.search(new RecordQuery(appCode, entityCode, filters, sort,
+                visibility, scope == View.Scope.MINE, scope == View.Scope.ASSIGNED_TO_ME,
+                scope == View.Scope.MY_ROLE_QUEUE, page, size));
+        return new RecordPage(result.rows().stream().map(RecordView::of).toList(), page, size, result.total(),
+                describe(sort));
     }
 
-    /** Row visibility: records are visible to authenticated callers; anonymous callers see none. */
-    private static boolean isVisible(RecordRow row, Principal caller) {
-        return caller != null && caller.userId() != null;
+    private static int intParam(Map<String, String> params, String name, int def, int min, int max,
+                                List<ApiViolation> bad) {
+        String raw = params.get(name);
+        if (raw == null || raw.isBlank()) return def;
+        try {
+            int v = Integer.parseInt(raw.trim());
+            if (v < min || v > max) {
+                bad.add(new ApiViolation(name, "OUT_OF_RANGE", "'" + name + "' must be between " + min
+                        + " and " + (max == Integer.MAX_VALUE ? "the maximum" : String.valueOf(max))));
+            }
+            return v;
+        } catch (NumberFormatException e) {
+            bad.add(new ApiViolation(name, "NOT_AN_INTEGER", "'" + name + "' must be an integer"));
+            return def;
+        }
+    }
+
+    private static RecordQuery.Sort parseSort(Entity entity, String text, List<ApiViolation> bad) {
+        String[] parts = text.split(",", -1);
+        String name = parts[0].trim();
+        if (parts.length > 2 || (parts.length == 2 && !parts[1].trim().equalsIgnoreCase("asc")
+                && !parts[1].trim().equalsIgnoreCase("desc"))) {
+            bad.add(new ApiViolation("sort", "INVALID_SORT", "Sort direction must be asc or desc"));
+            return null;
+        }
+        final boolean desc = parts.length == 2 && parts[1].trim().equalsIgnoreCase("desc");
+        RecordQuery.SortKind system = switch (name) {
+            case "$reference" -> RecordQuery.SortKind.REFERENCE;
+            case "$createdAt" -> RecordQuery.SortKind.CREATED_AT;
+            case "$updatedAt" -> RecordQuery.SortKind.UPDATED_AT;
+            case "$createdBy" -> RecordQuery.SortKind.CREATED_BY;
+            case "$status" -> RecordQuery.SortKind.STATUS;
+            case "$step" -> RecordQuery.SortKind.STEP;
+            case "$assignee" -> RecordQuery.SortKind.ASSIGNEE;
+            case "$dueAt" -> RecordQuery.SortKind.DUE_AT;
+            default -> null;
+        };
+        if (system != null) return new RecordQuery.Sort(system, null, false, desc);
+        return entity.field(name)
+                .map(f -> new RecordQuery.Sort(RecordQuery.SortKind.FIELD, name,
+                        f.type() == Field.Type.NUMBER || f.type() == Field.Type.DECIMAL, desc))
+                .orElseGet(() -> {
+                    bad.add(new ApiViolation("sort", "UNKNOWN_FIELD", "Unknown sort field '" + name + "'"));
+                    return null;
+                });
+    }
+
+    private static String describe(RecordQuery.Sort s) {
+        String name = s.kind() == RecordQuery.SortKind.FIELD ? s.field() : switch (s.kind()) {
+            case REFERENCE -> "$reference";
+            case CREATED_AT -> "$createdAt";
+            case UPDATED_AT -> "$updatedAt";
+            case CREATED_BY -> "$createdBy";
+            case STATUS -> "$status";
+            case STEP -> "$step";
+            case ASSIGNEE -> "$assignee";
+            default -> "$dueAt";
+        };
+        return name + "," + (s.descending() ? "desc" : "asc");
+    }
+
+    private RecordRow visible(String appCode, String entityCode, UUID id, Principal caller) {
+        RowVisibility visibility = definitions.latestPublished(appCode)
+                .map(a -> RowVisibility.of(a.definition(), entityCode, caller))
+                .orElseGet(() -> RowVisibility.of(caller, false, Set.of()));
+        return records.findById(id)
+                .filter(r -> r.appCode().equals(appCode) && r.entityCode().equals(entityCode))
+                .filter(r -> visibility.isVisible(r.createdBy(), instances.findByRecordId(r.id()).orElse(null)))
+                .orElseThrow(() -> new NotFound("Record not found"));
     }
 
     private void check(Entity entity, Map<String, Object> payload, RecordValidator.Mode mode) {

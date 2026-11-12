@@ -1,7 +1,9 @@
 package dev.skeletonkey.web;
 
 import dev.skeletonkey.domain.model.Principal;
+import dev.skeletonkey.record.RecordPage;
 import dev.skeletonkey.record.RecordService;
+import org.springframework.web.bind.annotation.RequestParam;
 import dev.skeletonkey.record.RecordView;
 import java.util.Map;
 import java.util.UUID;
@@ -35,6 +37,13 @@ public class RecordController {
     public RecordView create(@PathVariable String app, @PathVariable String entity,
                              @RequestBody Map<String, Object> body) {
         return service.create(app, entity, body, caller());
+    }
+
+    /** Paged list; every query parameter other than page, size, sort and view is an equality filter. */
+    @GetMapping
+    public RecordPage list(@PathVariable String app, @PathVariable String entity,
+                           @RequestParam Map<String, String> params) {
+        return service.list(app, entity, params, caller());
     }
 
     @GetMapping("/{id}")

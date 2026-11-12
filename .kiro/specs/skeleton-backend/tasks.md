@@ -119,7 +119,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Malformed JSON line and column, unknown id 404, publish of non-DRAFT, update of PUBLISHED 409, no published version, missing app or workflow, `workflow.version` absent
     - _Requirements: 1.2, 1.8, 2.15, 5.3, 5.7, 5.8, 5.9_
 
-- [ ] 6. Records
+- [x] 6. Records
   - [x] 6.1 Implement `RecordValidator`
     - Type table for all field types, CREATE and UPDATE modes, collects missing, unknown and failing fields in one pass
     - _Requirements: 7.3, 7.4, 7.5, 7.6_
@@ -140,7 +140,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - `RecordController` endpoints for create, read and update
     - _Requirements: 7.1, 7.2, 7.7, 7.8, 7.9, 7.15, 7.16, 7.17, 12.10, 12.11_
 
-  - [ ] 6.5 Implement `RecordService` listing and extend `RecordController`
+  - [x] 6.5 Implement `RecordService` listing and extend `RecordController`
     - List with paging (default 20, max 100), parameter-bound equality filters, sort and field name validation (unknown name is reported by parameter)
     - View scopes MINE, ASSIGNED_TO_ME, MY_ROLE_QUEUE and row visibility
     - `RecordController` list endpoint
@@ -170,7 +170,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - `RouterException` thrown before any write
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.14, 11.4, 11.5, 11.6, 11.7, 11.8_
 
-  - [ ] 7.5 Implement Router handler run, onExit events and transition selection wiring
+  - [x] 7.5 Implement Router handler run, onExit events and transition selection wiring
     - Run the Action handler and validate its changes, run onExit events, wire in `TransitionSelector` and Action `to` / next step resolution
     - Handler failures and invalid handler changes rejected before any write
     - _Requirements: 9.10, 9.11, 10.15, 12.1, 13.4, 13.5, 13.6, 13.7_
@@ -181,11 +181,11 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Assemble `ActionOutcome` (data, state, history entries, cursorUpdates)
     - _Requirements: 8.2, 8.3, 8.6, 9.12, 10.8, 10.9, 10.10, 10.11, 10.12, 10.13, 12.2, 12.3_
 
-  - [ ] 7.7 Write property test for transition selection
+  - [x] 7.7 Write property test for transition selection
     - **Property 9: Transition selection precedence**
     - **Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 19.5**
 
-  - [ ] 7.8 Write property test for status resolution
+  - [x] 7.8 Write property test for status resolution
     - **Property 22: Status resolution on step entry**
     - **Validates: Requirements 10.13, 10.14**
 
@@ -213,7 +213,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 11: Start and step entry set initial state and due time**
     - **Validates: Requirements 8.2, 8.3, 10.13**
 
-  - [ ] 7.15 Write property test for role gating
+  - [x] 7.15 Write property test for role gating
     - **Property 12: Role gating of actions**
     - **Validates: Requirements 9.3, 15.2, 15.3, 15.6, 19.2**
 
@@ -249,7 +249,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 21: JWT round trip and tamper resistance**
     - **Validates: Requirements 6.1, 6.4**
 
-  - [ ] 9.3 Implement `SeedLoader`
+  - [x] 9.3 Implement `SeedLoader`
     - `ApplicationRunner` at `@Order(1)`, plain password to BCrypt, pre-hashed pattern check, skip existing users, malformed seed exits non-zero naming the file, no path means no seeding
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.7, 17.8, 6.8_
 

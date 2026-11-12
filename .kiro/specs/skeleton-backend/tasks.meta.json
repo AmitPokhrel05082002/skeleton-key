@@ -67,6 +67,73 @@
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794458484266
       }
+    ],
+    "2.2 Implement `ExpressionEngine`": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794459613056
+      },
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460089980
+      }
+    ],
+    "3.1 Implement Validator infrastructure and structural rule groups": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794459613328
+      },
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460091305
+      }
+    ],
+    "5.1 Implement `DefinitionLoader` parsing, schema check and hashing": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794459613494
+      },
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460091791
+      }
+    ],
+    "6.1 Implement `RecordValidator`": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794459613830
+      },
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460092292
+      }
+    ],
+    "6.3 Implement remaining ports, adapters and in-memory twins": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794459614582
+      },
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460092879
+      }
+    ],
+    "2. Domain model and expression engine": [
+      {
+        "executionId": "a4e12c00-ab6e-4451-ba1a-cd7ba98e50f7",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794460090768
+      }
     ]
   }
 }

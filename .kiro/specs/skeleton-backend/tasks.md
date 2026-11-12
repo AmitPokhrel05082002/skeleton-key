@@ -38,13 +38,13 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - `OpenApiConfig`; 405 `NOT_SUPPORTED` handling for history modification
     - _Requirements: 20.6, 12.7, 12.12, 7.18, 9.13_
 
-- [ ] 2. Domain model and expression engine
+- [x] 2. Domain model and expression engine
   - [x] 2.1 Implement the immutable domain model and parser
     - Records: `AppDefinition`, `Entity`, `Field`, `Workflow`, `Step`, `Action`, `Transition`, sealed `Event`, runtime `InstanceState`, `HistoryEntry`, `CursorUpdate`, `Principal`
     - `DefinitionParser` from `JsonNode` to the model (no `workflow.version` field), with a cache keyed by `(appCode, version)`
     - _Requirements: 5.9, 5.5, 20.8_
 
-  - [ ] 2.2 Implement `ExpressionEngine`
+  - [x] 2.2 Implement `ExpressionEngine`
     - `analyze`: in-house walker returning operators, `var` paths and parse errors with JSON Pointers; total for any `JsonNode`; depth cap 64
     - Fixed operator allow-list; `var` root check (`data`, `instance`, `user`)
     - `evaluate` and `evaluateBoolean` delegating to json-logic-java after the allow-list check, with `JsonNode` to `Map`/`List` conversion, wrapping failures in `ExpressionException`
@@ -55,7 +55,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - _Requirements: 4.3, 14.4_
 
 - [ ] 3. Validator
-  - [ ] 3.1 Implement Validator infrastructure and structural rule groups
+  - [x] 3.1 Implement Validator infrastructure and structural rule groups
     - `Validator`, `Violation`, `ValidationReport` (sorted by path, rule, message), rule runner that runs all groups
     - Collections (`DUPLICATE_CODE`, `MULTIPLE_PUBLIC_ROLES`), entities and fields, forms and views rules
     - _Requirements: 2.1, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12, 2.13, 2.14_
@@ -93,7 +93,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
   - Ensure all validator tests pass, ask the user if questions arise.
 
 - [ ] 5. Definition loading and versioning
-  - [ ] 5.1 Implement `DefinitionLoader` parsing, schema check and hashing
+  - [x] 5.1 Implement `DefinitionLoader` parsing, schema check and hashing
     - Jackson parse with line and column from `JsonLocation` (400), networknt draft 2020-12 check mapped to JSON Pointer violations (422), canonical JSON and SHA-256 Content_Hash, `USE_BIG_DECIMAL_FOR_FLOATS`
     - _Requirements: 1.1, 1.2, 1.3, 1.7_
 
@@ -120,7 +120,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - _Requirements: 1.2, 1.8, 2.15, 5.3, 5.7, 5.8, 5.9_
 
 - [ ] 6. Records
-  - [ ] 6.1 Implement `RecordValidator`
+  - [x] 6.1 Implement `RecordValidator`
     - Type table for all field types, CREATE and UPDATE modes, collects missing, unknown and failing fields in one pass
     - _Requirements: 7.3, 7.4, 7.5, 7.6_
 
@@ -128,7 +128,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 8: Record validation reports every failure**
     - **Validates: Requirements 7.3, 7.4, 7.5, 7.6, 11.6, 11.8**
 
-  - [ ] 6.3 Implement remaining ports, adapters and in-memory twins
+  - [x] 6.3 Implement remaining ports, adapters and in-memory twins
     - `RecordRepository`, `InstanceRepository` (with open-task counts), `HistoryRepository` (append and find only), `AuditRepository`, `UserRepository`, `ReferenceCounter`, `AssignmentCursorRepository`
     - JDBC adapters using `JdbcClient` and in-memory twins under test sources
     - _Requirements: 19.9, 12.7, 7.7_

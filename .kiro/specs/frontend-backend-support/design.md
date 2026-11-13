@@ -307,7 +307,7 @@ The Validator has no rule that reads `widget`, so a key that matches no frontend
 
 Round trip (6.5): the Java model has no writer; documents are stored as the original `JsonNode`. The property therefore checks the path the system really has: text → `DefinitionLoader.load` → stored document → serialized text → `DefinitionLoader.load` again, JSON-equal to the original, with no `widget` key added to a field that had none, and `DefinitionParser.parse(document)` returns the declared widget (or null) for every field. A model-to-JSON writer is deliberately not added (lean principle: nothing would use it).
 
-Other files in the same change (repository rule): `.kiro/steering/app-definition.md` embeds a copy of the schema and must receive the same `widget` block. `examples/grievance.app.json` is unchanged (6.9). `skeleton/frontend` does not exist in the repository yet, so criterion 6.10 has nothing to update today; the frontend design already lists `widget?: string` on `FieldDef`.
+Other files in the same change (repository rule): `.kiro/steering/app-definition.md` needs no change, because it references `schema/app-definition.schema.json` instead of embedding a copy, so only the schema file receives the `widget` block. `examples/grievance.app.json` is unchanged (6.9). `skeleton/frontend` does not exist in the repository yet, so criterion 6.10 has nothing to update today; the frontend design already lists `widget?: string` on `FieldDef`.
 
 Generator change (6.11): `DefinitionArbitraries.Builder` adds a `widget` to about half of the generated fields, drawn from a pattern-valid pool that includes mixed case, `_` and `-`.
 
@@ -422,7 +422,7 @@ Restricted_Definition and Public_Subset: `app.branding` as already produced; eac
 
 ### Types changed
 
-`InstanceView` (+`assigneeName`), `Field` (+`widget`, secondary constructor), `DefinitionVersionRef` (+`createdAt`, `publishedAt`), `InstanceRepository` (+`findByRecordIds`), `UserRepository` (+`findDisplayNames`), `DefinitionRepository` (+`findAppCodes`, `findInfoByApp`), their JDBC and in-memory implementations, `DefinitionService`, `DefinitionController`, `AuthController`, `AuthService`, `RecordController`, `InstanceController`, `InstanceQueryService`, `ApiExceptionHandler`, `DefinitionParser`, `DefinitionReadService` (visibility of `fieldNode` and `widget`), the schema and the steering copy of it.
+`InstanceView` (+`assigneeName`), `Field` (+`widget`, secondary constructor), `DefinitionVersionRef` (+`createdAt`, `publishedAt`), `InstanceRepository` (+`findByRecordIds`), `UserRepository` (+`findDisplayNames`), `DefinitionRepository` (+`findAppCodes`, `findInfoByApp`), their JDBC and in-memory implementations, `DefinitionService`, `DefinitionController`, `AuthController`, `AuthService`, `RecordController`, `InstanceController`, `InstanceQueryService`, `ApiExceptionHandler`, `DefinitionParser`, `DefinitionReadService` (visibility of `fieldNode` and `widget`) and the schema (the steering file needs no change because it references the schema file).
 
 
 ## Correctness Properties

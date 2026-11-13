@@ -25,6 +25,7 @@ import java.util.Set;
  * Pure guard and input validation stages of the routing pipeline (Req 9.2-9.9, 11.4-11.8).
  * Every method throws {@link RouterException} and performs no write.
  */
+@org.springframework.stereotype.Component
 public class RouterGuards {
 
   private static final Set<String> IGNORED_TYPE_CONSTRAINTS = Set.of("REQUIRED", "UNKNOWN_FIELD");

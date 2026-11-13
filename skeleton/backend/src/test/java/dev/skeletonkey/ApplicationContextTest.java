@@ -1,6 +1,7 @@
 package dev.skeletonkey;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -12,7 +13,16 @@ import dev.skeletonkey.audit.AuditService;
 import dev.skeletonkey.definition.DefinitionService;
 import dev.skeletonkey.definition.DefinitionVersionRef;
 import dev.skeletonkey.persistence.DefinitionVersionRow;
+import dev.skeletonkey.domain.model.Principal;
 import dev.skeletonkey.record.PublishedDefinitions;
+import dev.skeletonkey.record.RecordPage;
+import dev.skeletonkey.record.RecordService;
+import dev.skeletonkey.record.RecordView;
+import dev.skeletonkey.web.BadRequest;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -65,7 +75,7 @@ class ApplicationContextTest {
     }
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
@@ -82,6 +92,7 @@ class ApplicationContextTest {
     @Autowired DefinitionService definitions;
     @Autowired PublishedDefinitions published;
     @Autowired ObjectMapper mapper;
+    @Autowired RecordService recordService;
     MockMvc mvc;
 
     @BeforeEach
@@ -145,6 +156,82 @@ class ApplicationContextTest {
                 .andExpect(status().isCreated());
     }
 
+    /**
+     * Exercises the JDBC adapters on real PostgreSQL through the real context: reference numbering, JSONB
+     * round trip, UUID/timestamp mapping, paging, filter, sort and the visibility SQL.
+     */
+    @Test
+    void jdbcAdaptersCreateReadAndListRecordsOnRealPostgres() throws IOException {
+        if (published.latestPublished("GRIEVANCE").isEmpty()) {
+            DefinitionVersionRef d = definitions.submit(Files.readString(GRIEVANCE, StandardCharsets.UTF_8));
+            definitions.publish(d.id(), DefinitionService.SYSTEM_ACTOR);
+        }
+        UUID citizenId = jdbc.queryForObject("select id from app_user where username = 'citizen'", UUID.class);
+        Principal citizen = new Principal(citizenId, Set.of("OFFICER"));
+
+        RecordView a = recordService.create("GRIEVANCE", "GRIEVANCE",
+                grievance("Pothole on Main", "WATER", true), citizen);
+        RecordView b = recordService.create("GRIEVANCE", "GRIEVANCE",
+                grievance("Broken tap", "WATER", false), citizen);
+        RecordView c = recordService.create("GRIEVANCE", "GRIEVANCE",
+                grievance("Overflowing bin", "WASTE", false), citizen);
+
+        // reference numbering: GRV-<year>-<6 digits>, consecutive per prefix and year
+        Pattern ref = Pattern.compile("^GRV-(\\d{4})-(\\d{6})$");
+        Matcher ma = ref.matcher(a.referenceNo());
+        Matcher mb = ref.matcher(b.referenceNo());
+        Matcher mc = ref.matcher(c.referenceNo());
+        assertThat(ma.matches() && mb.matches() && mc.matches()).isTrue();
+        int na = Integer.parseInt(ma.group(2));
+        assertThat(Integer.parseInt(mb.group(2))).isEqualTo(na + 1);
+        assertThat(Integer.parseInt(mc.group(2))).isEqualTo(na + 2);
+
+        // read back: JSONB data, UUID and timestamps
+        RecordView back = recordService.read("GRIEVANCE", "GRIEVANCE", a.id(), citizen);
+        assertThat(back.id()).isEqualTo(a.id());
+        assertThat(back.referenceNo()).isEqualTo(a.referenceNo());
+        assertThat(back.createdBy()).isEqualTo(citizenId);
+        assertThat(back.createdAt()).isNotNull();
+        assertThat(back.data()).containsEntry("subject", "Pothole on Main")
+                .containsEntry("category", "WATER").containsEntry("urgent", true);
+
+        // list with paging and total
+        Map<String, String> p1 = Map.of("size", "2", "page", "1", "sort", "$reference,asc");
+        RecordPage first = recordService.list("GRIEVANCE", "GRIEVANCE", p1, citizen);
+        assertThat(first.total()).isEqualTo(3);
+        assertThat(first.items()).extracting(RecordView::referenceNo)
+                .containsExactly(a.referenceNo(), b.referenceNo());
+        RecordPage second = recordService.list("GRIEVANCE", "GRIEVANCE",
+                Map.of("size", "2", "page", "2", "sort", "$reference,asc"), citizen);
+        assertThat(second.items()).extracting(RecordView::referenceNo).containsExactly(c.referenceNo());
+
+        // filter on a JSONB field
+        RecordPage water = recordService.list("GRIEVANCE", "GRIEVANCE", Map.of("category", "WATER"), citizen);
+        assertThat(water.total()).isEqualTo(2);
+
+        // sort on a JSONB field
+        RecordPage bySubject = recordService.list("GRIEVANCE", "GRIEVANCE", Map.of("sort", "subject,asc"), citizen);
+        assertThat(bySubject.items()).extracting(r -> r.data().get("subject"))
+                .containsExactly("Broken tap", "Overflowing bin", "Pothole on Main");
+
+        // visibility SQL: a user who did not create the rows and holds no granting role sees none of them
+        Principal stranger = new Principal(UUID.randomUUID(), Set.of());
+        assertThat(recordService.list("GRIEVANCE", "GRIEVANCE", Map.of(), stranger).total()).isZero();
+
+        // unknown filter field is rejected, not turned into SQL
+        assertThatThrownBy(() -> recordService.list("GRIEVANCE", "GRIEVANCE", Map.of("nope", "x"), citizen))
+                .isInstanceOf(BadRequest.class);
+    }
+
+    private static Map<String, Object> grievance(String subject, String category, boolean urgent) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("subject", subject);
+        m.put("details", "Details for " + subject);
+        m.put("category", category);
+        m.put("contactEmail", "someone@example.org");
+        m.put("urgent", urgent);
+        return m;
+    }
     private String login(String username, String password) throws Exception {
         MvcResult r = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(Map.of("username", username, "password", password))))

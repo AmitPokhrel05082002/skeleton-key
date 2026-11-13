@@ -175,7 +175,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Handler failures and invalid handler changes rejected before any write
     - _Requirements: 9.10, 9.11, 10.15, 12.1, 13.4, 13.5, 13.6, 13.7_
 
-  - [ ] 7.6 Implement Router step entry loop, END handling and `Router.start`
+  - [x] 7.6 Implement Router step entry loop, END handling and `Router.start`
     - Step entry loop: skipWhen with loop detection, AUTO steps, status resolution, onEnter events, assignee resolution with cursor update, due time, `stepEnteredAt`
     - END handling and `Router.start` for new instances
     - Assemble `ActionOutcome` (data, state, history entries, cursorUpdates)
@@ -240,7 +240,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
 - [ ] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Authentication and seeding
+- [x] 9. Authentication and seeding
   - [x] 9.1 Implement JWT auth, login and security config
     - `POST /api/auth/login` (BCrypt, dummy-hash timing on unknown user, identical 401 body, 400 validation naming the field), HS256 JWT with user id, roles, expiry, `JwtAuthFilter`, entry point 401, 403 handling, anonymous routes for login, public subset and form submit
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.7, 6.8, 17.5_

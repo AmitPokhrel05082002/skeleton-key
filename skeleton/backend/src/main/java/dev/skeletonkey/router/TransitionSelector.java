@@ -21,6 +21,7 @@ import java.util.UUID;
  * Picks the next step (Req 10.1-10.7): matching transition with the lowest priority (ties by
  * declaration order), else the action's {@code to}, else the next step in array order.
  */
+@org.springframework.stereotype.Component
 public class TransitionSelector {
 
   public static final String EXPRESSION_ERROR = "EXPRESSION_ERROR";

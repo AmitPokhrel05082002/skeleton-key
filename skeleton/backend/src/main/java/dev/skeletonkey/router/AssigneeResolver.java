@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Picks the assignee for a step entry. Read-only: a chosen round-robin cursor is returned, never stored. */
+@org.springframework.stereotype.Component
 public class AssigneeResolver {
 
     /** Result of a resolution; empty assignee means the task stays unassigned (role queue). */

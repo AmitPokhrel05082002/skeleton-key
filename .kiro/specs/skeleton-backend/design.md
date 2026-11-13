@@ -278,6 +278,7 @@ public record HandlerResult(Map<String,Object> fieldChanges) { static HandlerRes
 `GET /api/apps/{app}/definition[?version=n]` returns the restricted document: forms and views that declare no `roles` (available to any authenticated user) or whose `roles` intersect the principal's roles, plus the entities they reference. A form with `public` true is additionally available to callers with no JWT only through the Public_Subset endpoint below, not through this one. A non-PUBLISHED explicit version returns 409, unknown app or version 404. `GET /api/public/apps/{app}` returns the Public_Subset: for each public form, the form, the field definitions it lists (code, label, type, options, constraints, help), nothing else. Public record responses for a started workflow contain only the reference number and ids, never other fields (Req 11.2).
 
 Row visibility (Req 7.9, 15.5): a record or instance is visible when the principal holds any role in a view that targets the entity with a compatible scope, or when the principal created it, is its assignee, or holds the step's assignee role; otherwise 404. The public role sees only the record it just created, via the creation response.
+Known limitation: clause (d), holding the step's assignee role, uses the step roles of the latest published definition, not the instance's pinned version.
 
 ### Audit and History
 

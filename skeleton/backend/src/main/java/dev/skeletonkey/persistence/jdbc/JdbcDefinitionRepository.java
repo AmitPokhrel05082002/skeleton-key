@@ -27,9 +27,9 @@ public class JdbcDefinitionRepository implements DefinitionRepository {
 
     @Override
     public int maxVersion(String appCode) {
-        Integer max = jdbc.sql("SELECT max(version) FROM definition_version WHERE app_code = :app")
+        // max() is SQL NULL on an empty set, which JdbcClient.single() rejects, so coalesce in SQL.
+        return jdbc.sql("SELECT coalesce(max(version), 0) FROM definition_version WHERE app_code = :app")
                 .param("app", appCode).query(Integer.class).single();
-        return max == null ? 0 : max;
     }
 
     @Override

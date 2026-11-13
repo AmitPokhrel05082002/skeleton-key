@@ -32,6 +32,7 @@ import java.util.Map;
  * inputs of {@code enter(target, selected, action)}; {@link Prepared#data()} is the data to enter with; and
  * {@link Prepared#history()} holds the EXPRESSION_ERROR / EVENT_* entries to prepend to the outcome history.
  */
+@org.springframework.stereotype.Component
 public class ActionStages {
 
   public static final String UNKNOWN_HANDLER = "UNKNOWN_HANDLER";

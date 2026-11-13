@@ -25,6 +25,7 @@ import java.util.Map;
  * Runs step events (onEnter / onExit) sequentially in declared order (Req 14). Pure: works on a copy of the data and
  * returns the new data plus history entries. A failing event never stops the following ones.
  */
+@org.springframework.stereotype.Component
 public class EventRunner {
 
     public static final String EVENT_FAILED = "EVENT_FAILED";

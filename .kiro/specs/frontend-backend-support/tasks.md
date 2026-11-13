@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`), as fixed by the design. All paths are relative to `skeleton/backend/` unless stated otherwise, and the work is additive: new endpoints, new response properties and one optional schema property. No Flyway migration is added, no `application.properties` key is added, and `RecordService`, `RecordView` and `RecordPage` stay unchanged (a new assembler enriches their output). The steering file `.kiro/steering/app-definition.md` must NOT be edited, because it references the schema file instead of embedding it; only `schema/app-definition.schema.json` changes for `widget`. Requirement 5 (branding) needs no production change, only tests. The 14 correctness properties from the design are each their own sub-task, placed close to the code they check. Property tests 1.4 (Property 9) and 7.3 (Property 11) are required by Requirement 8.8; the other property tests, example tests and integration tests are optional. Commands use Windows CMD syntax (`mvnw.cmd`), run from `skeleton\backend`.
+Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`), as fixed by the design. All paths are relative to `skeleton/backend/` unless stated otherwise, and the work is additive: new endpoints, new response properties and one optional schema property. No Flyway migration is added, no `application.properties` key is added, and `RecordService`, `RecordView` and `RecordPage` stay unchanged (a new assembler enriches their output). The steering file `.kiro/steering/app-definition.md` must NOT be edited, because it references the schema file instead of embedding it; only `schema/app-definition.schema.json` changes for `widget`. Requirement 5 (branding) needs no production change, only tests. The 14 correctness properties from the design are each their own sub-task, placed close to the code they check. Property tests 1.4 (Property 9) and 7.3 (Property 11) are required by Requirement 8.8. The web tests 2.3, 4.5, 6.3 and 7.5 are also required because they pin the exact JSON shapes the frontend relies on, and so is integration test 9.1 because the batch SQL must run on real PostgreSQL via Testcontainers; the other property tests, example tests and smoke tests are optional. Commands use Windows CMD syntax (`mvnw.cmd`), run from `skeleton\backend`.
 
 ## Tasks
 
@@ -98,7 +98,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 4: Page enrichment cost does not depend on page size**
     - **Validates: Requirements 2.1, 2.14**
 
-  - [ ]* 4.5 Write web tests for record summaries
+  - [ ] 4.5 Write web tests for record summaries
     - Cover the five cases (instance running, ended, assignee absent, assignee unknown, record without instance) on both the list and the read response; create, replace and patch return the summary; the public form submit response has no summary keys (`FormSubmitTest`)
     - _Requirements: 2.1, 2.2, 2.7, 2.8, 2.10, 2.11, 2.13, 2.17, 8.7_
 
@@ -129,7 +129,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 6: App list and version list are complete and ordered**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 4.8**
 
-  - [ ]* 6.3 Write web tests for the list endpoints
+  - [ ] 6.3 Write web tests for the list endpoints
     - Create `DefinitionListEndpointsTest`: 200 for admin, 403 for non-admin with equal bodies for existing and unknown apps, 401, 404 for unknown and malformed code, timestamp pattern `\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z`, `publishedAt` null for DRAFT
     - _Requirements: 4.4, 4.5, 4.6, 4.7, 8.6_
 
@@ -157,7 +157,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 14: Body size bound**
     - **Validates: Requirements 7.13**
 
-  - [ ]* 7.5 Write web tests for the Validate endpoint
+  - [ ] 7.5 Write web tests for the Validate endpoint
     - Create `ValidateEndpointTest`: 200 with `[]` and with violations; 400 for empty, malformed (checks `line`, `column`) and array body; 403 for non-admin, including with an oversized body (body not read); 401; 413 for a body of 1 MiB + 1 that is not parsed; nothing stored and no audit row
     - _Requirements: 7.1, 7.2, 7.5, 7.6, 7.7, 7.8, 7.13, 8.6_
 
@@ -165,7 +165,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. Integration and compatibility tests
-  - [ ]* 9.1 Write the Testcontainers PostgreSQL integration test
+  - [ ] 9.1 Write the Testcontainers PostgreSQL integration test
     - Create `web/FrontendBackendSupportIT` following `ApplicationContextTest` (`postgres:16-alpine`, `@DynamicPropertySource`, seeded users)
     - Cover success and each failure status (400, 401, 403, 404) for the Me, App list, Version list and Validate endpoints; the five record summary cases on list and read; `assigneeName` and `actorName`
     - Count SQL statements through a wrapper: a record list of 1 and of 50 items issues the same number, and a history of 1 and of 200 entries issues one user statement
@@ -185,6 +185,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP
 - Required property tests (Requirement 8.8): 1.4 (Property 9) and 7.3 (Property 11, with Properties 12 and 13); 1.6 (Property 7) is also not optional because it carries the branding tests
+- Also required: web tests 2.3, 4.5, 6.3 and 7.5 (exact JSON shapes for the frontend) and integration test 9.1 (the batch SQL running on real PostgreSQL via Testcontainers)
 - Each property test is tagged `// Feature: frontend-backend-support, Property N: <title>` and uses at least 100 tries
 - Property tests run on the in-memory repositories and existing generators, no Spring context or database
 - The steering file `.kiro/steering/app-definition.md` is not edited; only `schema/app-definition.schema.json` changes for `widget`

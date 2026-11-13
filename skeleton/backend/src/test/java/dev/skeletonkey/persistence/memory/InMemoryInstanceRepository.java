@@ -13,7 +13,7 @@ public class InMemoryInstanceRepository implements InstanceRepository {
     private final Map<UUID, InstanceState> rows = new HashMap<>();
 
     @Override
-    public synchronized void insert(InstanceState state, UUID startedBy) {
+    public synchronized void insert(InstanceState state) {
         if (rows.containsKey(state.id())
                 || rows.values().stream().anyMatch(s -> s.recordId().equals(state.recordId()))) {
             throw new IllegalStateException("Duplicate instance for " + state.id());
@@ -37,9 +37,10 @@ public class InMemoryInstanceRepository implements InstanceRepository {
         if (stored == null || stored.lockVersion() != s.lockVersion()) {
             throw new OptimisticLockingFailureException("Instance " + s.id() + " was modified concurrently");
         }
+        // started_by and created_at are immutable: keep the stored values
         InstanceState saved = new InstanceState(s.id(), s.recordId(), s.appCode(), s.defVersion(),
                 s.workflowCode(), s.step(), s.status(), s.assigneeId(), s.dueAt(), s.ended(), s.stepEnteredAt(),
-                s.lockVersion() + 1);
+                s.lockVersion() + 1, stored.startedBy(), stored.startedAt());
         rows.put(s.id(), saved);
         return saved;
     }

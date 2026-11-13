@@ -152,6 +152,13 @@ public class DefinitionService implements PublishedDefinitions {
                 cache.get(r.appCode(), r.version(), r::document)));
     }
 
+    /** Exactly the given PUBLISHED version (never another one), parsed and cached by (app code, version). */
+    @Override
+    public Optional<PublishedApp> publishedVersion(String appCode, int version) {
+        return repository.findByAppAndVersion(appCode, version).filter(r -> !r.isDraft())
+                .map(r -> new PublishedApp(r.version(), cache.get(r.appCode(), r.version(), r::document)));
+    }
+
     private ValidationReport validate(JsonNode document) {
         AppDefinition def;
         try {

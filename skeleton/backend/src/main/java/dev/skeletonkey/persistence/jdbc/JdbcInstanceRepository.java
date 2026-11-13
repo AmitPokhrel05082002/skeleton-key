@@ -16,13 +16,14 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcInstanceRepository implements InstanceRepository {
     private static final String COLUMNS = "id, record_id, app_code, version, workflow_code, current_step, status, "
-            + "ended, assignee, due_at, step_entered_at, lock_version";
+            + "ended, assignee, due_at, step_entered_at, lock_version, started_by, created_at";
 
     private static final RowMapper<InstanceState> MAPPER = (rs, n) -> new InstanceState(
             JdbcSupport.uuid(rs, "id"), JdbcSupport.uuid(rs, "record_id"), rs.getString("app_code"),
             rs.getInt("version"), rs.getString("workflow_code"), rs.getString("current_step"),
             rs.getString("status"), JdbcSupport.uuid(rs, "assignee"), JdbcSupport.instant(rs, "due_at"),
-            rs.getBoolean("ended"), JdbcSupport.instant(rs, "step_entered_at"), rs.getLong("lock_version"));
+            rs.getBoolean("ended"), JdbcSupport.instant(rs, "step_entered_at"), rs.getLong("lock_version"),
+            JdbcSupport.uuid(rs, "started_by"), JdbcSupport.instant(rs, "created_at"));
 
     private final JdbcClient jdbc;
 
@@ -31,12 +32,12 @@ public class JdbcInstanceRepository implements InstanceRepository {
     }
 
     @Override
-    public void insert(InstanceState s, UUID startedBy) {
+    public void insert(InstanceState s) {
         jdbc.sql("""
                 INSERT INTO workflow_instance (id, record_id, app_code, version, workflow_code, current_step, status,
-                    ended, assignee, due_at, step_entered_at, started_by, lock_version)
+                    ended, assignee, due_at, step_entered_at, started_by, created_at, lock_version)
                 VALUES (:id, :recordId, :app, :version, :wf, :step, :status, :ended, :assignee, :dueAt,
-                    :enteredAt, :startedBy, :lock)
+                    :enteredAt, :startedBy, :createdAt, :lock)
                 """)
                 .param("id", s.id())
                 .param("recordId", s.recordId())
@@ -49,7 +50,8 @@ public class JdbcInstanceRepository implements InstanceRepository {
                 .param("assignee", s.assigneeId())
                 .param("dueAt", JdbcSupport.ts(s.dueAt()))
                 .param("enteredAt", JdbcSupport.ts(s.stepEnteredAt()))
-                .param("startedBy", startedBy)
+                .param("startedBy", s.startedBy())
+                .param("createdAt", JdbcSupport.ts(s.startedAt()))
                 .param("lock", s.lockVersion())
                 .update();
     }
@@ -87,8 +89,7 @@ public class JdbcInstanceRepository implements InstanceRepository {
         if (rows == 0) {
             throw new OptimisticLockingFailureException("Instance " + s.id() + " was modified concurrently");
         }
-        return new InstanceState(s.id(), s.recordId(), s.appCode(), s.defVersion(), s.workflowCode(), s.step(),
-                s.status(), s.assigneeId(), s.dueAt(), s.ended(), s.stepEnteredAt(), s.lockVersion() + 1);
+        return s.withLockVersion(s.lockVersion() + 1);
     }
 
     @Override

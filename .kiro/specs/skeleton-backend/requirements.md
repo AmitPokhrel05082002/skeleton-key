@@ -32,6 +32,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 - **START**: History_Entry kind written when a Workflow_Instance starts.
 - **ACTION**: History_Entry kind written when an Action completes.
 - **SKIPPED**: History_Entry kind written when a Step is skipped through `skipWhen`.
+- **AUTO**: History_Entry kind written when an AUTO Step has run and the Router routes onward from it.
 - **EVENT_DEFERRED**: History_Entry kind written when a NOTIFY or WEBHOOK event is not delivered because delivery is outside this release.
 - **EVENT_FAILED**: History_Entry kind written when a Step event fails to evaluate or run.
 - **EXPRESSION_ERROR**: History_Entry kind written when an Expression raises an error at run time in a Transition or `skipWhen`.
@@ -215,7 +216,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 9. IF a field the current Step marks `required` is empty after applying the request values, THEN THE Router SHALL reject the request with HTTP status 422, return an error naming every empty required field, and leave the Workflow_Instance unchanged.
 10. WHERE an Action names a `handler`, THE Router SHALL invoke the Plugin_Handler exactly once per accepted request, after all validation stages pass and before transition selection.
 11. IF a Plugin_Handler throws an exception, THEN THE Router SHALL roll back the whole action, return HTTP status 500 with an error identifier, and leave the Workflow_Instance and its History unchanged.
-12. WHEN the pipeline completes, THE Router SHALL commit field changes, the new Step, the new status, the due time, the assignee, exactly one History_Entry of kind ACTION and any SKIPPED, EXPRESSION_ERROR, EVENT_DEFERRED or EVENT_FAILED entries raised during the action in one database transaction, so that either all changes are persisted or none are.
+12. WHEN the pipeline completes, THE Router SHALL commit field changes, the new Step, the new status, the due time, the assignee, exactly one History_Entry of kind ACTION and any SKIPPED, AUTO, EXPRESSION_ERROR, EVENT_DEFERRED or EVENT_FAILED entries raised during the action in one database transaction, so that either all changes are persisted or none are.
 13. IF two action requests for the same Workflow_Instance arrive concurrently, THEN THE Router SHALL apply exactly one request and reject the other with HTTP status 409 and an error indicating a concurrent modification, by using optimistic locking on the instance.
 14. IF the pipeline fails at any stage, THEN THE Router SHALL add no History_Entry and persist no field, Step, status, due time or assignee change.
 
@@ -270,10 +271,11 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 6. IF the requested Workflow_Instance does not exist, THEN THE Skeleton_Backend SHALL return an error indicating the instance was not found and return no entries.
 7. THE Skeleton_Backend SHALL provide no operation that updates or deletes a History_Entry, and SHALL reject any such request with an error indicating the operation is not supported, leaving the entry unchanged.
 8. WHEN the History_Entries of a Workflow_Instance are read repeatedly with no new entries written between reads, THE Skeleton_Backend SHALL return identical entries in identical order on every read.
-9. FOR ALL Workflow_Instances, considering only the History_Entries of kind START, ACTION and SKIPPED in order, the to-Step of each such entry SHALL equal the from-Step of the following such entry (continuity property); History_Entries of kind EVENT_DEFERRED, EVENT_FAILED and EXPRESSION_ERROR SHALL be excluded from this chain.
+9. FOR ALL Workflow_Instances, considering only the History_Entries of kind START, ACTION, SKIPPED and AUTO in order, the to-Step and to-status of each such entry SHALL equal the from-Step and from-status of the following such entry (continuity property); History_Entries of kind EVENT_DEFERRED, EVENT_FAILED and EXPRESSION_ERROR SHALL be excluded from this chain.
 10. WHEN a Principal creates or updates a Record or publishes a Definition_Version, or WHEN Auto_Publish publishes a Definition_Version (actor id: a reserved system actor identifier), THE Skeleton_Backend SHALL write an audit log entry holding actor id, operation (create, update or publish), target identifier and event time in UTC, in the same transaction as the operation.
 11. IF writing an audit log entry fails, THEN THE Skeleton_Backend SHALL roll back the operation and return an error indicating the audit write failed.
 12. THE Skeleton_Backend SHALL store and return all time values in UTC using ISO 8601 format with millisecond precision.
+13. WHEN an AUTO Step routes on, THE Skeleton_Backend SHALL record a history entry of kind AUTO naming the AUTO Step, the next Step, the statuses, and the time.
 
 ### Requirement 13: Plugin Handler Interface
 
@@ -379,7 +381,7 @@ Scope is the must-have tier only. Out of scope: Angular frontend, form and workf
 5. THE Skeleton_Backend SHALL include a jqwik property verifying that, for any generated set of 0 to 20 matching Transitions, the Router selects the Transition with the lowest priority value, and, WHEN no Transition matches, selects the Action `to`, and, WHEN the Action `to` is absent, selects the next Step in declared order.
 6. THE Skeleton_Backend SHALL include a jqwik property verifying that every status set on a Workflow_Instance during any generated action sequence is a label declared in the `statuses` of its pinned workflow.
 7. THE Skeleton_Backend SHALL include a jqwik property verifying that, after each request in any generated action sequence of 1 to 50 requests on a Validator-approved workflow, the Workflow_Instance either is at a non-END Step with at least one executable Action or has ended.
-8. THE Skeleton_Backend SHALL include a jqwik property verifying that the History_Entry continuity property of Requirement 12.9, over the entries of kind START, ACTION and SKIPPED only, holds after any generated action sequence of 1 to 50 requests.
+8. THE Skeleton_Backend SHALL include a jqwik property verifying that the History_Entry continuity property of Requirement 12.9, over the entries of kind START, ACTION, SKIPPED and AUTO only, holds after any generated action sequence of 1 to 50 requests.
 9. WHEN the build's test task runs, THE Skeleton_Backend SHALL execute every Router property against an in-memory test double of the persistence layer, with at least 100 tries per property, and SHALL fail the test task IF any property is falsified.
 
 ### Requirement 20: Configuration and Packaging

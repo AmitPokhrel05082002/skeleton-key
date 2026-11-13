@@ -43,7 +43,7 @@ class AssigneeResolverTest {
     private void load(UUID user, int n) {
         for (int i = 0; i < n; i++) {
             instances.insert(new InstanceState(UUID.randomUUID(), UUID.randomUUID(), "APP", 1, "WF", "S", "Open",
-                    user, null, false, Instant.now(), 0), user);
+                    user, null, false, Instant.now(), 0, user, Instant.now()));
         }
     }
 

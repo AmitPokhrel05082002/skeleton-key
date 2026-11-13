@@ -147,7 +147,7 @@ class RecordServiceTest {
     void recordWithWorkflowInstanceOrWorkflowEntityIsConflict() {
         RecordView r = service.create("GRIEVANCE", "NOTE", note("one"), user);
         instances.insert(new InstanceState(UUID.randomUUID(), r.id(), "GRIEVANCE", 3, "GRIEVANCE_FLOW", "TRIAGE",
-                "Received", null, null, false, Instant.now(CLOCK), 0), user.userId());
+                "Received", null, null, false, Instant.now(CLOCK), 0, user.userId(), Instant.now(CLOCK)));
         assertThatThrownBy(() -> service.update("GRIEVANCE", "NOTE", r.id(), note("x"), false, user))
                 .isInstanceOf(Conflict.class).hasMessageContaining("workflow");
 

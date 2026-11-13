@@ -25,3 +25,6 @@ Thumbs.db
 # Secrets
 .env
 *.env.local
+
+# Stray Java files must never land at the repo root (all code lives under skeleton/ or app-*/)
+/*.java

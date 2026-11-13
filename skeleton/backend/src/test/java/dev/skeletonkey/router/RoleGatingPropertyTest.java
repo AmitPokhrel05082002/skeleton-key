@@ -110,7 +110,7 @@ class RoleGatingPropertyTest {
       case OTHER -> OTHER_USER;
     };
     InstanceState inst = new InstanceState(new UUID(1, 1), new UUID(2, 2), def.app().code(), 1, wf.code(),
-        step.code(), "Open", assignee, null, ended, Instant.EPOCH, 0);
+        step.code(), "Open", assignee, null, ended, Instant.EPOCH, 0, null, Instant.EPOCH);
     return new Scenario(wf, step, action, inst, p, when, ak, target, esc);
   }
 

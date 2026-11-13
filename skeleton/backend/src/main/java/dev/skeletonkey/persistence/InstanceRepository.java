@@ -9,7 +9,7 @@ import java.util.UUID;
 /** Port for workflow instances. Updates are guarded by the optimistic {@code lockVersion}. */
 public interface InstanceRepository {
     /** Stores a new instance (its lockVersion is stored as given). */
-    void insert(InstanceState state, UUID startedBy);
+    void insert(InstanceState state);
 
     Optional<InstanceState> findById(UUID id);
 

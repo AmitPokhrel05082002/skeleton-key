@@ -15,6 +15,19 @@
     "7.7 Write property test for transition selection": {
       "status": "passed",
       "lastRunTimestamp": 1794466626056
+    },
+    "7.16 Write property test for rejected requests": {
+      "status": "passed",
+      "lastRunTimestamp": 1794547728852
+    },
+    "7.18 Write property test for history continuity": {
+      "status": "failed",
+      "failingExample": "seed=-7746410517580061258, tries=42. Shrunk: START -> ACTION ACT_1_1 (STEP_1->STEP_5, Status 1->Status 4) then SKIPPED (STEP_3->STEP_4, Status 2->Status 2): ACTION.toStep=STEP_5 but next SKIPPED.fromStep=STEP_3. Original sample: START then SKIPPED STEP_1->STEP_2, then an AUTO hop STEP_2->STEP_3 writes no row, so next ACTION fromStep=STEP_3 != SKIPPED.toStep=STEP_2.",
+      "lastRunTimestamp": 1794547792834
+    },
+    "7.19 Write property test for version pinning": {
+      "status": "passed",
+      "lastRunTimestamp": 1794548317778
     }
   },
   "executionHistory": {
@@ -433,6 +446,73 @@
         "executionId": "b46d323b-d839-4f41-9259-e94077ccebfa",
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794544713954
+      }
+    ],
+    "10.1 Implement `WorkflowService`": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794545430898
+      },
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794549676799
+      }
+    ],
+    "7.16 Write property test for rejected requests": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794547521754
+      },
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794548347899
+      }
+    ],
+    "7.17 Write property test for routing invariants": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794547522190
+      },
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794548348189
+      }
+    ],
+    "7.18 Write property test for history continuity": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794547523081
+      },
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794549160082
+      }
+    ],
+    "7.19 Write property test for version pinning": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794547523424
+      },
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794548348524
+      }
+    ],
+    "7. Router": [
+      {
+        "executionId": "05922cb6-4e69-48cb-af60-fe5052099191",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794549160442
       }
     ]
   }

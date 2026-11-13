@@ -51,7 +51,7 @@ class RouterGuardsTest {
 
   private InstanceState inst(boolean ended, UUID assignee) {
     return new InstanceState(UUID.randomUUID(), UUID.randomUUID(), "APP", 1, "W", "REVIEW", "Open", assignee,
-        null, ended, Instant.now(), 0);
+        null, ended, Instant.now(), 0, null, Instant.now());
   }
 
   private Entity entity() {

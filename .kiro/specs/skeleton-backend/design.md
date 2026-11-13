@@ -234,7 +234,7 @@ Because everything is computed on copies and returned as an `ActionOutcome`, a t
 
 **Step entry loop.** `enter(target, selected, action)`:
 - Track `visitedSkips`. If `skipWhen` is true: add SKIPPED entry (from=target, to=next), if target already in `visitedSkips` throw 500 (Req 10.10), then select onward with an empty action code via TransitionSelector and call `enter` again with that selection (no action, so only the new Transition's status or the final step's status can apply).
-- AUTO: run handler, then route onward the same way; failure -> 500.
+- AUTO: run its `onEnter` events first, then its handler, then route onward the same way and write one AUTO history row (see "History kinds and the movement chain"); failure -> 500.
 - END: set status to `outcome`, finish.
 - Else: set status with `resolveStatus`, run `onEnter`, resolve assignee, set `dueAt = now + slaHours`, set `stepEnteredAt = now`.
 
@@ -367,14 +367,14 @@ CREATE TABLE workflow_instance (
   current_step varchar(64) NOT NULL, status varchar(120) NOT NULL,
   step_entered_at timestamptz NOT NULL,
   assignee_id uuid, due_at timestamptz, ended boolean NOT NULL DEFAULT false,
-  started_by uuid, started_at timestamptz NOT NULL,
+  started_by uuid, created_at timestamptz NOT NULL DEFAULT now(),
   lock_version bigint NOT NULL DEFAULT 0
 );
 CREATE TABLE assignment_cursor ( app_code varchar(64), workflow_code varchar(64), step_code varchar(64), last_user_id uuid, PRIMARY KEY (app_code, workflow_code, step_code) );
 
 CREATE TABLE history_entry (
   seq bigserial PRIMARY KEY, instance_id uuid NOT NULL REFERENCES workflow_instance(id),
-  kind varchar(20) NOT NULL CHECK (kind IN ('START','ACTION','SKIPPED','EVENT_DEFERRED','EVENT_FAILED','EXPRESSION_ERROR')),
+  kind varchar(20) NOT NULL CHECK (kind IN ('START','ACTION','SKIPPED','AUTO','EVENT_DEFERRED','EVENT_FAILED','EXPRESSION_ERROR')),
   action_code varchar(64), from_step varchar(64), to_step varchar(64),
   from_status varchar(120), to_status varchar(120),
   actor_id uuid, remarks varchar(2000), attachment_ref varchar(500),
@@ -387,13 +387,22 @@ CREATE TABLE audit_log ( id bigserial PRIMARY KEY, actor_id uuid, operation varc
 
 Status is a free `varchar`, not an enum type (Req 20.8). `time_in_step_ms` is computed as the action (or skip) time minus `workflow_instance.step_entered_at` (mapped by `InstanceState.stepEnteredAt`), floored at 0. `step_entered_at` is set at start and every time a non-skipped step is entered. `assignment_cursor` rows are written only from `ActionOutcome.cursorUpdates`.
 
+**History kinds and the movement chain.** Kinds: START, ACTION, SKIPPED, AUTO, EVENT_DEFERRED, EVENT_FAILED, EXPRESSION_ERROR (the table above is created by V1 and widened with AUTO by `V2__history_auto_kind.sql`). START, ACTION, SKIPPED and AUTO are movement rows and form one continuous chain on both step and status; the other kinds are excluded from it. Each movement row ends at the first step the move reaches, and its `toStatus` is the status in effect when that step is reached:
+- START: from empty to the start step; `toStatus` is the status resolved for the start step, or the initial status if the start step is skipped.
+- ACTION: from the acting step and its status to the first target of the move (not the final step after skips); the action code, actor, remarks, attachment and time in step are unchanged. `toStatus` is the status resolved for that target (transition, action, step precedence, or `outcome` for END); if the target is skipped it is the status before the skip chain, because a skipped step applies no status.
+- SKIPPED: from the skipped step and its status to the step the onward selection reaches; `toStatus` is the status resolved for that step (selected Transition, then step status, else kept; `outcome` for END), or the unchanged status if that step is itself skipped. Actor as the call's principal (null for a public start), time in step 0.
+- AUTO: written once the AUTO step has run (onEnter events first, then its handler) and routes on. From the AUTO step and its status to the next step; `toStatus` follows the same rule as SKIPPED. No action code, time in step 0, actor as for SKIPPED. Chained AUTO steps each write their own row. Any EXPRESSION_ERROR/EVENT entries are written in the order they occur, before the AUTO row.
+The Router implements this by writing each movement row with its target step and filling in `toStatus` when the target is reached (`finishRow`). Status therefore changes only on a row's `toStatus`, and the next row's `fromStatus` equals it.
+
+**Start facts.** `InstanceState.startedAt` is the instant `Router.start` ran. It is stored in `workflow_instance.created_at`, set once and never updated, and is the value of `instance.createdAt` in JSONLogic expressions. `InstanceState.startedBy` is the user id of the starting principal, stored in `started_by` (null for a public start by the public role, whose principal has no user id), and is what the INITIATOR assignee strategy assigns. `Router.execute` and `Router.complete` read both from the `InstanceState` they are given, not from parameters, and every state the Router produces carries them through unchanged. The repository `update` never writes either column.
+
 ### Domain model (Java records, immutable)
 
 - `AppDefinition(app, roles, entities, forms, views, workflows)` mirroring the schema.
 - `Entity(code, label, titleField, referencePrefix, fields)`; `Field(code, label, type, required, options, ref, min, max, maxLength, pattern, accept, maxFiles, defaultValue)`.
 - `Workflow(code, entity, startStep, initialStatus, statuses, steps, transitions)`; `Step(code, type, status, assignee, skipWhen, slaHours, escalateTo, fields, actions, onEnter, onExit, handler, outcome, ...)`.
 - `Action(code, roles, to, status, remarks, attachment, when, handler)`; `Transition(from, to, on, when, priority, status)` (Step and Transition `status` are optional and come from the pending schema update); `Event` sealed interface with `Notify`, `SetField`, `Webhook`, `HandlerCall`.
-- Runtime: `InstanceState(id, recordId, appCode, defVersion, workflowCode, step, status, assigneeId, dueAt, ended, stepEnteredAt, lockVersion)` (`stepEnteredAt` maps to column `step_entered_at`, `lockVersion` to `lock_version`); `CursorUpdate(appCode, workflowCode, stepCode, lastUserId)`; `HistoryEntry(kind, actionCode, fromStep, toStep, fromStatus, toStatus, actorId, remarks, attachmentRef, detail, eventTime, timeInStepMs)`; `Principal(userId, roles)` where anonymous = `Principal(null, {publicRoleCode})`.
+- Runtime: `InstanceState(id, recordId, appCode, defVersion, workflowCode, step, status, assigneeId, dueAt, ended, stepEnteredAt, lockVersion, startedBy, startedAt)` (`stepEnteredAt` maps to column `step_entered_at`, `lockVersion` to `lock_version`, `startedBy` to `started_by`, `startedAt` to `created_at`); `CursorUpdate(appCode, workflowCode, stepCode, lastUserId)`; `HistoryEntry(kind, actionCode, fromStep, toStep, fromStatus, toStatus, actorId, remarks, attachmentRef, detail, eventTime, timeInStepMs)`; `Principal(userId, roles)` where anonymous = `Principal(null, {publicRoleCode})`.
 
 ### Ports
 

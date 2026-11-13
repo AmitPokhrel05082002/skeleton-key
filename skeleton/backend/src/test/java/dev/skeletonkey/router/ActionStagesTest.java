@@ -42,7 +42,7 @@ class ActionStagesTest {
   private final Entity entity = new Entity("E", "E", null, null,
       List.of(field("a", Field.Type.TEXT), field("b", Field.Type.TEXT), field("n", Field.Type.NUMBER)));
   private final InstanceState inst = new InstanceState(UUID.randomUUID(), UUID.randomUUID(), "APP", 1, "W",
-      "S1", "Open", null, null, false, NOW, 0L);
+      "S1", "Open", null, null, false, NOW, 0L, null, NOW);
   private final Principal user = new Principal(UUID.randomUUID(), Set.of("R"));
   private final EvalContext base = new EvalContext(null, json("{\"status\":\"Open\"}"), json("{}"));
 

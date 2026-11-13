@@ -52,6 +52,7 @@ public class Router {
   public static final String START = "START";
   public static final String ACTION = "ACTION";
   public static final String SKIPPED = "SKIPPED";
+  public static final String AUTO = "AUTO";
 
   /** Safety bound for chains of AUTO steps, whose handlers may change the data and so never repeat a state. */
   static final int MAX_HOPS = 1000;
@@ -91,12 +92,13 @@ public class Router {
                 "Workflow '" + wf.code() + "' declares no initial or OPEN status"));
     UUID actor = principal == null ? null : principal.userId();
     InstanceState begin = new InstanceState(seed.id(), seed.recordId(), seed.appCode(), seed.defVersion(),
-        seed.workflowCode(), wf.startStep(), initial, null, null, false, now, seed.lockVersion());
+        seed.workflowCode(), wf.startStep(), initial, null, null, false, now, seed.lockVersion(), actor, now);
 
     List<HistoryEntry> history = new ArrayList<>();
-    history.add(new HistoryEntry(START, null, null, wf.startStep(), null, initial, actor, null, null, null, now, 0L));
-    Entry result = enter(wf, entity, begin, wf.startStep(), null, null, new LinkedHashMap<>(data), actor,
-        principal, now, now, null);
+    HistoryEntry lead = new HistoryEntry(START, null, null, wf.startStep(), null, initial, actor, null, null, null,
+        now, 0L);
+    Entry result = enter(wf, entity, begin, wf.startStep(), null, null, new LinkedHashMap<>(data), principal,
+        now, null, lead);
     history.addAll(result.history);
     return new ActionOutcome(result.data, result.state, history, result.cursors);
   }
@@ -104,13 +106,13 @@ public class Router {
   /** Full pipeline: guards, validation, handler, onExit, selection, step entry (Req 9.1). */
   public ActionOutcome execute(Workflow wf, Entity entity, InstanceState inst, Map<String, Object> data,
                                String actionCode, Map<String, Object> changes, String remarks, String attachment,
-                               UUID initiator, Instant createdAt, Principal principal, Instant now) {
-    EvalContext ctx = context(data, inst, createdAt, principal);
+                               Principal principal, Instant now) {
+    EvalContext ctx = context(data, inst, principal);
     RouterGuards.Guarded guarded = guards.checkPermission(wf, inst, actionCode, principal, ctx);
     guards.validateInput(guarded.step(), guarded.action(), entity, changes, data, remarks, attachment);
     ActionStages.Prepared prepared = stages.prepare(wf, entity, guarded.step(), guarded.action(), data, changes,
         inst, principal, ctx, now);
-    return complete(wf, entity, inst, prepared, remarks, attachment, initiator, createdAt, principal, now);
+    return complete(wf, entity, inst, prepared, remarks, attachment, principal, now);
   }
 
   /**
@@ -118,19 +120,20 @@ public class Router {
    * History order: onExit / selection entries, the ACTION row, then SKIPPED rows and entry entries in the order met.
    */
   public ActionOutcome complete(Workflow wf, Entity entity, InstanceState inst, ActionStages.Prepared prepared,
-                                String remarks, String attachment, UUID initiator, Instant createdAt,
-                                Principal principal, Instant now) {
+                                String remarks, String attachment, Principal principal,
+                                Instant now) {
     Action action = prepared.action();
     UUID actor = principal == null ? null : principal.userId();
-    Entry result = enter(wf, entity, inst, prepared.selection().targetStep(), prepared.selection().transition(),
-        action, prepared.data(), initiator, principal, now, createdAt, action.code());
-
     long inStep = inst.stepEnteredAt() == null ? 0L
         : Math.max(0L, Duration.between(inst.stepEnteredAt(), now).toMillis());
+    // The ACTION row ends at the first target of the move; enter() fills in its toStatus.
+    HistoryEntry lead = new HistoryEntry(ACTION, action.code(), inst.step(), prepared.selection().targetStep(),
+        inst.status(), inst.status(), actor, remarks, attachment == null || attachment.isBlank() ? null : attachment,
+        null, now, inStep);
+    Entry result = enter(wf, entity, inst, prepared.selection().targetStep(), prepared.selection().transition(),
+        action, prepared.data(), principal, now, action.code(), lead);
+
     List<HistoryEntry> history = new ArrayList<>(prepared.history());
-    history.add(new HistoryEntry(ACTION, action.code(), inst.step(), result.state.step(), inst.status(),
-        result.state.status(), actor, remarks, attachment == null || attachment.isBlank() ? null : attachment,
-        null, now, inStep));
     history.addAll(result.history);
     return new ActionOutcome(result.data, result.state, history, result.cursors);
   }
@@ -147,9 +150,16 @@ public class Router {
 
   /** The step entry loop (Req 10.8-10.13). */
   private Entry enter(Workflow wf, Entity entity, InstanceState from, String firstTarget, Transition firstSelected,
-                      Action firstAction, Map<String, Object> startData, UUID initiator, Principal principal,
-                      Instant now, Instant createdAt, String actionCode) {
+                      Action firstAction, Map<String, Object> startData, Principal principal,
+                      Instant now, String actionCode, HistoryEntry lead) {
     Entry out = new Entry();
+    // The lead row (START / ACTION) ends at the first target; its toStatus is filled in on arrival. Every movement
+    // row added below is "pending" in the same way until the next step is reached.
+    int pending = -1;
+    if (lead != null) {
+      out.history.add(lead);
+      pending = 0;
+    }
     Map<String, Object> data = new LinkedHashMap<>(startData);
     String status = from.status();
     String targetCode = firstTarget;
@@ -172,15 +182,17 @@ public class Router {
       }
 
       if (target.type() == Step.Type.END) {
+        finishRow(out, pending, target.outcome());
         out.data = data;
         out.state = new InstanceState(from.id(), from.recordId(), from.appCode(), from.defVersion(),
-            from.workflowCode(), target.code(), target.outcome(), null, null, true, now, from.lockVersion());
+            from.workflowCode(), target.code(), target.outcome(), null, null, true, now, from.lockVersion(),
+            from.startedBy(), from.startedAt());
         out.cursors = List.copyOf(out.cursorMap.values());
         return out;
       }
 
       InstanceState view = state(from, code, status, null, null, now);
-      EvalContext ctx = context(data, view, createdAt, principal);
+      EvalContext ctx = context(data, view, principal);
 
       // skipWhen (Req 10.8, 10.9)
       if (target.skipWhen() != null) {
@@ -197,8 +209,10 @@ public class Router {
           TransitionSelector.Selection next = selector.select(wf, target, null, ctx,
               principal == null ? null : principal.userId(), now, status);
           out.history.addAll(next.errorEntries());
+          finishRow(out, pending, status); // a skipped step applies no status
           out.history.add(new HistoryEntry(SKIPPED, null, code, next.targetStep(), status, status,
               principal == null ? null : principal.userId(), null, null, null, now, 0L));
+          pending = out.history.size() - 1;
           targetCode = next.targetStep();
           selected = next.transition();
           action = null;
@@ -208,18 +222,23 @@ public class Router {
 
       // status (Req 10.14): first of transition, action, step, else kept
       status = StatusResolver.resolveStatus(selected, action, target, status);
+      finishRow(out, pending, status);
+      pending = -1;
       view = state(from, code, status, null, null, now);
       EventRunner.Result onEnter = events.run(target.onEnter(), entity, data, view, principal, actionCode,
-          context(data, view, createdAt, principal), now);
+          context(data, view, principal), now);
       data = new LinkedHashMap<>(onEnter.data());
       out.history.addAll(onEnter.history());
 
       if (target.type() == Step.Type.AUTO) {
         data = runAutoHandler(target, entity, data, view, principal);
-        EvalContext autoCtx = context(data, view, createdAt, principal);
+        EvalContext autoCtx = context(data, view, principal);
         TransitionSelector.Selection next = selector.select(wf, target, null, autoCtx,
             principal == null ? null : principal.userId(), now, status);
         out.history.addAll(next.errorEntries());
+        out.history.add(new HistoryEntry(AUTO, null, code, next.targetStep(), status, status,
+            principal == null ? null : principal.userId(), null, null, null, now, 0L));
+        pending = out.history.size() - 1;
         targetCode = next.targetStep();
         selected = next.transition();
         action = null;
@@ -228,17 +247,28 @@ public class Router {
 
       // TASK / APPROVAL: assignee, due time, stepEnteredAt (Req 8.3, 8.4)
       AssigneeResolver.Resolution res = assignees.resolve(target.assignee(), from.appCode(), from.workflowCode(),
-          code, initiator, data);
+          code, from.startedBy(), data);
       res.cursorUpdate().ifPresent(c -> out.cursorMap.put(
           c.appCode() + "|" + c.workflowCode() + "|" + c.stepCode(), c));
       Instant due = target.slaHours() == null ? null
           : now.plus(Duration.ofMillis(Math.round(target.slaHours() * 3_600_000d)));
       out.data = data;
       out.state = new InstanceState(from.id(), from.recordId(), from.appCode(), from.defVersion(),
-          from.workflowCode(), code, status, res.assignee().orElse(null), due, false, now, from.lockVersion());
+          from.workflowCode(), code, status, res.assignee().orElse(null), due, false, now, from.lockVersion(),
+          from.startedBy(), from.startedAt());
       out.cursors = List.copyOf(out.cursorMap.values());
       return out;
     }
+  }
+
+  /** Sets the toStatus of the pending movement row once the step it leads into has been reached. */
+  private static void finishRow(Entry out, int index, String toStatus) {
+    if (index < 0) {
+      return;
+    }
+    HistoryEntry h = out.history.get(index);
+    out.history.set(index, new HistoryEntry(h.kind(), h.actionCode(), h.fromStep(), h.toStep(), h.fromStatus(),
+        toStatus, h.actorId(), h.remarks(), h.attachmentRef(), h.detail(), h.eventTime(), h.timeInStepMs()));
   }
 
   private Map<String, Object> runAutoHandler(Step step, Entity entity, Map<String, Object> data,
@@ -288,15 +318,15 @@ public class Router {
   private static InstanceState state(InstanceState base, String step, String status, java.util.UUID assignee,
                                      Instant due, Instant now) {
     return new InstanceState(base.id(), base.recordId(), base.appCode(), base.defVersion(), base.workflowCode(),
-        step, status, assignee, due, false, now, base.lockVersion());
+        step, status, assignee, due, false, now, base.lockVersion(), base.startedBy(), base.startedAt());
   }
 
-  private EvalContext context(Map<String, Object> data, InstanceState inst, Instant createdAt, Principal principal) {
+  private EvalContext context(Map<String, Object> data, InstanceState inst, Principal principal) {
     ObjectNode instance = mapper.createObjectNode();
     instance.put("status", inst.status());
     instance.put("step", inst.step());
-    if (createdAt != null) {
-      instance.put("createdAt", createdAt.toString());
+    if (inst.startedAt() != null) {
+      instance.put("createdAt", inst.startedAt().toString());
     }
     ObjectNode user = mapper.createObjectNode();
     if (principal != null) {

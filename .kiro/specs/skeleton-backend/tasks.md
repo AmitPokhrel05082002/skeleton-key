@@ -150,7 +150,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Update rules with and without workflow, paging bounds 0, 1, 100, 101, unknown filter or sort field naming the parameter
     - _Requirements: 7.11, 7.13, 7.15, 7.16_
 
-- [ ] 7. Router
+- [x] 7. Router
   - [x] 7.1 Implement `FieldRuleResolver`, status resolution and `TransitionSelector`
     - Effective rule (unlisted is `readonly`), `resolveStatus` precedence, selection by priority (default 100) then declaration order, then Action `to`, then next step, with `EXPRESSION_ERROR` entries
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.14, 11.3, 15.4_
@@ -217,19 +217,19 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 12: Role gating of actions**
     - **Validates: Requirements 9.3, 15.2, 15.3, 15.6, 19.2**
 
-  - [ ] 7.16 Write property test for rejected requests
+  - [x] 7.16 Write property test for rejected requests
     - **Property 13: Rejected requests change nothing**
     - **Validates: Requirements 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.11, 9.14, 10.7, 10.10, 10.12, 10.15, 11.4, 11.5, 12.4, 13.4, 13.6, 13.7, 19.4**
 
-  - [ ] 7.17 Write property test for routing invariants
+  - [x] 7.17 Write property test for routing invariants
     - **Property 14: Routing invariants over action sequences**
     - **Validates: Requirements 9.12, 19.1, 19.6, 19.7**
 
-  - [ ] 7.18 Write property test for history continuity
+  - [x] 7.18 Write property test for history continuity
     - **Property 16: History continuity, content and stability**
     - **Validates: Requirements 8.6, 9.12, 12.1, 12.2, 12.3, 12.5, 12.8, 12.9, 12.12, 19.8**
 
-  - [ ] 7.19 Write property test for version pinning
+  - [x] 7.19 Write property test for version pinning
     - **Property 7: Published versions are immutable and instances stay pinned**
     - **Validates: Requirements 5.2, 5.4, 5.5, 5.6, 19.3**
 
@@ -258,7 +258,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - _Requirements: 6.2, 6.3, 6.8, 17.2, 17.3, 17.4, 17.5, 17.7, 17.8_
 
 - [ ] 10. Workflow service, endpoints, startup loading
-  - [ ] 10.1 Implement `WorkflowService`
+  - [x] 10.1 Implement `WorkflowService`
     - Transactional start and execute: load pinned definition, instance, cursors and open-task counts, call Router, persist in the specified order (record, instance with lock check, history, cursor updates, audit); map history write failure to 500 `HISTORY_WRITE_FAILED`
     - _Requirements: 8.1, 8.7, 9.12, 9.13, 9.14, 12.4, 5.4, 5.5_
 

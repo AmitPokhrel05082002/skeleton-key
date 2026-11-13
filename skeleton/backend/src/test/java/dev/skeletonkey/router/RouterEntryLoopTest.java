@@ -54,7 +54,7 @@ class RouterEntryLoopTest {
       List.of(field("a"), field("b")));
   private final Principal user = new Principal(UUID.randomUUID(), Set.of("R"));
   private final InstanceState seed = new InstanceState(UUID.randomUUID(), UUID.randomUUID(), "APP", 1, "W",
-      null, null, null, null, false, null, 0L);
+      null, null, null, null, false, null, 0L, null, null);
 
   RouterEntryLoopTest() {
     users.insert(new UserAccount(u1, "u1", "x", "U", true, Set.of("R")));
@@ -133,13 +133,12 @@ class RouterEntryLoopTest {
   }
 
   private ActionOutcome execute(Workflow w, InstanceState inst, Map<String, Object> data) {
-    return router.execute(w, entity, inst, data, "GO", Map.of(), "ok", null, user.userId(), NOW.minusSeconds(60),
-        user, NOW);
+    return router.execute(w, entity, inst, data, "GO", Map.of(), "ok", null, user, NOW);
   }
 
   private InstanceState at(String step, String status) {
     return new InstanceState(seed.id(), seed.recordId(), "APP", 1, "W", step, status, null, null, false,
-        NOW.minusSeconds(10), 3L);
+        NOW.minusSeconds(10), 3L, user.userId(), NOW.minusSeconds(60));
   }
 
   private static List<String> kinds(ActionOutcome o) {
@@ -203,6 +202,8 @@ class RouterEntryLoopTest {
     assertThat(o.newState().status()).isEqualTo("Open");
     assertThat(kinds(o)).containsExactly("START", "SKIPPED", "SKIPPED");
     HistoryEntry first = o.history().get(1);
+    assertThat(o.history().get(0).toStep()).isEqualTo("S1");
+    assertThat(o.history().get(0).toStatus()).isEqualTo("Open");
     assertThat(first.fromStep()).isEqualTo("S1");
     assertThat(first.toStep()).isEqualTo("S2");
     assertThat(first.fromStatus()).isEqualTo("Open");
@@ -244,7 +245,23 @@ class RouterEntryLoopTest {
     assertThat(o.newState().step()).isEqualTo("S3");
     assertThat(o.newState().status()).isEqualTo("Other");
     assertThat(o.newData()).containsEntry("a", "auto");
-    assertThat(kinds(o)).containsExactly("START");
+    assertThat(kinds(o)).containsExactly("START", "AUTO", "AUTO");
+    HistoryEntry st = o.history().get(0);
+    assertThat(st.toStep()).isEqualTo("S1");
+    assertThat(st.toStatus()).isEqualTo("Other");
+    HistoryEntry a1 = o.history().get(1);
+    assertThat(a1.fromStep()).isEqualTo("S1");
+    assertThat(a1.toStep()).isEqualTo("S2");
+    assertThat(a1.fromStatus()).isEqualTo("Other");
+    assertThat(a1.toStatus()).isEqualTo("Other");
+    assertThat(a1.actionCode()).isNull();
+    assertThat(a1.timeInStepMs()).isZero();
+    assertThat(a1.actorId()).isEqualTo(user.userId());
+    HistoryEntry a2 = o.history().get(2);
+    assertThat(a2.fromStep()).isEqualTo("S2");
+    assertThat(a2.toStep()).isEqualTo("S3");
+    assertThat(a2.fromStatus()).isEqualTo("Other");
+    assertThat(a2.toStatus()).isEqualTo("Other");
   }
 
   @Test
@@ -263,7 +280,7 @@ class RouterEntryLoopTest {
     Workflow w = wf(null, List.of(task("S1", null, null, null, 2.0, List.of(), List.of(), go("E1", null)),
         end("E1", "Done")), List.of());
     InstanceState inst = new InstanceState(seed.id(), seed.recordId(), "APP", 1, "W", "S1", "Open", null,
-        NOW.plusSeconds(100), false, NOW.minusSeconds(10), 3L);
+        NOW.plusSeconds(100), false, NOW.minusSeconds(10), 3L, user.userId(), NOW.minusSeconds(60));
     ActionOutcome o = execute(w, inst, Map.of("a", "x"));
     assertThat(o.newState().ended()).isTrue();
     assertThat(o.newState().step()).isEqualTo("E1");
@@ -311,8 +328,7 @@ class RouterEntryLoopTest {
 
     // the action's status applies only to its own move; the skipped hop carries no action
     Workflow noTransition = wf(null, steps.subList(0, 4), List.of());
-    ActionOutcome a = router.execute(noTransition, entity, inst, Map.of(), "GO", Map.of(), null, null, null, NOW,
-        user, NOW);
+    ActionOutcome a = router.execute(noTransition, entity, inst, Map.of(), "GO", Map.of(), null, null, user, NOW);
     assertThat(a.newState().step()).isEqualTo("S3");
     assertThat(a.newState().status()).isEqualTo("Done");
 
@@ -373,8 +389,8 @@ class RouterEntryLoopTest {
     Workflow w = wf(null, List.of(task("S1", null, null, null, null, List.of(), List.of(), go("S2", null)),
         task("S2", null, null, init, null, List.of(), List.of(), go(null, null)), end("E1", "Done")), List.of());
     UUID starter = UUID.randomUUID();
-    ActionOutcome o = router.execute(w, entity, at("S1", "Open"), Map.of(), "GO", Map.of(), null, null, starter,
-        NOW, user, NOW);
+    ActionOutcome o = router.execute(w, entity, at("S1", "Open").withStart(starter, NOW), Map.of(), "GO", Map.of(), null, null,
+        user, NOW);
     assertThat(o.newState().assigneeId()).isEqualTo(starter);
   }
 
@@ -392,7 +408,35 @@ class RouterEntryLoopTest {
     ActionOutcome o = execute(w, at("S1", "Open"), Map.of());
     assertThat(o.newState().step()).isEqualTo("S3");
     assertThat(kinds(o)).containsExactly("EVENT_FAILED", "EXPRESSION_ERROR", "ACTION", "SKIPPED", "EVENT_FAILED");
-    assertThat(o.history().get(2).toStep()).isEqualTo("S3");
+    // the ACTION row ends at the first target (S2, skipped), not at the step finally entered
+    HistoryEntry action = o.history().get(2);
+    assertThat(action.fromStep()).isEqualTo("S1");
+    assertThat(action.toStep()).isEqualTo("S2");
+    assertThat(action.fromStatus()).isEqualTo("Open");
+    assertThat(action.toStatus()).isEqualTo("Open");
+    HistoryEntry skipped = o.history().get(3);
+    assertThat(skipped.fromStep()).isEqualTo("S2");
+    assertThat(skipped.toStep()).isEqualTo("S3");
+    assertThat(skipped.fromStatus()).isEqualTo("Open");
+    assertThat(skipped.toStatus()).isEqualTo("Open");
+  }
+
+  @Test
+  void actionRowEndsAtFirstTargetAndSkippedRowCarriesTheFinalStatus() {
+    Step s1 = task("S1", null, null, null, null, List.of(), List.of(), go("S2", null));
+    Workflow w = wf(null, List.of(s1, simple("S2", "Other", TRUE), simple("S3", "Done", null), end("E1", "Done")),
+        List.of());
+    ActionOutcome o = execute(w, at("S1", "Open"), Map.of());
+    assertThat(kinds(o)).containsExactly("ACTION", "SKIPPED");
+    HistoryEntry a = o.history().get(0);
+    assertThat(a.toStep()).isEqualTo("S2");
+    assertThat(a.toStatus()).isEqualTo("Open"); // a skipped step applies no status
+    HistoryEntry s = o.history().get(1);
+    assertThat(s.fromStep()).isEqualTo("S2");
+    assertThat(s.fromStatus()).isEqualTo("Open");
+    assertThat(s.toStep()).isEqualTo("S3");
+    assertThat(s.toStatus()).isEqualTo("Done"); // status resolved for the step finally entered
+    assertThat(o.newState().status()).isEqualTo("Done");
   }
 
   @Test

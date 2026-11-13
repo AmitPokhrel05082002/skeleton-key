@@ -33,7 +33,7 @@ class EventRunnerTest {
     private final EventRunner runner;
     private final Entity entity = new Entity("TICKET", "Ticket", null, null, List.of(field("a"), field("b")));
     private final InstanceState inst = new InstanceState(UUID.randomUUID(), UUID.randomUUID(), "APP", 1, "WF",
-            "S1", "Open", null, null, false, NOW, 0L);
+            "S1", "Open", null, null, false, NOW, 0L, null, NOW);
     private final Principal user = new Principal(UUID.randomUUID(), Set.of("AGENT"));
 
     EventRunnerTest() {

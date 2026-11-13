@@ -8,7 +8,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import dev.skeletonkey.app.WorkflowService;
+import dev.skeletonkey.domain.route.RouterException;
+import dev.skeletonkey.persistence.HistoryRepository;
+import dev.skeletonkey.persistence.InstanceRepository;
+import dev.skeletonkey.persistence.UserAccount;
+import dev.skeletonkey.persistence.UserRepository;
+import dev.skeletonkey.plugin.HandlerResult;
+import dev.skeletonkey.plugin.PluginHandler;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import dev.skeletonkey.audit.AuditService;
 import dev.skeletonkey.definition.DefinitionService;
 import dev.skeletonkey.definition.DefinitionVersionRef;
@@ -51,6 +71,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  */
 @Testcontainers
 @SpringBootTest
+@Import(ApplicationContextTest.Handlers.class)
 class ApplicationContextTest {
     static final String JWT_SECRET = "0123456789abcdef0123456789abcdef-context-test";
     static final String ADMIN_PW = "admin-pw-123";
@@ -93,6 +114,10 @@ class ApplicationContextTest {
     @Autowired PublishedDefinitions published;
     @Autowired ObjectMapper mapper;
     @Autowired RecordService recordService;
+    @Autowired WorkflowService workflows;
+    @Autowired UserRepository users;
+    @Autowired InstanceRepository instanceRepository;
+    @MockitoSpyBean HistoryRepository historySpy;
     MockMvc mvc;
 
     @BeforeEach
@@ -221,6 +246,92 @@ class ApplicationContextTest {
         // unknown filter field is rejected, not turned into SQL
         assertThatThrownBy(() -> recordService.list("GRIEVANCE", "GRIEVANCE", Map.of("nope", "x"), citizen))
                 .isInstanceOf(BadRequest.class);
+    }
+
+    /** Plugin handler used by the AUTO step of the end-to-end definition. */
+    @TestConfiguration
+    static class Handlers {
+        @Bean
+        PluginHandler stampHandler() {
+            return ctx -> HandlerResult.of(Map.of("inspectionNotes", "stamped"));
+        }
+    }
+
+    /**
+     * Start and execute against real PostgreSQL through WorkflowService: the grievance app with an AUTO step, so
+     * migration V2 (history kind AUTO) and the JDBC history adapter are exercised, then a forced history write
+     * failure to check the real transaction rolls back every earlier write.
+     */
+    @Test
+    void workflowStartAndExecuteOnRealPostgresIncludingAutoHistoryAndRollback() throws Exception {
+        ObjectNode doc = (ObjectNode) mapper.readTree(Files.readString(GRIEVANCE, StandardCharsets.UTF_8));
+        ((ObjectNode) doc.get("app")).put("code", "GRVAUTO");
+        ObjectNode flow = (ObjectNode) doc.get("workflows").get(0);
+        ArrayNode steps = (ArrayNode) flow.get("steps");
+        ((ObjectNode) steps.get(0).get("actions").get(0)).put("to", "STAMP");
+        ObjectNode stamp = mapper.createObjectNode();
+        stamp.put("code", "STAMP").put("label", "Stamp").put("type", "AUTO").put("handler", "stampHandler");
+        steps.insert(1, stamp); // next in array order is REVIEW
+        DefinitionVersionRef draft = definitions.submit(mapper.writeValueAsString(doc));
+        definitions.publish(draft.id(), DefinitionService.SYSTEM_ACTOR);
+
+        UUID clerkId = UUID.randomUUID();
+        users.insert(new UserAccount(clerkId, "clerk-wf", "x", "Clerk", true, Set.of("CLERK")));
+        UUID inspectorId = UUID.randomUUID();
+        users.insert(new UserAccount(inspectorId, "inspector-wf", "x", "Inspector", true, Set.of("INSPECTOR")));
+        UUID officerId = jdbc.queryForObject("select id from app_user where username = 'citizen'", UUID.class);
+        Principal clerk = new Principal(clerkId, Set.of("CLERK"));
+        Principal officer = new Principal(officerId, Set.of("OFFICER"));
+
+        WorkflowService.Started started = workflows.start("GRVAUTO", "GRIEVANCE_FLOW",
+                grievance("Auto path", "ROAD", false), Principal.anonymous("PUBLIC"));
+        UUID instanceId = started.instance().id();
+        assertThat(started.instance().assigneeId()).isEqualTo(clerkId);
+        assertThat(started.instance().defVersion()).isEqualTo(draft.version());
+
+        WorkflowService.Executed verified = workflows.execute(instanceId, "VERIFY", Map.of(), "ok", null, clerk);
+        assertThat(verified.instance().step()).isEqualTo("REVIEW");
+        assertThat(verified.instance().lockVersion()).isEqualTo(1L);
+        // The NOTIFY onExit event adds EVENT_DEFERRED; the START/ACTION/AUTO chain is what V2 must accept.
+        assertThat(jdbc.queryForList("select kind from history_entry where instance_id = ? "
+                + "and kind in ('START','ACTION','SKIPPED','AUTO') order by event_time, seq",
+                String.class, instanceId)).containsExactly("START", "ACTION", "AUTO");
+        assertThat(recordService.read("GRVAUTO", "GRIEVANCE", started.record().id(), officer).data())
+                .containsEntry("inspectionNotes", "stamped");
+
+        // Forced history failure: the record, instance, history, cursor and audit writes all roll back.
+        int historyBefore = count("select count(*) from history_entry where instance_id = ?", instanceId);
+        int auditBefore = count("select count(*) from audit_log where target_id = ?", started.record().id().toString());
+        doThrow(new DataAccessResourceFailureException("simulated")).when(historySpy).append(any(), any());
+        assertThatThrownBy(() -> workflows.execute(instanceId, "APPROVE", Map.of("resolutionNotes", "fix"),
+                null, null, officer))
+                .isInstanceOfSatisfying(RouterException.class,
+                        e -> assertThat(e.code()).isEqualTo("HISTORY_WRITE_FAILED"));
+        reset(historySpy);
+        assertThat(count("select count(*) from history_entry where instance_id = ?", instanceId))
+                .isEqualTo(historyBefore);
+        assertThat(count("select count(*) from audit_log where target_id = ?", started.record().id().toString()))
+                .isEqualTo(auditBefore);
+        assertThat(jdbc.queryForObject("select current_step || '/' || lock_version from workflow_instance "
+                + "where id = ?", String.class, instanceId)).isEqualTo("REVIEW/1");
+        assertThat(recordService.read("GRVAUTO", "GRIEVANCE", started.record().id(), officer).data())
+                .doesNotContainKey("resolutionNotes");
+        assertThat(count("select count(*) from assignment_cursor where app_code = 'GRVAUTO'")).isZero();
+
+        // The same request succeeds afterwards and then applies the cursor.
+        WorkflowService.Executed approved = workflows.execute(instanceId, "APPROVE",
+                Map.of("resolutionNotes", "fix"), null, null, officer);
+        assertThat(approved.instance().step()).isEqualTo("SITE_VISIT");
+        assertThat(approved.instance().assigneeId()).isEqualTo(inspectorId);
+        assertThat(count("select count(*) from assignment_cursor where app_code = 'GRVAUTO'")).isEqualTo(1);
+
+        // A stale writer loses: updating with an old lock version is a 409 CONCURRENT_MODIFICATION.
+        assertThatThrownBy(() -> instanceRepository.update(verified.instance()))
+                .isInstanceOf(OptimisticLockingFailureException.class);
+    }
+
+    private int count(String sql, Object... args) {
+        return jdbc.queryForObject(sql, Integer.class, args);
     }
 
     private static Map<String, Object> grievance(String subject, String category, boolean urgent) {

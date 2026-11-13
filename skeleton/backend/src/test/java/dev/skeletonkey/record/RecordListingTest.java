@@ -85,7 +85,7 @@ class RecordListingTest {
 
     private void instance(RecordRow r, String step, UUID assignee) {
         instances.insert(new InstanceState(UUID.randomUUID(), r.id(), APP, 1, "GRIEVANCE_FLOW", step, "Received",
-                assignee, null, false, Instant.now(CLOCK), 0), r.createdBy());
+                assignee, null, false, Instant.now(CLOCK), 0, r.createdBy(), Instant.now(CLOCK)));
     }
 
     private RecordPage list(Principal who, String... kv) {

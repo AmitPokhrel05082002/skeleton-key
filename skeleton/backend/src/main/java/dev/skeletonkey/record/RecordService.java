@@ -280,6 +280,11 @@ public class RecordService {
         return out;
     }
 
+    /** Reference number prefix of an entity, shared with the workflow start flow. */
+    public static String referencePrefix(Entity e) {
+        return prefix(e);
+    }
+
     private static String prefix(Entity e) {
         if (e.referencePrefix() != null && !e.referencePrefix().isBlank()) return e.referencePrefix();
         String letters = e.code().replaceAll("[^A-Za-z]", "").toUpperCase();

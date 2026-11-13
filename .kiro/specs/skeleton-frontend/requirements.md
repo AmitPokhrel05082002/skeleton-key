@@ -19,8 +19,8 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 | Public subset | `GET /api/public/apps/{app}` (anonymous), includes the app `branding` object |
 | Restricted definition | `GET /api/apps/{app}/definition[?version=n]`, includes the app `branding` object |
 | Form submit | `POST /api/apps/{app}/forms/{form}/submit` returns `{ recordId, referenceNo, instanceId }` |
-| Records | `GET/POST /api/apps/{app}/entities/{entity}/records`, `GET/PUT/PATCH .../records/{id}`; list returns `{ items[], page, size, total, sort }`, params `page`, `size`, `sort` (`field,asc\|desc`), `view`, other params are equality filters. Each list item and each record view includes `instanceId`, `step`, `stepLabel`, `status`, `statusColor`, `assignee`, `dueAt` and `ended` |
-| Instance | `GET /api/instances/{id}` returns `{ instanceId, recordId, step, status, ended, dueAt, assignee, actions[{code,label,style,confirm,remarks,attachment}], fieldRules{} }`; `POST /api/instances/{id}/actions/{code}` with `{ fields, remarks, attachment }`; `GET /api/instances/{id}/history` |
+| Records | `GET/POST /api/apps/{app}/entities/{entity}/records`, `GET/PUT/PATCH .../records/{id}`; list returns `{ items[], page, size, total, sort }`, params `page`, `size`, `sort` (`field,asc\|desc`), `view`, other params are equality filters. Each list item and each record view includes `instanceId`, `step`, `stepLabel`, `status`, `statusColor`, `assignee`, `assigneeName`, `dueAt` and `ended` |
+| Instance | `GET /api/instances/{id}` returns `{ instanceId, recordId, step, status, ended, dueAt, assignee, assigneeName, actions[{code,label,style,confirm,remarks,attachment}], fieldRules{} }`; `POST /api/instances/{id}/actions/{code}` with `{ fields, remarks, attachment }`; `GET /api/instances/{id}/history` returns entries that include `actorName` |
 | Admin: app codes | `GET /api/definitions/apps` returns the app codes that have definitions |
 | Admin: versions | `GET /api/apps/{app}/definitions` returns the version references (`id`, `version`, `status`, `contentHash`, timestamps) of an app |
 | Admin: validate | `POST /api/definitions/validate` returns the Validator_Report for a body without storing a version |
@@ -35,7 +35,11 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 - **App_Definition**: The versioned JSON document described by `schema/app-definition.schema.json`.
 - **Public_Subset**: The anonymous projection of an App_Definition returned by `GET /api/public/apps/{app}`: the `app` object with branding, public forms and the fields they list.
 - **Restricted_Definition**: The role-filtered App_Definition projection returned by `GET /api/apps/{app}/definition`: app info with branding, roles, entities, forms, views and a workflow presentation subset (statuses with colours, steps with labels and types).
-- **Record_Summary**: A record list item or record view, including `instanceId`, `step`, `stepLabel`, `status`, `statusColor`, `assignee`, `dueAt` and `ended`.
+- **Record_Summary**: A record list item or record view, including `instanceId`, `step`, `stepLabel`, `status`, `statusColor`, `assignee`, `assigneeName`, `dueAt` and `ended`.
+- **Display_Name**: The `assigneeName` of a Record_Summary or Instance_View, or the `actorName` of a history entry; shown in place of the user id, and the user id is shown only when the Display_Name is missing.
+- **Theme_Stylesheet**: One of NG-ZORRO's prebuilt stylesheets, `ng-zorro-antd.css` (light) or `ng-zorro-antd.dark.css` (dark).
+- **Primary_Override**: The small override stylesheet that reads the CSS custom property `--sk-primary` and applies it to Branded_Surfaces only.
+- **Branded_Surface**: The header, primary buttons, focus ring, Kanban column headers and status chips.
 - **Runtime_Config**: The JSON file `assets/config.json`, fetched by the Frontend at startup, holding the Backend base path and the Host_Mapping.
 - **Host_Mapping**: The object in the Runtime_Config that maps a lower-case host name (without port) to a default app code.
 - **Default_App**: The app code that the Host_Mapping assigns to the host name of the current page.
@@ -136,7 +140,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 2. THE Shell SHALL build the navigation menu from the `views` of the Restricted_Definition, one menu item per view, labelled with the view `label` or, when absent, the view `code`, in declaration order.
 3. WHERE a form in the Restricted_Definition can be submitted by the user, THE Shell SHALL add a "New" menu entry for it, labelled with the form `label` or `code`.
 4. THE Shell SHALL show the app `name` in the header and, WHERE `app.branding.logo` is defined, the logo image.
-5. WHERE `app.branding.primaryColor` is defined, THE Shell SHALL apply it as the primary colour of the NG-ZORRO theme.
+5. WHERE `app.branding.primaryColor` is defined, THE Shell SHALL set it as the CSS custom property `--sk-primary` for the Primary_Override (Requirement 6.5).
 6. THE Shell SHALL show the signed-in user's display name and a Sign out action in the header.
 7. IF the Restricted_Definition request fails with status 404 or 409, THEN THE Shell SHALL show an "app not available" message with no menu.
 8. WHILE the Restricted_Definition request is pending, THE Shell SHALL show a loading indicator.
@@ -150,11 +154,11 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 
 #### Acceptance Criteria
 
-1. THE Frontend SHALL use a dark theme by default through the NG-ZORRO dark algorithm.
-2. WHERE `app.branding.theme` is `light`, THE Frontend SHALL apply the light theme, and WHERE it is `auto`, THE Frontend SHALL follow the browser `prefers-color-scheme` setting.
+1. THE Frontend SHALL deliver the dark theme by default through the NG-ZORRO dark Theme_Stylesheet, lazy-loaded at runtime.
+2. WHERE `app.branding.theme` is `light`, THE Frontend SHALL lazy-load the light Theme_Stylesheet in place of the dark one, and WHERE it is `auto`, THE Frontend SHALL load the Theme_Stylesheet that matches the browser `prefers-color-scheme` setting and switch it at runtime when that setting changes.
 3. THE Frontend SHALL show the Skeleton Key name and a skeleton-key mark in the login page and the Shell header, with an orange accent colour used for highlights only.
 4. THE Frontend SHALL give body text, labels and button text a contrast ratio of at least 4.5:1 against their background, and large text and interactive component borders a ratio of at least 3:1, in the dark theme and in the light theme.
-5. WHEN an app primary colour from the definition has a contrast ratio below 4.5:1 against the text colour placed on it, THE Frontend SHALL choose black or white text for that surface, whichever gives the higher ratio.
+5. WHERE `app.branding.primaryColor` is defined, THE Frontend SHALL apply it through the CSS custom property `--sk-primary` used by the Primary_Override on Branded_Surfaces only, and SHALL choose black or white text colour for each Branded_Surface, whichever gives the higher contrast ratio against `--sk-primary`.
 6. THE Frontend SHALL make every interactive element reachable and operable by keyboard with a visible focus indicator.
 7. THE Frontend SHALL provide a text label or `aria-label` for every form control, icon-only button and status colour chip, and SHALL NOT rely on colour alone to convey a status or SLA_Warning.
 8. THE Frontend SHALL provide an automated test that computes the contrast ratio of every foreground and background colour pair defined in the theme tokens and fails when a pair is below its required ratio.
@@ -215,7 +219,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 10. WHEN the Backend answers the list request with status 400 and violations, THE Dynamic_Table SHALL show the violation messages above the table and keep the previous rows.
 11. WHEN a list response contains no items, THE Dynamic_Table SHALL show an empty-state message.
 12. WHEN the user chooses a row, THE Dynamic_Table SHALL navigate to the Record_Detail of that record.
-13. THE Dynamic_Table SHALL render the `$status` column from the Record_Summary `status` as a chip with a text label and the `statusColor`, the `$step` column from `stepLabel`, the `$assignee` column from `assignee` and the `$dueAt` column from `dueAt` with its SLA_Warning.
+13. THE Dynamic_Table SHALL render the `$status` column from the Record_Summary `status` as a chip with a text label and the `statusColor`, the `$step` column from `stepLabel`, the `$assignee` column from the Display_Name `assigneeName` (or `assignee` when `assigneeName` is missing) and the `$dueAt` column from `dueAt` with its SLA_Warning.
 14. WHILE a list request is pending, THE Dynamic_Table SHALL show a loading indicator.
 
 ### Requirement 10: View renderers (KANBAN and MY_TASKS)
@@ -227,7 +231,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 1. THE Kanban_Board SHALL create one column for each status in the `statuses` of the workflow whose `entity` equals the view entity, in declaration order, labelled with the status `label`.
 2. WHERE a status declares a `color`, THE Kanban_Board SHALL show that colour on the column header together with the status label text.
 3. WHEN the Kanban_Board has loaded its records, THE Kanban_Board SHALL place each record in the column whose label equals the Record_Summary `status`.
-4. THE Kanban_Board SHALL show on each card the record `$reference`, the `titleField` value when present, the `assignee` when present, and the `status` with its `statusColor` as a chip with a text label.
+4. THE Kanban_Board SHALL show on each card the record `$reference`, the `titleField` value when present, the Display_Name `assigneeName` (or `assignee` when `assigneeName` is missing) when an assignee is present, and the `status` with its `statusColor` as a chip with a text label.
 5. WHEN the user chooses a card, THE Kanban_Board SHALL navigate to the Record_Detail of that record.
 6. THE Kanban_Board SHALL provide no drag-to-move behaviour for cards.
 7. THE Kanban_Board SHALL load the records page by page from the records list endpoint with the view code and show a "load more" control while `total` exceeds the cards loaded.
@@ -248,7 +252,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 
 1. WHEN the Record_Detail opens, THE Record_Detail SHALL request the record, and, using the `instanceId` of the record, the Instance_View and the history of that instance.
 2. THE Record_Detail SHALL render the entity fields through the Dynamic_Form using the `fieldRules` of the Instance_View.
-3. THE Record_Detail SHALL show the record `$reference`, the current `stepLabel`, the current `status` with its `statusColor` and text, the assignee, and the `dueAt` with its SLA_Warning when due.
+3. THE Record_Detail SHALL show the record `$reference`, the current `stepLabel`, the current `status` with its `statusColor` and text, the assignee shown as the Display_Name `assigneeName` (or `assignee` when `assigneeName` is missing), and the `dueAt` with its SLA_Warning when due.
 4. THE Record_Detail SHALL render one button per action in the Instance_View `actions`, labelled with the action `label`, in the given order, styled by the action `style` (`primary`, `default` or `danger`).
 5. WHEN the Instance_View lists no actions, THE Record_Detail SHALL show the fields as read-only and no action buttons.
 6. WHEN the user chooses an action whose `remarks` is `optional` or `required`, or whose `attachment` is `optional` or `required`, THE Record_Detail SHALL open a dialog containing a remarks input for non-hidden remarks and an attachment reference input for non-hidden attachment.
@@ -261,7 +265,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 13. WHEN the action request fails with status 409, THE Record_Detail SHALL show the Api_Error message, reload the Instance_View, and keep the entered field values.
 14. IF an action request fails with a 5xx status, THEN THE Record_Detail SHALL show a generic error message including the `requestId`.
 15. WHILE an action request is pending, THE Record_Detail SHALL disable all action buttons.
-16. THE Record_Detail SHALL render the history as a timeline in the order returned by the Backend, showing for each entry the time, the kind, the action code, the from and to step, the from and to status, the actor id, and the remarks.
+16. THE Record_Detail SHALL render the history as a timeline in the order returned by the Backend, showing for each entry the time, the kind, the action code, the from and to step, the from and to status, the actor shown as the Display_Name `actorName` (or the actor id when `actorName` is missing), and the remarks.
 17. WHEN the Instance_View `ended` is true, THE Record_Detail SHALL label the record as closed and show no action buttons.
 18. WHERE the record has a null `instanceId`, THE Record_Detail SHALL render the fields using the `required` flags of the entity and no action buttons or history.
 
@@ -357,7 +361,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
 
 #### Acceptance Criteria
 
-1. THE Frontend SHALL rely on these Backend_Dependencies and implement no fallback, placeholder or workaround for any of them:
+1. THE Frontend SHALL rely on these Backend_Dependencies and implement no fallback, placeholder or workaround for any of them, except the user-id fallback of BD-8:
    - **BD-1 Current user endpoint:** `GET /api/auth/me` returning `{ userId, displayName, roles[] }` (Requirement 2).
    - **BD-2 Record workflow summary:** every record list item and every record view includes `instanceId`, `step`, `stepLabel`, `status`, `statusColor`, `assignee`, `dueAt` and `ended` (Requirements 9, 10 and 11).
    - **BD-3 Definition listing:** `GET /api/definitions/apps` returning the app codes that have definitions, and `GET /api/apps/{app}/definitions` returning the version references (`id`, `version`, `status`, `contentHash`, timestamps) of an app (Requirement 13).
@@ -365,6 +369,7 @@ The backend API used (from `skeleton/backend` controllers, `.kiro/specs/skeleton
    - **BD-5 Schema widget property:** an optional `widget` string on the schema `field` (Requirement 8).
    - **BD-6 Validate without storing:** `POST /api/definitions/validate` returning the Validator_Report for a body without storing a version (Requirement 14).
    - **BD-7 File upload (not yet available):** a file upload and download endpoint; FILE fields stay disabled in the Frontend (Requirement 7.4).
+   - **BD-8 Display names:** every Record_Summary and Instance_View includes `assigneeName`, and every history entry includes `actorName`, delivered by the backend-ui-support spec (Requirements 9.13, 11.3 and 11.16, and the Kanban card in 10.4). The only fallback is showing the user id when the name is absent.
 2. THE Frontend SHALL keep every call to a Backend_Dependency endpoint in one API service class.
 
 ### Requirement 18: Property-based testing of the form renderer

@@ -26,7 +26,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JAVA_OPTS: "-Xmx512m"
+      JAVA_OPTS: "-Xmx384m"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/skeletonkey
       SPRING_DATASOURCE_USERNAME: skeletonkey
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-skeletonkey}

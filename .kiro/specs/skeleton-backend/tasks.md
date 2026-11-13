@@ -257,20 +257,20 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Identical 401 for unknown, wrong password and inactive user; 400 field validation; seed idempotence and hashing
     - _Requirements: 6.2, 6.3, 6.8, 17.2, 17.3, 17.4, 17.5, 17.7, 17.8_
 
-- [ ] 10. Workflow service, endpoints, startup loading
+- [x] 10. Workflow service, endpoints, startup loading
   - [x] 10.1 Implement `WorkflowService`
     - Transactional start and execute: load pinned definition, instance, cursors and open-task counts, call Router, persist in the specified order (record, instance with lock check, history, cursor updates, audit); map history write failure to 500 `HISTORY_WRITE_FAILED`
     - _Requirements: 8.1, 8.7, 9.12, 9.13, 9.14, 12.4, 5.4, 5.5_
 
-  - [ ] 10.2 Implement instance endpoints
+  - [x] 10.2 Implement instance endpoints
     - Action endpoint, history read endpoint (404 for unknown instance, 405 for modification), Instance_View with row visibility and pinned definition
     - _Requirements: 9.1, 12.5, 12.6, 12.7, 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7_
 
-  - [ ] 10.3 Implement form submit endpoint
+  - [x] 10.3 Implement form submit endpoint
     - Public form without JWT, 401 for non-public without JWT, role check (403 with no Record stored), `startsWorkflow` atomic start, public responses contain only reference number and ids
     - _Requirements: 6.5, 6.6, 8.1, 11.2_
 
-  - [ ] 10.4 Implement definition read and Public_Subset endpoints
+  - [x] 10.4 Implement definition read and Public_Subset endpoints
     - `GET /api/apps/{app}/definition[?version=n]` with role-restricted forms, views and entities (404, 409, 401), `GET /api/public/apps/{app}` returning only public forms, their fields, options and labels
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7_
 
@@ -278,7 +278,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - **Property 20: Public exposure is limited to the public subset**
     - **Validates: Requirements 11.2, 16.1, 16.4, 16.5**
 
-  - [ ] 10.6 Implement `StartupLoader` with Auto_Publish
+  - [x] 10.6 Implement `StartupLoader` with Auto_Publish
     - `ApplicationRunner` after `SeedLoader`; load files in sorted order, skip hash duplicates, log failures and continue; when `auto-publish` is true publish only newly stored DRAFTs through `DefinitionService.publish` with the system actor, leaving DRAFTs with violations and logging them
     - _Requirements: 1.5, 1.6, 1.10, 1.11, 1.12, 1.13, 12.10_
 

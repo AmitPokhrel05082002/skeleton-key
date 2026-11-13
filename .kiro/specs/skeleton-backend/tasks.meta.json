@@ -514,6 +514,61 @@
         "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
         "timestamp": 1794549160442
       }
+    ],
+    "10.2 Implement instance endpoints": [
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794550100639
+      },
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794551206396
+      }
+    ],
+    "10.3 Implement form submit endpoint": [
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794550101615
+      },
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794551206890
+      }
+    ],
+    "10.4 Implement definition read and Public_Subset endpoints": [
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794550102868
+      },
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794551207366
+      }
+    ],
+    "10.6 Implement `StartupLoader` with Auto_Publish": [
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794550103105
+      },
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794552853277
+      }
+    ],
+    "10. Workflow service, endpoints, startup loading": [
+      {
+        "executionId": "63128daa-9517-467a-9945-a983d7a7829a",
+        "chatSessionId": "sess_d8476ff0-63f5-402c-972c-77fe0b202750",
+        "timestamp": 1794552853587
+      }
     ]
   }
 }

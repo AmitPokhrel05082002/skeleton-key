@@ -83,6 +83,9 @@ class ApplicationContextTest {
     static {
         try {
             DEFINITIONS_DIR = Files.createTempDirectory("sk-defs");
+            Path startupCopy = DEFINITIONS_DIR.resolve("grievance.app.json");
+            Files.copy(GRIEVANCE, startupCopy);
+            startupCopy.toFile().deleteOnExit();
             SEED = Files.createTempFile("sk-seed", ".json");
             Files.writeString(SEED, "{\"users\":["
                     + "{\"username\":\"root\",\"password\":\"" + ADMIN_PW + "\",\"roles\":[\"PLATFORM_ADMIN\"]},"
@@ -140,26 +143,24 @@ class ApplicationContextTest {
     }
 
     @Test
-    void grievanceDefinitionSubmitsAndPublishesAsSystemActor() throws IOException {
-        // TODO(task 10.6): once StartupLoader (Auto_Publish ApplicationRunner) exists, point
-        // skeletonkey.definitions.dir at a directory holding grievance.app.json and assert the published version
-        // through it. Until then this performs exactly the calls Auto_Publish will make.
-        String json = Files.readString(GRIEVANCE, StandardCharsets.UTF_8);
-        DefinitionVersionRef draft = definitions.submit(json);
-        assertThat(draft.status()).isEqualTo(DefinitionVersionRow.DRAFT);
+    void grievanceDefinitionSubmitsAndPublishesAsSystemActor() {
+        // StartupLoader read grievance.app.json from the temp definitions dir before the context finished starting.
+        // Other tests may add further GRIEVANCE versions, so look at the version created from the file (the first).
+        var row = jdbc.queryForMap("select id, status, content_hash from definition_version "
+                + "where app_code = 'GRIEVANCE' and version = 1");
+        assertThat(row.get("status")).isEqualTo(DefinitionVersionRow.PUBLISHED);
+        assertThat((String) row.get("content_hash")).isNotBlank();
+        String id = row.get("id").toString();
 
-        DefinitionVersionRef pub = definitions.publish(draft.id(), DefinitionService.SYSTEM_ACTOR);
-        assertThat(pub.status()).isEqualTo("PUBLISHED");
-        assertThat(pub.contentHash()).isNotBlank();
+        assertThat(published.latestPublished("GRIEVANCE")).isPresent();
+        assertThat(published.publishedVersion("GRIEVANCE", 1)).isPresent();
 
-        var latest = published.latestPublished(pub.appCode());
-        assertThat(latest).isPresent();
-        assertThat(latest.get().version()).isGreaterThanOrEqualTo(pub.version());
-
-        Integer audits = jdbc.queryForObject(
-                "select count(*) from audit_log where action = ? and target_type = ? and target_id = ?",
-                Integer.class, AuditService.PUBLISH, DefinitionService.AUDIT_TARGET, pub.id().toString());
-        assertThat(audits).isEqualTo(1);
+        // Exactly one publish audit row, written by the reserved system actor.
+        var audits = jdbc.queryForList(
+                "select actor_id from audit_log where action = ? and target_type = ? and target_id = ?",
+                AuditService.PUBLISH, DefinitionService.AUDIT_TARGET, id);
+        assertThat(audits).hasSize(1);
+        assertThat(audits.get(0).get("actor_id")).isEqualTo(DefinitionService.SYSTEM_ACTOR.userId());
     }
 
     @Test

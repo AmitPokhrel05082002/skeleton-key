@@ -346,7 +346,7 @@ class RecordDetailComponent {
 - `ActionDialogComponent` is opened when `remarks` or `attachment` is not `hidden`; the confirm button is disabled by `actionDialogReady(action, remarks, attachment)` (pure). An action with a `confirm` text, and no dialog, uses `NzModalService.confirm`; when the dialog is shown the confirm text is displayed in it.
 - The request body carries `fields` (only changed, editable values from `collectValues`, diffed against initial JSON values), and `remarks` and `attachment` when non-blank.
 - Success: set the returned Instance_View, reload record and history, `NzMessageService.success`. 422/403 with violations: apply to form controls through `serverError` and to the dialog inputs named `remarks`/`attachment`; the dialog stays open. 409: show message, reload instance, keep field values. 5xx: generic message with `requestId`. 404: NotFound page with app-home link.
-- `HistoryTimelineComponent` uses `nz-timeline`, with time, kind, action code, from/to step, from/to status, the actor as `displayName(actorName, actorId)` and remarks, in backend order. All text is interpolated, never bound to `innerHTML` (20.5).
+- `HistoryTimelineComponent` uses `nz-timeline`, with `eventTime`, `kind`, `actionCode`, `fromStep`/`toStep`, `fromStatus`/`toStatus`, the actor as `displayName(actorName, actorId)` and `remarks`, in backend order. `attachmentRef` and `detail` are shown when present, and `timeInStepMs` is shown as a formatted duration when displayed. All text is interpolated, never bound to `innerHTML` (20.5).
 
 ### Public form page (Requirement 4)
 
@@ -472,7 +472,7 @@ export interface Page<T> { items: T[]; page: number; size: number; total: number
 export interface ActionInfo { code: string; label: string; style: 'primary'|'default'|'danger'; confirm?: string; remarks: 'hidden'|'optional'|'required'; attachment: 'hidden'|'optional'|'required'; }
 export interface InstanceView { instanceId: string; recordId: string; step: string; status: string; ended: boolean; dueAt?: string | null; assignee?: string | null; assigneeName?: string | null; actions: ActionInfo[]; fieldRules: Record<string, FieldRule>; }
 export interface ActionBody { fields: Record<string, unknown>; remarks?: string; attachment?: string; }
-export interface HistoryEntry { at: string; kind: string; action?: string; fromStep?: string; toStep?: string; fromStatus?: string; toStatus?: string; actorId?: string; actorName?: string | null; remarks?: string; }   // actorName: BD-8
+export interface HistoryEntry { kind: string; actionCode?: string | null; fromStep?: string | null; toStep?: string | null; fromStatus?: string | null; toStatus?: string | null; actorId?: string | null; actorName?: string | null; remarks?: string | null; attachmentRef?: string | null; detail?: string | null; eventTime: string; timeInStepMs: number; }   // actorName: BD-8
 
 /** Pure. Name when it has non-blank text, otherwise the id, otherwise '-'. */
 export function displayName(name: string | null | undefined, id: string | null | undefined): string;
@@ -481,7 +481,7 @@ export interface VersionRef { id: string; version: number; status: 'DRAFT'|'PUBL
 export type ValidatorReport = Violation[];
 ```
 
-Field names that the requirements do not fix (for example `data`, `referenceNo` on a record, `at`/`actorId` on history) follow the existing backend DTOs. The implementer reads `skeleton/backend` DTOs and the backend design when creating `api.types.ts` and aligns the names; any mismatch is recorded in that file as a comment instead of being worked around.
+`HistoryEntry` matches the backend exactly (`eventTime`, `actionCode`, `attachmentRef`, `detail`, `timeInStepMs` and so on). Other field names that the requirements do not fix (for example `data`, `referenceNo` on a record) follow the existing backend DTOs. The implementer reads `skeleton/backend` DTOs and the backend design when creating `api.types.ts` and aligns the names; any mismatch is recorded in that file as a comment instead of being worked around.
 
 Session storage record: `{ token, expiresAt, userId, displayName, roles }` under one key. The return target is held in `sessionStorage` under a second key, cleared after use.
 

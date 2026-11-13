@@ -144,6 +144,125 @@ class DefinitionReadTest {
                 .andExpect(jsonPath("$.forms", hasSize(1)));
     }
 
+    /**
+     * GRVSCOPE: the grievance example with its form restricted to CLERK (not public), plus an AUDIT entity with a
+     * workflow only the AUDITOR role touches (as action role and assignee) and one only SUPERVISOR-escalated.
+     */
+    private void seedScoped() throws Exception {
+        if (definitions.latestPublished("GRVSCOPE").isPresent()) {
+            return;
+        }
+        ObjectMapper m = new ObjectMapper();
+        com.fasterxml.jackson.databind.node.ObjectNode doc =
+                (com.fasterxml.jackson.databind.node.ObjectNode) m.readTree(grievance);
+        ((com.fasterxml.jackson.databind.node.ObjectNode) doc.get("app")).put("code", "GRVSCOPE");
+        com.fasterxml.jackson.databind.node.ObjectNode form =
+                (com.fasterxml.jackson.databind.node.ObjectNode) doc.get("forms").get(0);
+        form.remove("public");
+        form.putArray("roles").add("CLERK");
+        ((com.fasterxml.jackson.databind.node.ArrayNode) doc.get("roles")).addObject()
+                .put("code", "AUDITOR").put("label", "Auditor");
+        doc.set("entities", append(m, doc.get("entities"), m.readTree("""
+                {"code":"AUDIT","label":"Audit","fields":[{"code":"title","label":"Title","type":"TEXT"}]}""")));
+        doc.set("workflows", append(m, doc.get("workflows"), m.readTree("""
+                {"code":"AUDIT_FLOW","label":"Audit","entity":"AUDIT","startStep":"CHECK",
+                 "statuses":[{"label":"Open","category":"OPEN","color":"#112233"},{"label":"Closed","category":"DONE"}],
+                 "steps":[{"code":"CHECK","label":"Check","type":"TASK","slaHours":5,"escalateTo":"SUPERVISOR",
+                           "assignee":{"strategy":"ROLE_QUEUE","role":"AUDITOR"},
+                           "actions":[{"code":"CLOSE","label":"Close","roles":["AUDITOR"],"to":"DONE","status":"Closed"}]},
+                          {"code":"DONE","label":"Done","type":"END","outcome":"Closed"}]}""")));
+        var v = definitions.submit(m.writeValueAsString(doc));
+        definitions.publish(v.id(), DefinitionService.SYSTEM_ACTOR);
+    }
+
+    private static com.fasterxml.jackson.databind.node.ArrayNode append(ObjectMapper m, JsonNode arr, JsonNode item) {
+        com.fasterxml.jackson.databind.node.ArrayNode a = m.createArrayNode().addAll(
+                (com.fasterxml.jackson.databind.node.ArrayNode) arr);
+        a.add(item);
+        return a;
+    }
+
+    private JsonNode scopedRead(String... roles) throws Exception {
+        seedScoped();
+        String body = mvc.perform(get("/api/apps/GRVSCOPE/definition").header("Authorization", token(roles)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return new ObjectMapper().readTree(body);
+    }
+
+    private static java.util.List<String> codes(JsonNode arr) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        arr.forEach(n -> out.add(n.get("code").asText()));
+        return out;
+    }
+
+    private static java.util.List<String> keys(JsonNode n) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        n.fieldNames().forEachRemaining(out::add);
+        return out;
+    }
+
+    @Test
+    void workflowsAreReturnedOnlyWhenReachable() throws Exception {
+        // CLERK: form and INBOX view -> GRIEVANCE entity -> GRIEVANCE_FLOW. Not AUDIT_FLOW (no role anywhere in it).
+        JsonNode clerk = scopedRead("CLERK");
+        assertThat(codes(clerk.get("workflows"))).containsExactly("GRIEVANCE_FLOW");
+        assertThat(codes(clerk.get("entities"))).containsExactly("GRIEVANCE");
+        // AUDITOR: action role + assignee role bring in AUDIT_FLOW and widen entities with AUDIT.
+        JsonNode auditor = scopedRead("AUDITOR");
+        assertThat(codes(auditor.get("workflows"))).containsExactly("AUDIT_FLOW");
+        assertThat(codes(auditor.get("entities"))).containsExactly("AUDIT");
+        // SUPERVISOR: views -> GRIEVANCE_FLOW; escalateTo on AUDIT_FLOW -> AUDIT_FLOW too.
+        JsonNode supervisor = scopedRead("SUPERVISOR");
+        assertThat(codes(supervisor.get("workflows"))).containsExactly("GRIEVANCE_FLOW", "AUDIT_FLOW");
+        assertThat(codes(supervisor.get("entities"))).containsExactly("GRIEVANCE", "AUDIT");
+        // Unrelated role: nothing.
+        JsonNode other = scopedRead("OTHER");
+        assertThat(other.get("workflows")).isEmpty();
+        assertThat(other.get("entities")).isEmpty();
+    }
+
+    @Test
+    void formThatStartsWorkflowMakesItReachable() throws Exception {
+        // The example's form has no roles, so any authenticated caller may submit it (rule d).
+        String body = mvc.perform(get("/api/apps/GRIEVANCE/definition").header("Authorization", token("OTHER")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertThat(codes(new ObjectMapper().readTree(body).get("workflows"))).containsExactly("GRIEVANCE_FLOW");
+    }
+
+    @Test
+    void workflowStatusAndStepKeysAreAnAllowList() throws Exception {
+        String body = mvc.perform(get("/api/apps/GRIEVANCE/definition").header("Authorization", token("SUPERVISOR")))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        JsonNode wf = new ObjectMapper().readTree(body).get("workflows").get(0);
+        assertThat(keys(wf)).containsExactlyInAnyOrder("code", "label", "entity", "statuses", "steps");
+        assertThat(wf.get("entity").asText()).isEqualTo("GRIEVANCE");
+        assertThat(keys(wf.get("statuses").get(0))).containsExactlyInAnyOrder("label", "category", "color");
+        assertThat(wf.get("statuses")).hasSize(5);
+        assertThat(wf.get("steps")).hasSize(6);
+        assertThat(codes(wf.get("steps"))).containsExactly(
+                "TRIAGE", "REVIEW", "SITE_VISIT", "RESOLVE", "END_RESOLVED", "END_REJECTED");
+        wf.get("steps").forEach(s -> assertThat(keys(s)).containsExactlyInAnyOrder("code", "label", "type"));
+        // Remove the sections that legitimately carry these words (views, forms) and check the workflows only.
+        String wfJson = wf.toString();
+        for (String banned : new String[] {"transitions", "when", "skipWhen", "handler", "assignee", "actions",
+                "onEnter", "onExit", "escalateTo", "slaHours", "startStep", "initialStatus", "outcome", "fields"}) {
+            assertThat(wfJson).doesNotContain("\"" + banned + "\"");
+        }
+        // The whole response never carries them either (forms/views do not use these keys).
+        for (String banned : new String[] {"transitions", "when", "skipWhen", "handler", "assignee", "actions",
+                "onEnter", "onExit", "escalateTo", "slaHours", "startStep"}) {
+            assertThat(body).doesNotContain("\"" + banned + "\"");
+        }
+    }
+
+    @Test
+    void statusColorIsOmittedWhenAbsent() throws Exception {
+        JsonNode auditor = scopedRead("AUDITOR");
+        JsonNode statuses = auditor.get("workflows").get(0).get("statuses");
+        assertThat(keys(statuses.get(0))).containsExactlyInAnyOrder("label", "category", "color");
+        assertThat(keys(statuses.get(1))).containsExactlyInAnyOrder("label", "category");
+    }
+
     @Test
     void explicitPublishedVersionIsReturned() throws Exception {
         mvc.perform(get("/api/apps/GRIEVANCE/definition?version=1").header("Authorization", token("CLERK")))

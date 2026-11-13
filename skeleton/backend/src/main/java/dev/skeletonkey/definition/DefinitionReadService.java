@@ -10,7 +10,9 @@ import dev.skeletonkey.domain.model.Entity;
 import dev.skeletonkey.domain.model.Field;
 import dev.skeletonkey.domain.model.Form;
 import dev.skeletonkey.domain.model.Principal;
+import dev.skeletonkey.domain.model.Step;
 import dev.skeletonkey.domain.model.View;
+import dev.skeletonkey.domain.model.Workflow;
 import dev.skeletonkey.persistence.DefinitionRepository;
 import dev.skeletonkey.persistence.DefinitionVersionRow;
 import dev.skeletonkey.record.PublishedDefinitions;
@@ -93,6 +95,10 @@ public class DefinitionReadService {
         Set<String> entityCodes = new LinkedHashSet<>();
         forms.forEach(f -> entityCodes.add(f.entity()));
         views.forEach(v -> entityCodes.add(v.entity()));
+        // Req 16.8-16.9: reachable workflows; their entities join the set so the response stays self-consistent.
+        List<Workflow> reachable = def.workflows().stream()
+                .filter(w -> reachable(w, entityCodes, forms, caller)).toList();
+        reachable.forEach(w -> entityCodes.add(w.entity()));
 
         ObjectNode out = JSON.objectNode();
         out.put("schemaVersion", 1);
@@ -155,7 +161,55 @@ public class DefinitionReadService {
                 n.put("scope", v.scope().name());
             }
         });
+        // Presentation subset built from an explicit allow-list: never serialise the model and strip keys.
+        ArrayNode workflowsOut = out.putArray("workflows");
+        reachable.forEach(w -> {
+            ObjectNode n = workflowsOut.addObject();
+            n.put("code", w.code());
+            putIfNotNull(n, "label", w.label());
+            n.put("entity", w.entity());
+            ArrayNode statuses = n.putArray("statuses");
+            w.statuses().forEach(s -> {
+                ObjectNode sn = statuses.addObject();
+                sn.put("label", s.label());
+                sn.put("category", s.category().name());
+                putIfNotNull(sn, "color", s.color());
+            });
+            ArrayNode steps = n.putArray("steps");
+            w.steps().forEach(s -> {
+                ObjectNode sn = steps.addObject();
+                sn.put("code", s.code());
+                putIfNotNull(sn, "label", s.label());
+                sn.put("type", s.type().name());
+            });
+        });
         return out;
+    }
+
+    /**
+     * A workflow is reachable when (a) its entity is already in the restricted entity set, (b) the caller holds a
+     * role of any step action, (c) the caller holds a step assignee role or escalateTo role, or (d) the caller may
+     * submit a form that starts it.
+     */
+    private static boolean reachable(Workflow w, Set<String> entityCodes, List<Form> visibleForms, Principal caller) {
+        if (entityCodes.contains(w.entity())) {
+            return true;
+        }
+        if (visibleForms.stream().anyMatch(f -> w.code().equals(f.startsWorkflow()))) {
+            return true;
+        }
+        for (Step s : w.steps()) {
+            if (s.actions().stream().anyMatch(a -> caller.hasAnyRole(a.roles()))) {
+                return true;
+            }
+            if (s.assignee() != null && s.assignee().role() != null && caller.hasAnyRole(List.of(s.assignee().role()))) {
+                return true;
+            }
+            if (s.escalateTo() != null && caller.hasAnyRole(List.of(s.escalateTo()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean allowed(List<String> roles, Principal caller) {

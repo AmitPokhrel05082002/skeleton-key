@@ -58,3 +58,5 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 | 2026-11-13 | Claude Code | Verified 200/200 clean incl. Postgres; deleted Kiro's stray Maven logs; confirmed memory workaround left no committed config | Pass |
 | 2026-11-13 | Kiro IDE (4 parallel spec tasks) | 10.2 instance view/actions/history, 10.3 form submit, 10.4 definition read + public subset, 10.6 StartupLoader auto-publish (context test now uses the real loader); -Xmx384m | 232 pass; compose build blocked: Docker DNS resolves Maven Central to a Fortinet filter IP |
 | 2026-11-13 | Claude Code | Verified 232/232 clean; root clean | Backend required tasks complete |
+| 2026-11-13 | Kiro IDE | App healthcheck; workflow presentation subset in definition read (allow-listed keys, reachability rule, Req 16.8–16.10); checkpoints 4, 8, 11 closed | **skeleton-backend spec complete: all required tasks done, 237 tests** |
+| 2026-11-13 | Claude Code | Verified 237/237 clean incl. Postgres | Next: skeleton-frontend spec |

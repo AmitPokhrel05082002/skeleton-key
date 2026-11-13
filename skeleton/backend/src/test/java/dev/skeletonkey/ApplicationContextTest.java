@@ -182,6 +182,14 @@ class ApplicationContextTest {
                 .andExpect(status().isCreated());
     }
 
+    /** The docker-compose healthcheck calls this path anonymously; it must answer 200 UP without a token. */
+    @Test
+    void actuatorHealthAnswersAnonymously() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+    }
+
     /**
      * Exercises the JDBC adapters on real PostgreSQL through the real context: reference numbering, JSONB
      * round trip, UUID/timestamp mapping, paging, filter, sort and the visibility SQL.

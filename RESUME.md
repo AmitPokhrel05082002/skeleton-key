@@ -6,7 +6,7 @@ _Last updated: 2026-11-06_
 - Public repo: https://github.com/AmitPokhrel05082002/skeleton-key (MIT license, branch `main`). Project name: **Skeleton Key**, Java package `dev.skeletonkey`.
 - `schema/app-definition.schema.json` v1 drafted. `examples/grievance.app.json` passes it, and 11 broken variants fail it (Ajv, draft 2020-12).
 - Steering written: `.kiro/steering/{product,tech,structure,app-definition}.md`. `app-definition.md` pulls the schema in with `#[[file:...]]`.
-- Kiro spec `.kiro/specs/skeleton-backend/`: requirements.md and design.md approved after review (status precedence, auto-publish, 22 properties). tasks.md generated and revised. Tasks 1–7.6 + 9.3 done (184 tests incl. real Postgres via Testcontainers). Next: router properties 7.16–7.19 and 10.1 WorkflowService.
+- Kiro spec `.kiro/specs/skeleton-backend/`: requirements.md and design.md approved after review (status precedence, auto-publish, 22 properties). tasks.md generated and revised. **Backend spec complete** (all required tasks, 237 tests incl. real Postgres; 21 optional test tasks left). Next: `skeleton-frontend` spec, then a reduced `engine-extensions` spec (SLA scheduler + escalation, file upload). Compose build blocked locally by Docker DNS (Fortinet filter); test on home network or VPS.
 
 ## Next action
 1. Credits received (4,000, expire Dec 31). Track usage in Kiro → Settings → Account & plan.

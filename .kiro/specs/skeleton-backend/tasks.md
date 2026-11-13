@@ -89,7 +89,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Grievance example publishes with zero violations; `UNSET_STATUS` once per label; `UNKNOWN_STATUS` for Transition and Step status; `min == max` has no violation
     - _Requirements: 1.10, 2.3, 2.12, 3.7, 3.16_
 
-- [ ] 4. Checkpoint - Ensure validator tests pass
+- [x] 4. Checkpoint - Ensure validator tests pass
   - Ensure all validator tests pass, ask the user if questions arise.
 
 - [x] 5. Definition loading and versioning
@@ -237,7 +237,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - Two beans with the same name fail context start with `BeanDefinitionOverrideException`; unknown handler gives 500; NOTIFY and WEBHOOK write `EVENT_DEFERRED`
     - _Requirements: 13.3, 13.4, 14.10_
 
-- [ ] 8. Checkpoint - Ensure all tests pass
+- [x] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 9. Authentication and seeding
@@ -299,7 +299,7 @@ Implementation language is Java 21 with Spring Boot 3 (package `dev.skeletonkey`
     - OpenAPI document lists records, definition, instance view and action endpoints; `/actuator/health` answers; source scan finds no status `enum`; error body shape
     - _Requirements: 7.18, 20.6, 20.7, 20.8_
 
-- [ ] 11. Final checkpoint - Ensure all tests pass
+- [x] 11. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

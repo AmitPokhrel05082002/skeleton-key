@@ -1,5 +1,10 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "4.3 Write property test for submitted values": {
+      "status": "passed",
+      "lastRunTimestamp": 1794634719891
+    }
+  },
   "executionHistory": {
     "1.1 Scaffold the Angular project and pin every dependency": [
       {
@@ -54,6 +59,121 @@
         "executionId": "60094f6a-3385-4550-b5ee-3f8200da5bc2",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794628200865
+      }
+    ],
+    "3.2 Implement ApiService": [
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794630568134
+      },
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794632289734
+      }
+    ],
+    "4.1 Implement the form model layer": [
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794630568607
+      },
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794632290079
+      }
+    ],
+    "4.5 Implement SLA, safe URL and error text helpers": [
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794630569242
+      },
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794632290321
+      }
+    ],
+    "3.3 Implement SessionService": [
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794632312692
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634604184
+      }
+    ],
+    "4.2 Create shared fast-check generators": [
+      {
+        "executionId": "2f4cef86-2d00-44ad-b3d4-28ba237faa22",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794632312890
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634413693
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634604662
+      }
+    ],
+    "3.4 Implement auth interceptor and guards": [
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634605456
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634759155
+      }
+    ],
+    "4.3 Write property test for submitted values": [
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634605875
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634759802
+      }
+    ],
+    "3. Session, interceptor and API service": [
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634759349
+      }
+    ],
+    "4. Pure helpers and shared test generators": [
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634759962
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634765569
+      },
+      {
+        "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794634841348
       }
     ]
   }

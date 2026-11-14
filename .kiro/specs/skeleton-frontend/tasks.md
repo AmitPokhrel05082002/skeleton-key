@@ -49,26 +49,26 @@ Constraints that apply to every task:
     - Initializer completes before navigation; invalid config shows ConfigErrorPage and starts no routing; replacing the file changes the mapping.
     - _Requirements: 21.1, 21.3, 21.8_
 
-- [ ] 3. Session, interceptor and API service
+- [x] 3. Session, interceptor and API service
   - [x] 3.1 Define API types, ApiError and display-name helper
     - Create `core/api/api.types.ts` with the data models of the design. Read the backend DTOs (read only) and align field names; `HistoryEntry` must match the backend exactly (`kind`, `actionCode`, `fromStep`, `toStep`, `fromStatus`, `toStatus`, `actorId`, `actorName`, `remarks`, `attachmentRef`, `detail`, `eventTime`, `timeInStepMs`); note any other mismatch as a comment in the file instead of working around it.
     - Create `core/api/api-error.ts` with `toApiError()` mapping no response to `{ status: 0, code: 'NETWORK' }` and tolerating non-JSON bodies (nginx 502 pages).
     - Create `core/pure/display-name.ts` with `displayName(name, id)` (name, else id, else `-`).
     - _Requirements: 9.13, 10.4, 11.3, 11.16, 17.1, 20.1_
 
-  - [ ] 3.2 Implement ApiService
+  - [x] 3.2 Implement ApiService
     - One class in `core/api/api.service.ts` with every endpoint method listed in the design (auth, public, definition, submit, records, instances, history, admin definitions).
     - `ListQuery` drops empty filter values. `validateDefinition` and `createDefinition` send the raw editor text as `application/json` so the backend reports `line` and `column`.
     - All backend calls live in this class only.
     - _Requirements: 4.2, 9.1, 11.1, 11.10, 13.3, 13.4, 14.3, 17.2_
 
-  - [ ] 3.3 Implement SessionService
+  - [x] 3.3 Implement SessionService
     - Create `core/auth/session.service.ts` with the `session` signal, `roles`, `isPlatformAdmin`, `login()` (POST login then GET `/auth/me`), `restore()` and `clear()`, plus the exported `ADMIN_ROLE = 'PLATFORM_ADMIN'` constant.
     - Create pure `parseStoredSession(text, now)` that never throws and rejects malformed or expired values.
     - Use `sessionStorage` only; call `restore()` from the app initializer after the config; overwrite id, name and roles from `/auth/me`.
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.7, 2.8, 2.9_
 
-  - [ ] 3.4 Implement auth interceptor and guards
+  - [x] 3.4 Implement auth interceptor and guards
     - `auth.interceptor.ts`: add the Bearer header only to URLs under `apiBase` and not under `{apiBase}/public/`; on 401 (not the login call) clear the Session and navigate to `/login?returnUrl=...`.
     - `auth.guard.ts` (redirects to login keeping the return target) and `admin.guard.ts` (requires `ADMIN_ROLE`, else navigates to NotAuthorised). Register the interceptor with `provideHttpClient(withInterceptors(...))`.
     - Add `NotFoundPage` and `NotAuthorisedPage`.
@@ -82,17 +82,17 @@ Constraints that apply to every task:
     - Bearer added under `apiBase`, not added to other origins or the public call, 401 clears the Session, expired session discarded on start.
     - _Requirements: 2.3, 2.4, 2.5, 2.6, 4.2, 20.4_
 
-- [ ] 4. Pure helpers and shared test generators
-  - [ ] 4.1 Implement the form model layer
+- [x] 4. Pure helpers and shared test generators
+  - [x] 4.1 Implement the form model layer
     - Create `core/pure/field-rules.ts` (`effectiveRule`), `features/form/form-model.ts` (`FieldDef`, `SectionDef`, `planControls`, `collectValues`, `isEmptyValue`, `initialValues`, `layoutSections`) and `core/pure/value-codec.ts` (`toJsonValue`, `fromJsonValue`).
     - DATETIME is written with the local UTC offset (`Z` when zero); `accept` and `maxFiles` are ignored.
     - _Requirements: 7.4, 7.6, 7.8, 7.9, 7.10, 7.11, 7.12, 7.13, 7.14, 7.15, 7.17_
 
-  - [ ] 4.2 Create shared fast-check generators
+  - [x] 4.2 Create shared fast-check generators
     - Create `src/testing/arbitraries.ts` with `arbFieldDef` (all 15 types, optional constraints, options for SELECT and MULTISELECT), `arbRuleMap`, `arbViolation`, `arbApiError`, `arbDefinition`, `arbHost`.
     - _Requirements: 18.1, 18.7, 19.1_
 
-  - [ ] 4.3 Write property test for submitted values
+  - [x] 4.3 Write property test for submitted values
     - **Property 3: Submitted values contain exactly the editable non-empty fields**
     - **Validates: Requirements 7.4, 7.8, 7.9, 18.6**
 
@@ -100,7 +100,7 @@ Constraints that apply to every task:
     - **Property 4: Type conversion round trip and JSON types**
     - **Validates: Requirements 7.17**
 
-  - [ ] 4.5 Implement SLA, safe URL and error text helpers
+  - [x] 4.5 Implement SLA, safe URL and error text helpers
     - `core/pure/sla.ts` with `WARNING_WINDOW_MS` and `slaState(dueAt, now, windowMs, ended)`.
     - `safeLogoUrl(url)` (http, https or same-origin relative path only) and `errorText(err)` (5xx: generic text plus `requestId`, never the server message).
     - _Requirements: 10.12, 10.13, 10.15, 12.9, 20.6_
@@ -113,7 +113,7 @@ Constraints that apply to every task:
     - **Property 20: Safe display helpers**
     - **Validates: Requirements 9.13, 10.4, 11.3, 11.16, 12.9, 20.6**
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run build`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Theme and accessibility

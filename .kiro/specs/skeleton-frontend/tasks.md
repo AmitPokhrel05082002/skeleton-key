@@ -30,7 +30,7 @@ Constraints that apply to every task:
     - _Requirements: 1.3, 1.5, 1.8, 2.8, 20.5_
 
 - [ ] 2. Runtime configuration and host resolution
-  - [ ] 2.1 Implement runtime config, host resolution and the app initializer
+  - [x] 2.1 Implement runtime config, host resolution and the app initializer
     - Create `core/config/host-resolver.ts` with pure `resolveDefaultApp(hosts, host)` (strip port, lower-case, own-property exact match) and `validateRuntimeConfig(value)`.
     - Create `RuntimeConfigService.load()` using `fetch('assets/config.json', { cache: 'no-store' })`, with `configError`, a config signal and an `apiBase` computed signal defaulting to `/api`.
     - Register it with `provideAppInitializer` and `withDisabledInitialNavigation()`, calling `router.initialNavigation()` after success only.
@@ -50,7 +50,7 @@ Constraints that apply to every task:
     - _Requirements: 21.1, 21.3, 21.8_
 
 - [ ] 3. Session, interceptor and API service
-  - [ ] 3.1 Define API types, ApiError and display-name helper
+  - [x] 3.1 Define API types, ApiError and display-name helper
     - Create `core/api/api.types.ts` with the data models of the design. Read the backend DTOs (read only) and align field names; `HistoryEntry` must match the backend exactly (`kind`, `actionCode`, `fromStep`, `toStep`, `fromStatus`, `toStatus`, `actorId`, `actorName`, `remarks`, `attachmentRef`, `detail`, `eventTime`, `timeInStepMs`); note any other mismatch as a comment in the file instead of working around it.
     - Create `core/api/api-error.ts` with `toApiError()` mapping no response to `{ status: 0, code: 'NETWORK' }` and tolerating non-JSON bodies (nginx 502 pages).
     - Create `core/pure/display-name.ts` with `displayName(name, id)` (name, else id, else `-`).
@@ -117,7 +117,7 @@ Constraints that apply to every task:
   - Run `cd skeleton\frontend` then `npm run test` and `npm run build`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Theme and accessibility
-  - [ ] 6.1 Implement contrast helpers and theme tokens
+  - [x] 6.1 Implement contrast helpers and theme tokens
     - `core/pure/contrast.ts` (`contrastRatio` using WCAG luminance, `onColor`), `core/theme/theme-tokens.ts` (`THEME_TOKEN_PAIRS` for dark, light and the orange accent) and pure `resolveTheme(mode, prefersDark)`.
     - _Requirements: 6.3, 6.4, 6.5, 6.8_
 

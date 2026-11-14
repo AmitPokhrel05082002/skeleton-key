@@ -1,0 +1,6 @@
+{
+  "apiBasePath": "/api",
+  "hosts": {
+    "localhost": "GRIEVANCE"
+  }
+}

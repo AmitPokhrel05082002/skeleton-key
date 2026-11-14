@@ -47,6 +47,10 @@ public final class DefinitionArbitraries {
     private static final List<String> FIELD_RULES = List.of("hidden", "readonly", "optional", "required");
     private static final List<String> PRESENCE = List.of("hidden", "optional", "required");
 
+    /** Pattern-valid widget keys (mixed case, underscore, hyphen). */
+    public static final List<String> WIDGET_POOL =
+            List.of("starRating", "QR_scanner", "geo-picker", "a", "Signature_pad-2", "colorSwatch");
+
     private DefinitionArbitraries() {}
 
     /** A generated document in both representations. */
@@ -150,10 +154,24 @@ public final class DefinitionArbitraries {
             if (rnd.nextBoolean()) {
                 app.put("description", "Generated for property tests");
             }
-            if (rnd.nextBoolean()) {
-                ObjectNode b = app.putObject("branding");
-                b.put("primaryColor", "#1a2b3c");
-                b.put("theme", pick("light", "dark", "auto"));
+            // branding: absent, empty, partial or full
+            switch (rnd.nextInt(4)) {
+                case 1 -> app.putObject("branding");
+                case 2 -> {
+                    ObjectNode b = app.putObject("branding");
+                    if (rnd.nextBoolean()) {
+                        b.put("primaryColor", "#1a2b3c");
+                    } else {
+                        b.put("theme", pick("light", "dark", "auto"));
+                    }
+                }
+                case 3 -> {
+                    ObjectNode b = app.putObject("branding");
+                    b.put("primaryColor", "#1a2b3c");
+                    b.put("logo", "branding/logo.png");
+                    b.put("theme", pick("light", "dark", "auto"));
+                }
+                default -> { }
             }
             return app;
         }
@@ -248,6 +266,9 @@ public final class DefinitionArbitraries {
                     f.put("maxFiles", 1 + rnd.nextInt(5));
                 }
                 default -> { }
+            }
+            if (rnd.nextBoolean()) {
+                f.put("widget", pick(WIDGET_POOL));
             }
             return f;
         }

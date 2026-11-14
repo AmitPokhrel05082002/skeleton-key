@@ -2,6 +2,7 @@ package dev.skeletonkey.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dev.skeletonkey.definition.DefinitionService;
 import dev.skeletonkey.domain.access.RowVisibility;
 import dev.skeletonkey.domain.expr.EvalContext;
 import dev.skeletonkey.domain.model.Action;
@@ -18,12 +19,17 @@ import dev.skeletonkey.persistence.HistoryRepository;
 import dev.skeletonkey.persistence.InstanceRepository;
 import dev.skeletonkey.persistence.RecordRepository;
 import dev.skeletonkey.persistence.RecordRow;
+import dev.skeletonkey.persistence.UserRepository;
 import dev.skeletonkey.record.PublishedDefinitions;
 import dev.skeletonkey.record.PublishedDefinitions.PublishedApp;
 import dev.skeletonkey.router.FieldRuleResolver;
 import dev.skeletonkey.router.RouterGuards;
 import dev.skeletonkey.web.NotFound;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,17 +52,19 @@ public class InstanceQueryService {
     private final HistoryRepository history;
     private final RouterGuards guards;
     private final WorkflowService workflow;
+    private final UserRepository users;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public InstanceQueryService(PublishedDefinitions definitions, InstanceRepository instances,
                                 RecordRepository records, HistoryRepository history, RouterGuards guards,
-                                WorkflowService workflow) {
+                                WorkflowService workflow, UserRepository users) {
         this.definitions = definitions;
         this.instances = instances;
         this.records = records;
         this.history = history;
         this.guards = guards;
         this.workflow = workflow;
+        this.users = users;
     }
 
     /** Instance_View of a visible instance; 404 otherwise. */
@@ -68,12 +76,18 @@ public class InstanceQueryService {
 
     /** History of a visible instance ordered by event time, then write order; 404 otherwise. */
     @Transactional(readOnly = true)
-    public List<HistoryEntry> history(UUID instanceId, Principal caller) {
+    public List<HistoryEntryView> history(UUID instanceId, Principal caller) {
         Loaded l = loadVisible(instanceId, caller);
         List<HistoryEntry> out = new ArrayList<>(history.findByInstance(l.inst.id()));
         // Stable sort: equal event times keep the order in which the repository returned (write order).
         out.sort(Comparator.comparing(HistoryEntry::eventTime, Comparator.nullsFirst(Comparator.naturalOrder())));
-        return out;
+        // One lookup for every actor; the reserved system actor has no user row and no name.
+        UUID system = DefinitionService.SYSTEM_ACTOR.userId();
+        Set<UUID> actors = out.stream().map(HistoryEntry::actorId).filter(Objects::nonNull)
+                .filter(id -> !id.equals(system)).collect(Collectors.toCollection(LinkedHashSet::new));
+        Map<UUID, String> names = actors.isEmpty() ? Map.of() : users.findDisplayNames(actors);
+        return out.stream().map(e -> HistoryEntryView.of(e, e.actorId() == null ? null : names.get(e.actorId())))
+                .toList();
     }
 
     /** Runs one action through the single routing pipeline and returns the Instance_View afterwards. */
@@ -133,8 +147,10 @@ public class InstanceQueryService {
         for (Field f : p.entity.fields()) {
             rules.put(f.code(), FieldRuleResolver.effectiveRule(step, f.code()).name().toLowerCase());
         }
+        String assigneeName = inst.assigneeId() == null ? null
+                : users.findDisplayNames(Set.of(inst.assigneeId())).get(inst.assigneeId());
         return new InstanceView(inst.id(), inst.recordId(), inst.step(), inst.status(), inst.ended(), inst.dueAt(),
-                inst.assigneeId(), actions, rules);
+                inst.assigneeId(), assigneeName, actions, rules);
     }
 
     private EvalContext context(Map<String, Object> data, InstanceState inst, Principal caller) {

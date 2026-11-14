@@ -3,9 +3,11 @@ package dev.skeletonkey.persistence.jdbc;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.skeletonkey.persistence.DefinitionRepository;
+import dev.skeletonkey.persistence.DefinitionVersionInfo;
 import dev.skeletonkey.persistence.DefinitionVersionRow;
 import dev.skeletonkey.persistence.DuplicateVersionException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
@@ -70,6 +72,23 @@ public class JdbcDefinitionRepository implements DefinitionRepository {
         return jdbc.sql("SELECT " + COLUMNS + " FROM definition_version "
                         + "WHERE app_code = :app AND status = 'PUBLISHED' ORDER BY version DESC LIMIT 1")
                 .param("app", appCode).query((rs, n) -> map(rs)).optional();
+    }
+
+    @Override
+    public List<String> findAppCodes() {
+        return jdbc.sql("SELECT app_code FROM (SELECT DISTINCT app_code FROM definition_version) d ORDER BY app_code COLLATE \"C\"")
+                .query(String.class).list();
+    }
+
+    @Override
+    public List<DefinitionVersionInfo> findInfoByApp(String appCode) {
+        return jdbc.sql("SELECT id, app_code, version, status, content_hash, created_at, published_at "
+                        + "FROM definition_version WHERE app_code = :app ORDER BY version DESC")
+                .param("app", appCode)
+                .query((rs, n) -> new DefinitionVersionInfo(JdbcSupport.uuid(rs, "id"), rs.getString("app_code"),
+                        rs.getInt("version"), rs.getString("status"), rs.getString("content_hash"),
+                        JdbcSupport.instant(rs, "created_at"), JdbcSupport.instant(rs, "published_at")))
+                .list();
     }
 
     @Override

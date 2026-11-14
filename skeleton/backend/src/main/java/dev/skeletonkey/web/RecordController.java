@@ -1,10 +1,11 @@
 package dev.skeletonkey.web;
 
 import dev.skeletonkey.domain.model.Principal;
-import dev.skeletonkey.record.RecordPage;
+import dev.skeletonkey.record.RecordItem;
+import dev.skeletonkey.record.RecordItemAssembler;
+import dev.skeletonkey.record.RecordItemPage;
 import dev.skeletonkey.record.RecordService;
 import org.springframework.web.bind.annotation.RequestParam;
-import dev.skeletonkey.record.RecordView;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -27,40 +28,42 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecordController {
 
     private final RecordService service;
+    private final RecordItemAssembler assembler;
 
-    public RecordController(RecordService service) {
+    public RecordController(RecordService service, RecordItemAssembler assembler) {
         this.service = service;
+        this.assembler = assembler;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RecordView create(@PathVariable String app, @PathVariable String entity,
+    public RecordItem create(@PathVariable String app, @PathVariable String entity,
                              @RequestBody Map<String, Object> body) {
-        return service.create(app, entity, body, caller());
+        return assembler.item(service.create(app, entity, body, caller()));
     }
 
     /** Paged list; every query parameter other than page, size, sort and view is an equality filter. */
     @GetMapping
-    public RecordPage list(@PathVariable String app, @PathVariable String entity,
+    public RecordItemPage list(@PathVariable String app, @PathVariable String entity,
                            @RequestParam Map<String, String> params) {
-        return service.list(app, entity, params, caller());
+        return assembler.page(service.list(app, entity, params, caller()));
     }
 
     @GetMapping("/{id}")
-    public RecordView read(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id) {
-        return service.read(app, entity, id, caller());
+    public RecordItem read(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id) {
+        return assembler.item(service.read(app, entity, id, caller()));
     }
 
     @PutMapping("/{id}")
-    public RecordView replace(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id,
+    public RecordItem replace(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id,
                               @RequestBody Map<String, Object> body) {
-        return service.update(app, entity, id, body, true, caller());
+        return assembler.item(service.update(app, entity, id, body, true, caller()));
     }
 
     @PatchMapping("/{id}")
-    public RecordView patch(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id,
+    public RecordItem patch(@PathVariable String app, @PathVariable String entity, @PathVariable UUID id,
                             @RequestBody Map<String, Object> body) {
-        return service.update(app, entity, id, body, false, caller());
+        return assembler.item(service.update(app, entity, id, body, false, caller()));
     }
 
     /** The authenticated {@link Principal} (set by the JWT filter as the authentication principal), else 401. */

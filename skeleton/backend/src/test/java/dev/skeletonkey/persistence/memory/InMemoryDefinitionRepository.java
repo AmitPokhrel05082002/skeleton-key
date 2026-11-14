@@ -1,6 +1,7 @@
 package dev.skeletonkey.persistence.memory;
 
 import dev.skeletonkey.persistence.DefinitionRepository;
+import dev.skeletonkey.persistence.DefinitionVersionInfo;
 import dev.skeletonkey.persistence.DefinitionVersionRow;
 import dev.skeletonkey.persistence.DuplicateVersionException;
 import java.time.Instant;
@@ -46,6 +47,20 @@ public class InMemoryDefinitionRepository implements DefinitionRepository {
     public synchronized Optional<DefinitionVersionRow> findLatestPublished(String appCode) {
         return rows.stream().filter(r -> r.appCode().equals(appCode) && DefinitionVersionRow.PUBLISHED.equals(r.status()))
                 .max(Comparator.comparingInt(DefinitionVersionRow::version));
+    }
+
+    @Override
+    public synchronized List<String> findAppCodes() {
+        return rows.stream().map(DefinitionVersionRow::appCode).distinct().sorted().toList();
+    }
+
+    @Override
+    public synchronized List<DefinitionVersionInfo> findInfoByApp(String appCode) {
+        return rows.stream().filter(r -> r.appCode().equals(appCode))
+                .sorted(Comparator.comparingInt(DefinitionVersionRow::version).reversed())
+                .map(r -> new DefinitionVersionInfo(r.id(), r.appCode(), r.version(), r.status(), r.contentHash(),
+                        r.createdAt(), r.publishedAt()))
+                .toList();
     }
 
     @Override

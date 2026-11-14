@@ -2,7 +2,7 @@ package dev.skeletonkey.web;
 
 import dev.skeletonkey.app.InstanceQueryService;
 import dev.skeletonkey.app.InstanceView;
-import dev.skeletonkey.domain.model.HistoryEntry;
+import dev.skeletonkey.app.HistoryEntryView;
 import dev.skeletonkey.domain.model.Principal;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class InstanceController {
     }
 
     @GetMapping("/history")
-    public List<HistoryEntry> history(@PathVariable UUID id) {
+    public List<HistoryEntryView> history(@PathVariable UUID id) {
         return service.history(id, caller());
     }
 

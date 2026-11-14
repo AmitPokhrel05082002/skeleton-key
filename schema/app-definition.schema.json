@@ -131,7 +131,11 @@
         "maxLength": { "type": "integer", "minimum": 1 },
         "pattern": { "type": "string", "description": "Regex for TEXT fields." },
         "accept": { "type": "string", "description": "Accepted MIME types for FILE fields, e.g. image/*,application/pdf." },
-        "maxFiles": { "type": "integer", "minimum": 1 }
+        "maxFiles": { "type": "integer", "minimum": 1 },
+        "widget": {
+          "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$",
+          "description": "Optional key of a frontend widget registered by the app. The backend has no widget registry."
+        }
       },
       "allOf": [
         { "if": { "properties": { "type": { "enum": ["SELECT", "MULTISELECT"] } } }, "then": { "required": ["options"] } },

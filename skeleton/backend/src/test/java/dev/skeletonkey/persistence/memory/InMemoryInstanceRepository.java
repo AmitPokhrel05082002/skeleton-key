@@ -32,6 +32,13 @@ public class InMemoryInstanceRepository implements InstanceRepository {
     }
 
     @Override
+    public synchronized Map<UUID, InstanceState> findByRecordIds(Collection<UUID> recordIds) {
+        Map<UUID, InstanceState> out = new HashMap<>();
+        rows.values().stream().filter(s -> recordIds.contains(s.recordId())).forEach(s -> out.put(s.recordId(), s));
+        return out;
+    }
+
+    @Override
     public synchronized InstanceState update(InstanceState s) {
         InstanceState stored = rows.get(s.id());
         if (stored == null || stored.lockVersion() != s.lockVersion()) {

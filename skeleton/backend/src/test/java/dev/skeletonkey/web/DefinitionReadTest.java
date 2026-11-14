@@ -263,6 +263,91 @@ class DefinitionReadTest {
         assertThat(keys(statuses.get(1))).containsExactlyInAnyOrder("label", "category");
     }
 
+    /** Publishes the grievance example under {@code code} with the given branding JSON (null = absent). */
+    private void seedBranding(String code, String brandingJson, String widget) throws Exception {
+        if (definitions.latestPublished(code).isPresent()) {
+            return;
+        }
+        ObjectMapper m = new ObjectMapper();
+        com.fasterxml.jackson.databind.node.ObjectNode doc =
+                (com.fasterxml.jackson.databind.node.ObjectNode) m.readTree(grievance);
+        com.fasterxml.jackson.databind.node.ObjectNode app = (com.fasterxml.jackson.databind.node.ObjectNode) doc.get("app");
+        app.put("code", code);
+        app.remove("branding");
+        if (brandingJson != null) {
+            app.set("branding", m.readTree(brandingJson));
+        }
+        if (widget != null) {
+            doc.get("entities").get(0).get("fields").forEach(f ->
+                    ((com.fasterxml.jackson.databind.node.ObjectNode) f).put("widget", widget));
+        }
+        var v = definitions.submit(m.writeValueAsString(doc));
+        definitions.publish(v.id(), DefinitionService.SYSTEM_ACTOR);
+    }
+
+    private JsonNode body(String url, String auth) throws Exception {
+        var req = get(url);
+        if (auth != null) {
+            req = req.header("Authorization", auth);
+        }
+        return new ObjectMapper().readTree(
+                mvc.perform(req).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+    }
+
+    @Test
+    void brandingIsProjectedAsDeclaredInBothProjections() throws Exception {
+        String[][] cases = {
+                {"BRFULL", "{\"primaryColor\":\"#112233\",\"logo\":\"branding/logo.svg\",\"theme\":\"dark\"}"},
+                {"BRPART", "{\"primaryColor\":\"#aabbcc\"}"},
+                {"BREMPTY", "{}"},
+                {"BRNONE", null}};
+        for (String[] c : cases) {
+            seedBranding(c[0], c[1], null);
+            JsonNode expected = c[1] == null ? null : new ObjectMapper().readTree(c[1]);
+            for (JsonNode app : new JsonNode[] {
+                    body("/api/apps/" + c[0] + "/definition", token("CLERK")).get("app"),
+                    body("/api/public/apps/" + c[0], null).get("app")}) {
+                if (expected == null) {
+                    assertThat(app.has("branding")).isFalse();
+                } else {
+                    assertThat(app.get("branding")).isEqualTo(expected);
+                }
+                assertThat(app.get("code").asText()).isEqualTo(c[0]);
+                assertThat(app.has("name")).isTrue();
+            }
+        }
+    }
+
+    @Test
+    void widgetIsProjectedOnFieldsInBothProjections() throws Exception {
+        seedBranding("WIDGETAPP", null, "star-Rating_1");
+        JsonNode restricted = body("/api/apps/WIDGETAPP/definition", token("CLERK"));
+        restricted.get("entities").get(0).get("fields")
+                .forEach(f -> assertThat(f.get("widget").asText()).isEqualTo("star-Rating_1"));
+        JsonNode pub = body("/api/public/apps/WIDGETAPP", null);
+        assertThat(pub.get("forms").get(0).get("fields")).isNotEmpty();
+        pub.get("forms").get(0).get("fields")
+                .forEach(f -> assertThat(f.get("widget").asText()).isEqualTo("star-Rating_1"));
+        // A field without a widget carries no widget key.
+        JsonNode plain = body("/api/apps/GRIEVANCE/definition", token("CLERK"));
+        plain.get("entities").get(0).get("fields").forEach(f -> assertThat(f.has("widget")).isFalse());
+    }
+
+    @Test
+    void publicSubsetKeysAreOnTheAllowList() throws Exception {
+        seedBranding("BRFULL", "{\"primaryColor\":\"#112233\",\"logo\":\"l.svg\",\"theme\":\"dark\"}", null);
+        JsonNode pub = body("/api/public/apps/BRFULL", null);
+        assertThat(keys(pub)).isSubsetOf("version", "app", "forms");
+        assertThat(keys(pub.get("app"))).isSubsetOf("code", "name", "description", "branding");
+        assertThat(keys(pub.get("app").get("branding"))).isSubsetOf("primaryColor", "logo", "theme");
+        pub.get("forms").forEach(f -> {
+            assertThat(keys(f)).isSubsetOf("code", "label", "entity", "sections", "fields");
+            f.get("fields").forEach(fd -> assertThat(keys(fd)).isSubsetOf("code", "label", "type", "required",
+                    "help", "default", "options", "ref", "min", "max", "maxLength", "pattern", "accept",
+                    "maxFiles", "widget"));
+        });
+    }
+
     @Test
     void explicitPublishedVersionIsReturned() throws Exception {
         mvc.perform(get("/api/apps/GRIEVANCE/definition?version=1").header("Authorization", token("CLERK")))

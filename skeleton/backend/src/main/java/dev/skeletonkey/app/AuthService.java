@@ -1,9 +1,11 @@
 package dev.skeletonkey.app;
 
+import dev.skeletonkey.domain.model.Principal;
 import dev.skeletonkey.persistence.UserAccount;
 import dev.skeletonkey.persistence.UserRepository;
 import dev.skeletonkey.web.ApiViolation;
 import dev.skeletonkey.web.BadRequest;
+import dev.skeletonkey.web.CurrentUserResponse;
 import dev.skeletonkey.web.JwtService;
 import dev.skeletonkey.web.LoginRequest;
 import dev.skeletonkey.web.LoginResponse;
@@ -47,6 +49,15 @@ public class AuthService {
         UserAccount user = found.get();
         return new LoginResponse(jwt.issue(user), "Bearer", jwt.expirySeconds(), user.id(), user.displayName(),
                 new ArrayList<>(new TreeSet<>(user.roles())));
+    }
+
+    /** The caller as stored: roles and the active flag come from the user store, never from the token. */
+    public CurrentUserResponse me(Principal caller) {
+        UserAccount user = (caller == null || caller.userId() == null ? Optional.<UserAccount>empty()
+                : users.findById(caller.userId()))
+                .filter(UserAccount::active)
+                .orElseThrow(() -> new BadCredentialsException("Authentication required"));
+        return new CurrentUserResponse(user.id(), user.displayName(), new ArrayList<>(new TreeSet<>(user.roles())));
     }
 
     private static void validate(LoginRequest req) {

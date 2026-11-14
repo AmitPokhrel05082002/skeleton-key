@@ -69,6 +69,18 @@ public class JdbcInstanceRepository implements InstanceRepository {
     }
 
     @Override
+    public Map<UUID, InstanceState> findByRecordIds(Collection<UUID> recordIds) {
+        Map<UUID, InstanceState> out = new HashMap<>();
+        if (recordIds == null || recordIds.isEmpty()) {
+            return out;
+        }
+        jdbc.sql("SELECT " + COLUMNS + " FROM workflow_instance WHERE record_id IN (:ids)")
+                .param("ids", recordIds).query(MAPPER).list()
+                .forEach(s -> out.put(s.recordId(), s));
+        return out;
+    }
+
+    @Override
     public InstanceState update(InstanceState s) {
         int rows = jdbc.sql("""
                 UPDATE workflow_instance SET current_step = :step, status = :status, ended = :ended,

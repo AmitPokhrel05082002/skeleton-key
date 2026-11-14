@@ -2,6 +2,7 @@ package dev.skeletonkey.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +20,12 @@ public interface DefinitionRepository {
 
     /** The highest-numbered PUBLISHED version of the app. */
     Optional<DefinitionVersionRow> findLatestPublished(String appCode);
+
+    /** Distinct app codes, ordered by code point. */
+    List<String> findAppCodes();
+
+    /** Every version of the app without its document, highest version first. */
+    List<DefinitionVersionInfo> findInfoByApp(String appCode);
 
     boolean existsByContentHash(String contentHash);
 

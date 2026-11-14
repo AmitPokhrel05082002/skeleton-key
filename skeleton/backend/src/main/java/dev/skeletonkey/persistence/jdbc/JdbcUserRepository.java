@@ -2,8 +2,11 @@ package dev.skeletonkey.persistence.jdbc;
 
 import dev.skeletonkey.persistence.UserAccount;
 import dev.skeletonkey.persistence.UserRepository;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -55,6 +58,21 @@ public class JdbcUserRepository implements UserRepository {
                         + "(SELECT user_id FROM user_role WHERE role_code = :role) ORDER BY id")
                 .param("role", roleCode)
                 .query((rs, n) -> map(rs)).list().stream().map(this::withRoles).toList();
+    }
+
+    @Override
+    public Map<UUID, String> findDisplayNames(Collection<UUID> userIds) {
+        Map<UUID, String> names = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) {
+            return names;
+        }
+        jdbc.sql("SELECT id, display_name FROM app_user WHERE id IN (:ids)")
+                .param("ids", userIds)
+                .query((rs, n) -> {
+                    names.put(JdbcSupport.uuid(rs, "id"), rs.getString("display_name"));
+                    return null;
+                }).list();
+        return names;
     }
 
     private UserAccount map(java.sql.ResultSet rs) throws java.sql.SQLException {

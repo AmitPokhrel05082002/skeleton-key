@@ -23,6 +23,9 @@ public interface InstanceRepository {
      */
     InstanceState update(InstanceState state);
 
+    /** Instances of the given records, one lookup. Records without an instance are absent; empty in, empty out. */
+    Map<UUID, InstanceState> findByRecordIds(Collection<UUID> recordIds);
+
     /** Number of not-ended instances assigned to each given user (users with none map to 0). */
     Map<UUID, Long> openTaskCounts(Collection<UUID> userIds);
 }

@@ -1,6 +1,8 @@
 package dev.skeletonkey.persistence;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +16,7 @@ public interface UserRepository {
 
     /** Active users holding the role, ordered by id. */
     List<UserAccount> findActiveByRole(String roleCode);
+
+    /** Display names by user id, one lookup. Unknown ids are absent; an empty argument gives an empty map. */
+    Map<UUID, String> findDisplayNames(Collection<UUID> userIds);
 }

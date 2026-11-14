@@ -15,12 +15,14 @@ import dev.skeletonkey.app.SeedLoader;
 import dev.skeletonkey.audit.AuditService;
 import dev.skeletonkey.config.SecurityConfig;
 import dev.skeletonkey.config.SkeletonProperties;
+import dev.skeletonkey.definition.DefinitionQueryService;
 import dev.skeletonkey.definition.DefinitionService;
 import dev.skeletonkey.domain.load.DefinitionLoader;
 import dev.skeletonkey.domain.model.DefinitionCache;
 import dev.skeletonkey.domain.model.DefinitionParser;
 import dev.skeletonkey.domain.model.Principal;
 import dev.skeletonkey.domain.validator.HandlerCatalog;
+import dev.skeletonkey.persistence.DefinitionRepository;
 import dev.skeletonkey.persistence.UserAccount;
 import dev.skeletonkey.persistence.UserRepository;
 import dev.skeletonkey.persistence.memory.InMemoryAuditRepository;
@@ -66,9 +68,13 @@ class DefinitionAdminAccessTest {
         @Bean JwtService jwtService(SkeletonProperties p) { return new JwtService(p); }
         @Bean UserRepository users() { return new InMemoryUserRepository(); }
         @Bean ObjectMapper objectMapper() { return new ObjectMapper(); }
-        @Bean DefinitionService definitionService() {
+        @Bean DefinitionRepository definitionRepository() { return new InMemoryDefinitionRepository(); }
+        @Bean DefinitionQueryService definitionQueryService(DefinitionRepository repo) {
+            return new DefinitionQueryService(repo);
+        }
+        @Bean DefinitionService definitionService(DefinitionRepository repo) {
             DefinitionParser parser = new DefinitionParser();
-            return new DefinitionService(new DefinitionLoader(), new InMemoryDefinitionRepository(), parser,
+            return new DefinitionService(new DefinitionLoader(), repo, parser,
                     new DefinitionCache(parser), HandlerCatalog.empty(),
                     new AuditService(new InMemoryAuditRepository(), Clock.systemUTC()), Clock.systemUTC());
         }

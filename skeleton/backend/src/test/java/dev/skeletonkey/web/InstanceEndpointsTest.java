@@ -1,5 +1,6 @@
 package dev.skeletonkey.web;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -23,6 +24,7 @@ import dev.skeletonkey.config.SecurityConfig;
 import dev.skeletonkey.config.SkeletonProperties;
 import dev.skeletonkey.domain.expr.ExpressionEngine;
 import dev.skeletonkey.domain.model.DefinitionParser;
+import dev.skeletonkey.domain.model.InstanceState;
 import dev.skeletonkey.domain.model.Principal;
 import dev.skeletonkey.persistence.UserAccount;
 import dev.skeletonkey.persistence.memory.InMemoryAssignmentCursorRepository;
@@ -103,13 +105,17 @@ class InstanceEndpointsTest {
         @Bean InMemoryRecordRepository records() { return new InMemoryRecordRepository(); }
         @Bean InMemoryInstanceRepository instances() { return new InMemoryInstanceRepository(); }
         @Bean InMemoryHistoryRepository histories() { return new InMemoryHistoryRepository(); }
-
-        @Bean WorkflowService workflowService(PublishedDefinitions defs, InMemoryRecordRepository records,
-                                              InMemoryInstanceRepository instances, InMemoryHistoryRepository hist) {
-            Clock clock = Clock.systemUTC();
-            InMemoryAssignmentCursorRepository cursors = new InMemoryAssignmentCursorRepository();
+        @Bean InMemoryUserRepository users() {
             InMemoryUserRepository users = new InMemoryUserRepository();
             users.insert(new UserAccount(CLERK, "clerk", "x", "Clerk", true, Set.of("CLERK")));
+            return users;
+        }
+
+        @Bean WorkflowService workflowService(PublishedDefinitions defs, InMemoryRecordRepository records,
+                                              InMemoryInstanceRepository instances, InMemoryHistoryRepository hist,
+                                              InMemoryUserRepository users) {
+            Clock clock = Clock.systemUTC();
+            InMemoryAssignmentCursorRepository cursors = new InMemoryAssignmentCursorRepository();
             AuditService audit = new AuditService(new InMemoryAuditRepository(), clock);
             ExpressionEngine engine = new ExpressionEngine();
             HandlerRegistry registry = new HandlerRegistry(Map.of());
@@ -123,15 +129,18 @@ class InstanceEndpointsTest {
 
         @Bean InstanceQueryService queryService(PublishedDefinitions defs, InMemoryInstanceRepository instances,
                                                 InMemoryRecordRepository records, InMemoryHistoryRepository hist,
-                                                WorkflowService wf) {
+                                                WorkflowService wf, InMemoryUserRepository users) {
             return new InstanceQueryService(defs, instances, records, hist, new RouterGuards(new ExpressionEngine()),
-                    wf);
+                    wf, users);
         }
     }
 
     @Autowired WebApplicationContext ctx;
     @Autowired JwtService jwt;
     @Autowired WorkflowService workflow;
+    @Autowired dev.skeletonkey.persistence.memory.InMemoryUserRepository users;
+    @Autowired InMemoryInstanceRepository instanceStore;
+    @Autowired InMemoryHistoryRepository historyStore;
     MockMvc mvc;
     UUID id;
 
@@ -159,6 +168,8 @@ class InstanceEndpointsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.instanceId", is(id.toString())))
                 .andExpect(jsonPath("$.step", is("TRIAGE")))
+                .andExpect(jsonPath("$.assignee", is(CLERK.toString())))
+                .andExpect(jsonPath("$.assigneeName", is("Clerk")))
                 .andExpect(jsonPath("$.status", is("Received")))
                 .andExpect(jsonPath("$.ended", is(false)))
                 .andExpect(jsonPath("$.fieldRules.category", is("required")))
@@ -257,4 +268,69 @@ class InstanceEndpointsTest {
                     .andExpect(jsonPath("$.code", is("NOT_SUPPORTED")));
         }
     }
-}
+
+    @Test
+    void assigneeNameIsNullWhenNobodyIsAssignedAndWhenTheUserIsUnknown() throws Exception {
+        // VERIFY moves to REVIEW, a ROLE_QUEUE step: no assignee.
+        mvc.perform(post("/api/instances/" + id + "/actions/VERIFY").header("Authorization", clerk())
+                .contentType(JSON).content("{}")).andExpect(status().isOk());
+        String officer = token(new UUID(0, 5), "OFFICER");
+        mvc.perform(get("/api/instances/" + id).header("Authorization", officer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.assigneeName").value(org.hamcrest.Matchers.nullValue()));
+        // An assignee id without a user row keeps the id and has no name.
+        UUID ghost = UUID.randomUUID();
+        InstanceState s = instanceStore.findById(id).orElseThrow();
+        instanceStore.update(new InstanceState(s.id(), s.recordId(), s.appCode(), s.defVersion(), s.workflowCode(),
+                s.step(), s.status(), ghost, s.dueAt(), s.ended(), s.stepEnteredAt(), s.lockVersion(),
+                s.startedBy(), s.startedAt()));
+        mvc.perform(get("/api/instances/" + id).header("Authorization", officer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assignee", is(ghost.toString())))
+                .andExpect(jsonPath("$.assigneeName").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    void historyCarriesActorNamesResolvedAtReadTime() throws Exception {
+        mvc.perform(post("/api/instances/" + id + "/actions/VERIFY").header("Authorization", clerk())
+                .contentType(JSON).content("{}")).andExpect(status().isOk());
+        java.time.Instant t = java.time.Instant.now().plusSeconds(60);
+        historyStore.append(id, new dev.skeletonkey.domain.model.HistoryEntry("NOTE_SYSTEM", null, null, null, null,
+                null, dev.skeletonkey.definition.DefinitionService.SYSTEM_ACTOR.userId(), null, null, null, t, 0));
+        historyStore.append(id, new dev.skeletonkey.domain.model.HistoryEntry("NOTE_NOBODY", null, null, null, null,
+                null, null, null, null, null, t.plusSeconds(1), 0));
+        historyStore.append(id, new dev.skeletonkey.domain.model.HistoryEntry("NOTE_UNKNOWN", null, null, null, null,
+                null, UUID.randomUUID(), null, null, null, t.plusSeconds(2), 0));
+        String officer = token(new UUID(0, 5), "OFFICER");
+        com.fasterxml.jackson.databind.JsonNode rows = readHistory(officer);
+        assertThat(byKind(rows, "ACTION").get("actorName").asText()).isEqualTo("Clerk");
+        assertThat(byKind(rows, "ACTION").get("actorId").asText()).isEqualTo(CLERK.toString());
+        assertThat(byKind(rows, "START").get("actorName").isNull()).isTrue(); // starter has no user row
+        assertThat(byKind(rows, "NOTE_SYSTEM").get("actorName").isNull()).isTrue();
+        assertThat(byKind(rows, "NOTE_NOBODY").get("actorName").isNull()).isTrue();
+        assertThat(byKind(rows, "NOTE_UNKNOWN").get("actorName").isNull()).isTrue();
+        // A renamed user shows the new name on old entries.
+        users.put(new UserAccount(CLERK, "clerk", "x", "Clara Clerk", true, Set.of("CLERK")));
+        try {
+            assertThat(byKind(readHistory(officer), "ACTION").get("actorName").asText()).isEqualTo("Clara Clerk");
+        } finally {
+            users.put(new UserAccount(CLERK, "clerk", "x", "Clerk", true, Set.of("CLERK")));
+        }
+    }
+
+    private com.fasterxml.jackson.databind.JsonNode readHistory(String auth) throws Exception {
+        return new ObjectMapper().readTree(mvc.perform(get("/api/instances/" + id + "/history")
+                        .header("Authorization", auth)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+    }
+
+    private static com.fasterxml.jackson.databind.JsonNode byKind(com.fasterxml.jackson.databind.JsonNode rows,
+                                                                  String kind) {
+        for (com.fasterxml.jackson.databind.JsonNode r : rows) {
+            if (kind.equals(r.get("kind").asText())) {
+                return r;
+            }
+        }
+        throw new AssertionError("no history row of kind " + kind);
+    }}

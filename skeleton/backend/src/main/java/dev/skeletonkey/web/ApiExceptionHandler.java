@@ -59,6 +59,11 @@ public class ApiExceptionHandler {
         return build(400, "BAD_REQUEST", e.getMessage(), e.violations());
     }
 
+    @ExceptionHandler(PayloadTooLarge.class)
+    ResponseEntity<ApiError> tooLarge(PayloadTooLarge e) {
+        return build(413, "PAYLOAD_TOO_LARGE", e.getMessage(), List.of());
+    }
+
     @ExceptionHandler(NotFound.class)
     ResponseEntity<ApiError> notFound(NotFound e) {
         return build(404, "NOT_FOUND", e.getMessage(), List.of());

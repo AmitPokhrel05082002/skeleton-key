@@ -5,7 +5,15 @@ import java.util.List;
 
 public record Field(String code, String label, Type type, boolean required, String help, JsonNode defaultValue,
                     List<Option> options, String ref, Double min, Double max, Integer maxLength,
-                    String pattern, String accept, Integer maxFiles) {
+                    String pattern, String accept, Integer maxFiles, String widget) {
+    /** Keeps the 14-argument call sites valid; widget is absent. */
+    public Field(String code, String label, Type type, boolean required, String help, JsonNode defaultValue,
+                 List<Option> options, String ref, Double min, Double max, Integer maxLength,
+                 String pattern, String accept, Integer maxFiles) {
+        this(code, label, type, required, help, defaultValue, options, ref, min, max, maxLength, pattern, accept,
+                maxFiles, null);
+    }
+
     public enum Type {
         TEXT, TEXTAREA, NUMBER, DECIMAL, DATE, DATETIME, BOOLEAN, SELECT, MULTISELECT, FILE, USER,
         REFERENCE, EMAIL, PHONE, LOCATION

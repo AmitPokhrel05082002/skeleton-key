@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.skeletonkey.audit.AuditService;
 import dev.skeletonkey.domain.load.DefinitionLoader;
 import dev.skeletonkey.domain.load.LoadedDefinition;
+import dev.skeletonkey.domain.load.SchemaViolation;
 import dev.skeletonkey.domain.model.AppDefinition;
 import dev.skeletonkey.domain.model.DefinitionCache;
 import dev.skeletonkey.domain.model.DefinitionParseException;
@@ -19,6 +20,7 @@ import dev.skeletonkey.persistence.DefinitionVersionRow;
 import dev.skeletonkey.persistence.DuplicateVersionException;
 import dev.skeletonkey.record.PublishedDefinitions;
 import dev.skeletonkey.web.ApiViolation;
+import dev.skeletonkey.web.BadRequest;
 import dev.skeletonkey.web.Conflict;
 import dev.skeletonkey.web.NotFound;
 import dev.skeletonkey.web.ValidationFailed;
@@ -129,11 +131,11 @@ public class DefinitionService implements PublishedDefinitions {
                     "Only a DRAFT can be published; version " + row.version() + " of " + row.appCode()
                             + " is " + row.status());
         }
-        ValidationReport report = validate(row.document());
-        if (!report.ok()) {
-            throw new ValidationFailed("Definition has " + report.violations().size() + " violation(s)",
-                    report.violations().stream()
-                            .map(v -> new ApiViolation(v.path(), v.rule(), v.message())).toList());
+        List<ApiViolation> found = violationsOf(row.document());
+        if (!found.isEmpty()) {
+            boolean parseError = found.size() == 1 && "PARSE".equals(found.get(0).rule());
+            throw new ValidationFailed(parseError ? "Definition cannot be parsed"
+                    : "Definition has " + found.size() + " violation(s)", found);
         }
         if (!repository.markPublished(id, Instant.now(clock))) {
             throw new Conflict("INVALID_STATUS", "Version was published or removed concurrently");
@@ -159,15 +161,33 @@ public class DefinitionService implements PublishedDefinitions {
                 .map(r -> new PublishedApp(r.version(), cache.get(r.appCode(), r.version(), r::document)));
     }
 
-    private ValidationReport validate(JsonNode document) {
+    /** Single source of the publish-time report; Publish and the validate endpoint both call it. */
+    List<ApiViolation> violationsOf(JsonNode document) {
         AppDefinition def;
         try {
             def = parser.parse(document);
         } catch (DefinitionParseException e) {
-            throw new ValidationFailed("Definition cannot be parsed",
-                    List.of(new ApiViolation("", "PARSE", e.getMessage())));
+            return List.of(new ApiViolation("", "PARSE", e.getMessage()));
         }
-        return validator.validate(def);
+        ValidationReport report = validator.validate(def);
+        return report.violations().stream().map(v -> new ApiViolation(v.path(), v.rule(), v.message())).toList();
+    }
+
+    /**
+     * Validate endpoint: the same report Publish would produce, with no write, no audit and no repository call.
+     * 400 for syntax errors (with line and column) and for a non-object document; schema violations are returned
+     * as the report, otherwise the Validator report.
+     */
+    public List<ApiViolation> validateText(String json) {
+        JsonNode tree = loader.parse(json);
+        if (!tree.isObject()) {
+            throw new BadRequest("Document must be a JSON object", List.of());
+        }
+        List<SchemaViolation> schema = loader.checkSchema(tree);
+        if (!schema.isEmpty()) {
+            return schema.stream().map(v -> new ApiViolation(v.path(), v.rule(), v.message())).toList();
+        }
+        return violationsOf(tree);
     }
 
     /** version = max + 1, guarded by the unique (app code, version) constraint with one retry (Req 1.4). */

@@ -41,7 +41,8 @@ public class DefinitionParser {
                 bool(n, "required", false), optStr(n, "help"), n.has("default") ? n.get("default") : null,
                 list(n, "options", p, false, (o, op) -> new Option(str(o, "value", op), str(o, "label", op))),
                 optStr(n, "ref"), optDouble(n, "min"), optDouble(n, "max"), optInt(n, "maxLength"),
-                optStr(n, "pattern"), optStr(n, "accept"), optInt(n, "maxFiles"));
+                optStr(n, "pattern"), optStr(n, "accept"), optInt(n, "maxFiles"),
+                optStr(n, "widget"));
     }
 
     private Form form(JsonNode n, String p) {

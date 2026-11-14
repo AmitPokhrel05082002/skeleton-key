@@ -245,7 +245,7 @@ public class DefinitionReadService {
         return sections;
     }
 
-    private static ObjectNode fieldNode(Field f) {
+    static ObjectNode fieldNode(Field f) {
         ObjectNode n = JSON.objectNode();
         n.put("code", f.code());
         n.put("label", f.label());
@@ -278,6 +278,7 @@ public class DefinitionReadService {
         if (f.maxFiles() != null) {
             n.put("maxFiles", f.maxFiles());
         }
+        putIfNotNull(n, "widget", f.widget());
         return n;
     }
 

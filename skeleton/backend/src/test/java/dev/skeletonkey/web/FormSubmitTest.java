@@ -156,6 +156,9 @@ class FormSubmitTest {
         JsonNode n = new ObjectMapper().readTree(json);
         assertThat(n.fieldNames()).toIterable().containsExactlyInAnyOrder("recordId", "referenceNo", "instanceId");
         assertThat(json).doesNotContain("Pothole").doesNotContain("a@b.co");
+        for (String summaryKey : new String[] {"stepLabel", "statusColor", "assigneeName", "ended", "dueAt"}) {
+            assertThat(n.has(summaryKey)).as(summaryKey).isFalse();
+        }
         assertThat(INSERTS.get()).isEqualTo(1);
     }
 

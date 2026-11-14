@@ -14,8 +14,8 @@ Constraints that apply to every task:
 
 ## Tasks
 
-- [ ] 1. Project setup and pinned versions
-  - [ ] 1.1 Scaffold the Angular project and pin every dependency
+- [x] 1. Project setup and pinned versions
+  - [x] 1.1 Scaffold the Angular project and pin every dependency
     - Run `npx -y @angular/cli@latest new skeleton-frontend --directory skeleton\frontend --standalone --routing --style=scss --skip-git --ssr=false` (CMD, one line), then read the generated `package.json` and `angular.json` to learn the unit test runner and its packages.
     - Resolve exact versions with `npm view <package> versions` for `@angular/*` 22.2.x, `@angular/cdk` 22.2.x, `ng-zorro-antd` 22.2.0 and `fast-check` 4.10.x; write them, and the generated runner packages, to `package.json` as exact versions (no `^` or `~`); run `npm install` to create `package-lock.json`.
     - Install NG-ZORRO with its prerequisites (animations, i18n locale, icons), enable strict TypeScript, and add ESLint with `ng lint` plus a `no-restricted-syntax` rule forbidding `innerHTML` bindings.

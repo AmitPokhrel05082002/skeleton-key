@@ -60,3 +60,5 @@ Submission closes **Dec 4, 2026, 2:00 PM PT**. Target: submit Dec 3.
 | 2026-11-13 | Claude Code | Verified 232/232 clean; root clean | Backend required tasks complete |
 | 2026-11-13 | Kiro IDE | App healthcheck; workflow presentation subset in definition read (allow-listed keys, reachability rule, Req 16.8–16.10); checkpoints 4, 8, 11 closed | **skeleton-backend spec complete: all required tasks done, 237 tests** |
 | 2026-11-13 | Claude Code | Verified 237/237 clean incl. Postgres | Next: skeleton-frontend spec |
+| 2026-11-14 | Kiro IDE (Spec task) | Frontend 1.1 Angular 22.2.6 scaffold, ng-zorro-antd 22.2.0, fast-check 4.10.2, Vitest runner, exact pins, proxy config | build, lint, test pass |
+| 2026-11-14 | Claude Code | Verified 0 version ranges, lockfile, no BOM/CRLF, node_modules/dist ignored, 41 files staged only under skeleton/frontend, npm test passes | OK; backend-support spec running in parallel in Kiro Crew |

@@ -74,7 +74,10 @@ describe('ShellComponent', () => {
           {
             path: 'app/:app',
             component: ShellComponent,
-            children: [...shellChildren, { path: 'views/:view', component: DummyComponent }],
+            children: [
+              ...shellChildren.filter((r) => r.path !== 'views/:view'),
+              { path: 'views/:view', component: DummyComponent },
+            ],
           },
           { path: 'login', component: DummyComponent },
         ]),

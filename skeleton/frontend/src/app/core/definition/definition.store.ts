@@ -45,7 +45,7 @@ export function buildMenu(def: RestrictedDefinition, roles: readonly string[]): 
         key: 'new:' + f.code,
         kind: 'new',
         label: 'New ' + (f.label || f.code),
-        link: ['/app', app, 'forms', f.code],
+        link: ['/app', app, 'forms', f.code, 'new'],
       });
     }
   }

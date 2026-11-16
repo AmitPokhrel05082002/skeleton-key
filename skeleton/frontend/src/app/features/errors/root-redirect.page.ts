@@ -11,7 +11,9 @@ import { NoAppPage } from './no-app.page';
   imports: [NoAppPage],
   template: `
     @if (!defaultApp) {
-      <sk-no-app-page />
+      @defer {
+        <sk-no-app-page />
+      }
     }
   `,
 })

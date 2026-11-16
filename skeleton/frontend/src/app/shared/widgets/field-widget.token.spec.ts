@@ -3,9 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FIELD_WIDGETS, WidgetRegistry } from './field-widget.token';
 
-@Component({ selector: 'app-test-a', template: '' })
+@Component({ selector: 'sk-test-a', template: '' })
 class A {}
-@Component({ selector: 'app-test-b', template: '' })
+@Component({ selector: 'sk-test-b', template: '' })
 class B {}
 
 function registry(regs: { key: string; component: unknown }[]): WidgetRegistry {

@@ -43,6 +43,24 @@ describe('toApiError', () => {
     expect(e.code).toBe('HTTP_502');
     expect(e.violations).toEqual([]);
   });
+
+  it('is idempotent for an already mapped ApiError', () => {
+    const mapped = toApiError(
+      new HttpErrorResponse({
+        status: 422,
+        error: { code: 'VALIDATION', message: 'bad', requestId: 'r1', violations: [{ field: 'a', rule: 'required' }], line: 2 },
+      }),
+    );
+    const again = toApiError(mapped);
+    expect(again).toEqual(mapped);
+    expect(again.code).toBe('VALIDATION');
+    expect(again.violations).toEqual([{ field: 'a', rule: 'required' }]);
+    expect(toApiError(again)).toEqual(mapped);
+  });
+
+  it('does not treat a partial object as an ApiError', () => {
+    expect(toApiError({ status: 500 }).code).toBe('HTTP_500');
+  });
 });
 
 describe('displayName', () => {

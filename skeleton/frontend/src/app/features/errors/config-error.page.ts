@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RuntimeConfigService } from '../../core/config/runtime-config.service';
 
 @Component({
-  selector: 'app-config-error-page',
+  selector: 'sk-config-error-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="sk-error-page" role="alert">

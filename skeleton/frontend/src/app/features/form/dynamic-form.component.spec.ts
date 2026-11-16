@@ -67,7 +67,7 @@ describe('DynamicFormComponent', () => {
       expect(c.touched).toBe(true);
       expect(cmp.form().controls['city'].errors).toBeNull();
       expect(cmp.unmatchedErrors()).toEqual([]);
-      expect(fixture.nativeElement.querySelector('app-error-alert nz-alert')).toBeNull();
+      expect(fixture.nativeElement.querySelector('sk-error-alert nz-alert')).toBeNull();
     });
 
     it('shows unmatched and hidden-field violations in the form alert', () => {
@@ -81,7 +81,7 @@ describe('DynamicFormComponent', () => {
       );
       fixture.detectChanges();
       expect(cmp.unmatchedErrors()).toEqual(['Hidden bad', 'Unknown bad']);
-      const text = (fixture.nativeElement as HTMLElement).querySelector('app-error-alert')?.textContent ?? '';
+      const text = (fixture.nativeElement as HTMLElement).querySelector('sk-error-alert')?.textContent ?? '';
       expect(text).toContain('Hidden bad');
       expect(text).toContain('Unknown bad');
     });
@@ -113,7 +113,7 @@ describe('DynamicFormComponent', () => {
       const { fixture } = setup([f('name')]);
       fixture.componentRef.setInput('serverError', apiError([], 409));
       fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('app-error-alert nz-alert')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('sk-error-alert nz-alert')).not.toBeNull();
     });
   });
 

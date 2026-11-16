@@ -6,12 +6,12 @@ import { NoAppPage } from './no-app.page';
 
 /** Route `/`: redirects to `/app/<Default_App>`, or shows NoAppPage when the host is not mapped. */
 @Component({
-  selector: 'app-root-redirect-page',
+  selector: 'sk-root-redirect-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NoAppPage],
   template: `
     @if (!defaultApp) {
-      <app-no-app-page />
+      <sk-no-app-page />
     }
   `,
 })

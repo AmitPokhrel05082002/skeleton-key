@@ -56,7 +56,7 @@ interface SectionView {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, NzFormModule, FieldControlComponent, ErrorAlertComponent],
   template: `
-    <app-error-alert [error]="alertError()" [unmatched]="unmatchedErrors()" />
+    <sk-error-alert [error]="alertError()" [unmatched]="unmatchedErrors()" />
     <form nz-form nzLayout="vertical" [formGroup]="form()" (ngSubmit)="submit()" novalidate>
       @for (section of sectionViews(); track $index) {
         <fieldset class="sk-section">

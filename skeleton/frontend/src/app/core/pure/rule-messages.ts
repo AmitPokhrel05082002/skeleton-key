@@ -28,4 +28,8 @@ export const RULE_MESSAGES: Readonly<Record<string, string>> = Object.freeze({
   REMARKS_REQUIRED: 'Remarks are required',
   attachment: 'An attachment is required',
   ATTACHMENT_REQUIRED: 'An attachment is required',
+  DUPLICATE: 'This value already exists',
+  UUID: 'Value is not a valid identifier',
+  CONSTRAINT: 'Value violates a constraint',
+  FIELD_NOT_WRITABLE: 'This field cannot be changed',
 });

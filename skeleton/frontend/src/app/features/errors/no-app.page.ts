@@ -5,7 +5,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzInputModule } from 'ng-zorro-antd/input';
 
 @Component({
-  selector: 'app-no-app-page',
+  selector: 'sk-no-app-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, NzInputModule, NzButtonModule],
   template: `

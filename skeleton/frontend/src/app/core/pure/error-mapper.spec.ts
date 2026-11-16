@@ -36,4 +36,12 @@ describe('error-mapper', () => {
     expect(violationMessage({ field: 'f', rule: '' })).toBe('Invalid value');
     expect(violationMessage({ field: 'f', rule: 'toString' })).toBe('toString');
   });
+
+  it('has fallback messages for backend rule codes', () => {
+    const msg = (rule: string) => violationMessage({ field: 'f', rule });
+    expect(msg('DUPLICATE')).toBe('This value already exists');
+    expect(msg('UUID')).toBe('Value is not a valid identifier');
+    expect(msg('CONSTRAINT')).toBe('Value violates a constraint');
+    expect(msg('FIELD_NOT_WRITABLE')).toBe('This field cannot be changed');
+  });
 });

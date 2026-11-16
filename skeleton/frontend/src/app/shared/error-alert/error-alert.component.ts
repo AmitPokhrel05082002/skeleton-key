@@ -10,7 +10,7 @@ import { errorText } from '../../core/pure/error-text';
  * Status 0 (no response) offers a Retry output.
  */
 @Component({
-  selector: 'app-error-alert',
+  selector: 'sk-error-alert',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NzAlertModule, NzButtonModule],
   template: `

@@ -3,7 +3,7 @@ import type { SlaState } from '../../core/pure/sla';
 
 /** Icon plus text for DUE_SOON and OVERDUE. Renders nothing for NONE. */
 @Component({
-  selector: 'app-sla-badge',
+  selector: 'sk-sla-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (text(); as t) {

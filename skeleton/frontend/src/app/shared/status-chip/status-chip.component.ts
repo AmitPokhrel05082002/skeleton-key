@@ -7,7 +7,7 @@ import { onColor } from '../../core/pure/contrast';
  * Primary_Override styles of `.sk-status-chip` apply.
  */
 @Component({
-  selector: 'app-status-chip',
+  selector: 'sk-status-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'sk-status-chip',

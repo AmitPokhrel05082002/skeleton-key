@@ -208,8 +208,8 @@ Constraints that apply to every task:
 - [x] 9. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run lint`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Public form page
-  - [ ] 10.1 Implement PublicFormPage
+- [x] 10. Public form page
+  - [x] 10.1 Implement PublicFormPage
     - Route `/public/:app/:form` (no guard). Call `publicApp(app)` without a session, pick the form by code, build `FieldDef[]` from the Public_Subset, and render through `DynamicFormComponent`.
     - Missing form, 404 or 409 show "form not available" with no controls. Submit sends only listed fields that hold a value; 201 shows the confirmation with `referenceNo`; 422/400 uses `serverError` and keeps values; 5xx or no response shows a generic error with `requestId` and keeps values; the button is disabled while pending.
     - Apply branding through `ThemeService`; under 576 px use one column with controls at least 44 px high.
@@ -219,8 +219,8 @@ Constraints that apply to every task:
     - Not-available cases, 201 confirmation, 422 keeps values, 5xx generic message with `requestId`, pending disables the button, no Authorization header.
     - _Requirements: 4.2, 4.3, 4.4, 4.7, 4.8, 4.9, 4.10_
 
-- [ ] 11. Login page
-  - [ ] 11.1 Implement LoginPage
+- [x] 11. Login page
+  - [x] 11.1 Implement LoginPage
     - Route `/login`. Reactive form with `username` and `password`; blank values show a field message and send nothing; 401 shows one neutral message; 400 violations map onto the controls through `mapErrors`; success navigates to the stored return target or `/app/<Default_App>`; the button is disabled while pending. Show the Skeleton Key name and mark with the orange accent.
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 6.3_
 
@@ -228,8 +228,8 @@ Constraints that apply to every task:
     - Blank fields send nothing, 401 neutral message, 400 violations on controls, return target navigation.
     - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 12. App shell and navigation
-  - [ ] 12.1 Implement DefinitionStore, Shell and app home
+- [x] 12. App shell and navigation
+  - [x] 12.1 Implement DefinitionStore, Shell and app home
     - `core/definition/definition.store.ts` (signals, restricted definition per app) and pure `buildMenu(def, roles)` (views in order labelled by `label` or `code`, "New" entries for submittable forms, "Admin" only for `PLATFORM_ADMIN`).
     - `ShellComponent` at `/app/:app` guarded by `authGuard`: loading indicator, "app not available" with no menu on 404/409, header with safe logo, app name, display name and Sign out, and calls to `ThemeService.apply` and `applyBranding`. `AppHomeComponent` redirects to the first view or shows an empty state.
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 2.7, 20.6_
@@ -242,24 +242,24 @@ Constraints that apply to every task:
     - Loading state, app-not-available, Sign out clears the Session, empty-state app home, Admin entry only for admins.
     - _Requirements: 5.7, 5.8, 5.9, 5.11, 2.7_
 
-- [ ] 13. View renderers
-  - [ ] 13.1 Implement pure view helpers
+- [x] 13. View renderers
+  - [x] 13.1 Implement pure view helpers
     - `formatCell(field, value)` (option labels, localised dates, Yes/No, plain text; never throws), `resolveColumns(view, entity)`, `buildListQuery(state)` (non-empty filters only, `defaultSort` only when the user has not sorted, page 1 on sort or filter change) and `groupByStatus(records, statuses)` (declaration order, "Other" column, input order kept).
     - _Requirements: 9.2, 9.3, 9.4, 9.6, 9.7, 9.8, 9.9, 10.1, 10.3, 10.8_
 
-  - [ ] 13.2 Write property test for Kanban grouping
+  - [x] 13.2 Write property test for Kanban grouping
     - **Property 9: Kanban grouping places every record once**
     - **Validates: Requirements 10.1, 10.3, 10.8**
 
-  - [ ] 13.3 Implement DynamicTableComponent
+  - [x] 13.3 Implement DynamicTableComponent
     - Single `switchMap` pipeline for page, size, sort and filter changes; defaults page 1, size 20 with sizes 10/20/50/100; filter controls by field type; `$status`, `$step`, `$assignee` (with `displayName`), `$dueAt` (with `SlaBadge`) columns; 400 violations shown above the table keeping previous rows; empty state; loading indicator; row click navigates to `/app/:app/records/:entity/:id`.
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 9.12, 9.13, 9.14_
 
-  - [ ] 13.4 Implement KanbanComponent
+  - [x] 13.4 Implement KanbanComponent
     - Columns from the first workflow statuses for the view entity; headers use the status `color` (else `--sk-primary`) with `onColor` text and the label always shown; cards show reference, title, assignee via `displayName`, status chip and `SlaBadge`; "Other" column only when non-empty; "Load more" while `total` exceeds loaded (page size 50); no drag behaviour; card click navigates to Record_Detail.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.12, 10.13, 10.14_
 
-  - [ ] 13.5 Implement MyTasksComponent and ViewHostPage
+  - [x] 13.5 Implement MyTasksComponent and ViewHostPage
     - `MyTasksComponent`: records list for the MY_TASKS view, sorted by `$dueAt` ascending unless `defaultSort`, showing reference, title, `stepLabel`, status chip and due date with `SlaBadge`; empty state; click navigates to Record_Detail.
     - `ViewHostPage` at `/app/:app/views/:view` switches on `view.type`; register the route.
     - _Requirements: 10.9, 10.10, 10.11, 10.12, 10.13, 10.14_

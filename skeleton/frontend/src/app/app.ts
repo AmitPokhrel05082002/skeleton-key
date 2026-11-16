@@ -4,7 +4,7 @@ import { RuntimeConfigService } from './core/config/runtime-config.service';
 import { ConfigErrorPage } from './features/errors/config-error.page';
 
 @Component({
-  selector: 'app-root',
+  selector: 'sk-root',
   imports: [RouterOutlet, ConfigErrorPage],
   templateUrl: './app.html',
   styleUrl: './app.scss'

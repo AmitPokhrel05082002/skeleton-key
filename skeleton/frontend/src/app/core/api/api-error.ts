@@ -56,6 +56,34 @@ function parseBody(body: unknown): Record<string, unknown> | null {
  * Non-JSON or non-object bodies give a generic error carrying only the HTTP status.
  */
 export function toApiError(err: unknown): ApiError {
+  if (
+    !(err instanceof HttpErrorResponse) &&
+    isObject(err) &&
+    typeof err['status'] === 'number' &&
+    typeof err['code'] === 'string' &&
+    typeof err['message'] === 'string' &&
+    Array.isArray(err['violations'])
+  ) {
+    const copy: ApiError = {
+      status: err['status'],
+      code: err['code'],
+      message: err['message'],
+      violations: toViolations(err['violations']),
+    };
+    const rid = str(err['requestId']);
+    if (rid !== undefined) {
+      copy.requestId = rid;
+    }
+    const ln = num(err['line']);
+    if (ln !== undefined) {
+      copy.line = ln;
+    }
+    const col = num(err['column']);
+    if (col !== undefined) {
+      copy.column = col;
+    }
+    return copy;
+  }
   const status =
     err instanceof HttpErrorResponse
       ? err.status

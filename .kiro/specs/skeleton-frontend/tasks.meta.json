@@ -7,6 +7,10 @@
     "8.5 Write property test for applied server errors": {
       "status": "passed",
       "lastRunTimestamp": 1794638753669
+    },
+    "13.2 Write property test for Kanban grouping": {
+      "status": "passed",
+      "lastRunTimestamp": 1794811104963
     }
   },
   "executionHistory": {
@@ -398,6 +402,130 @@
         "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794639402328
+      }
+    ],
+    "13.1 Implement pure view helpers": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794809352244
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794810962247
+      }
+    ],
+    "10.1 Implement PublicFormPage": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794810973908
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817911227
+      }
+    ],
+    "11.1 Implement LoginPage": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794810974166
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817911774
+      }
+    ],
+    "12.1 Implement DefinitionStore, Shell and app home": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794810974341
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817912233
+      }
+    ],
+    "13.2 Write property test for Kanban grouping": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794810974503
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817912693
+      }
+    ],
+    "10. Public form page": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817911419
+      }
+    ],
+    "11. Login page": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817911944
+      }
+    ],
+    "12. App shell and navigation": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817912427
+      }
+    ],
+    "13.3 Implement DynamicTableComponent": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817929157
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794821858363
+      }
+    ],
+    "13.4 Implement KanbanComponent": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794817929393
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794821858859
+      }
+    ],
+    "13.5 Implement MyTasksComponent and ViewHostPage": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794821859281
+      },
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794822253483
+      }
+    ],
+    "13. View renderers": [
+      {
+        "executionId": "49e1a240-0979-45fb-bc23-7828bf297483",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794822253823
       }
     ]
   }

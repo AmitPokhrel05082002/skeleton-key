@@ -276,12 +276,12 @@ Constraints that apply to every task:
     - Table: initial request parameters, page-size change, sort change, filter change resets page, 400 keeps rows, empty state, row navigation. Kanban: load more while `total` exceeds loaded, no drag handlers, `displayName` fallback to the id. My tasks: default sort.
     - _Requirements: 9.1, 9.5, 9.6, 9.9, 9.10, 9.11, 9.12, 10.6, 10.7, 10.9_
 
-- [ ] 14. Record detail and workflow actions
+- [x] 14. Record detail and workflow actions
   - [x] 14.1 Implement pure action helpers
     - `actionDialogReady(action, remarks, attachment)` (each `required` input must be non-blank) and `buildActionBody(initial, current, rules, remarks, attachment)` (only changed editable fields; `remarks` and `attachment` only when non-blank).
     - _Requirements: 11.7, 11.8, 11.10_
 
-  - [-] 14.2 Implement RecordDetailComponent
+  - [x] 14.2 Implement RecordDetailComponent
     - Route `/app/:app/records/:entity/:id`. Load the record, then instance and history in parallel when `instanceId` is not null; null `instanceId` shows fields with entity `required` flags and no actions or history.
     - Header shows reference, `stepLabel`, status chip, assignee via `displayName`, `dueAt` with `SlaBadge`; fields via `DynamicFormComponent` with `instance.fieldRules`; action buttons in order mapped to `style`, all disabled while pending; ended instance shows a "Closed" tag and no buttons.
     - Request handling: success replaces state with the returned Instance_View, reloads record and history, shows a success message; 422/403 maps violations to the form and the dialog inputs and keeps them open; 409 shows the message, reloads the instance and keeps values; 5xx shows a generic message with `requestId`; 404 shows NotFound with the app-home link.

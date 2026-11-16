@@ -537,6 +537,49 @@
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794822253823
       }
+    ],
+    "14.1 Implement pure action helpers": [
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824108821
+      },
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824417794
+      }
+    ],
+    "14.3 Implement ActionDialogComponent and HistoryTimelineComponent": [
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824109157
+      },
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824418019
+      }
+    ],
+    "14.4 Implement the authenticated form page": [
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824109502
+      },
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824418261
+      }
+    ],
+    "14.2 Implement RecordDetailComponent": [
+      {
+        "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794824418508
+      }
     ]
   }
 }

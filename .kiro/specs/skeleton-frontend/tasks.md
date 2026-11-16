@@ -277,23 +277,23 @@ Constraints that apply to every task:
     - _Requirements: 9.1, 9.5, 9.6, 9.9, 9.10, 9.11, 9.12, 10.6, 10.7, 10.9_
 
 - [ ] 14. Record detail and workflow actions
-  - [ ] 14.1 Implement pure action helpers
+  - [x] 14.1 Implement pure action helpers
     - `actionDialogReady(action, remarks, attachment)` (each `required` input must be non-blank) and `buildActionBody(initial, current, rules, remarks, attachment)` (only changed editable fields; `remarks` and `attachment` only when non-blank).
     - _Requirements: 11.7, 11.8, 11.10_
 
-  - [ ] 14.2 Implement RecordDetailComponent
+  - [-] 14.2 Implement RecordDetailComponent
     - Route `/app/:app/records/:entity/:id`. Load the record, then instance and history in parallel when `instanceId` is not null; null `instanceId` shows fields with entity `required` flags and no actions or history.
     - Header shows reference, `stepLabel`, status chip, assignee via `displayName`, `dueAt` with `SlaBadge`; fields via `DynamicFormComponent` with `instance.fieldRules`; action buttons in order mapped to `style`, all disabled while pending; ended instance shows a "Closed" tag and no buttons.
     - Request handling: success replaces state with the returned Instance_View, reloads record and history, shows a success message; 422/403 maps violations to the form and the dialog inputs and keeps them open; 409 shows the message, reloads the instance and keeps values; 5xx shows a generic message with `requestId`; 404 shows NotFound with the app-home link.
     - Invoke `ActionDialogComponent` (for `remarks` or `attachment` not hidden) and `NzModalService.confirm` (for `confirm` text without a dialog) through the interface defined in task 14.3, and render `HistoryTimelineComponent` from task 14.3.
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.9, 11.10, 11.11, 11.12, 11.13, 11.14, 11.15, 11.16, 11.17, 11.18, 20.2, 20.3_
 
-  - [ ] 14.3 Implement ActionDialogComponent and HistoryTimelineComponent
+  - [x] 14.3 Implement ActionDialogComponent and HistoryTimelineComponent
     - `ActionDialogComponent`: gated by `actionDialogReady` (confirm disabled until each `required` input is non-blank), shows the action `confirm` text, and maps `remarks` and `attachment` violations onto its inputs. Expose inputs and outputs (action, pending, violations; confirmed, cancelled) that task 14.2 consumes.
     - `HistoryTimelineComponent`: `nz-timeline` in backend order showing `eventTime`, `kind`, `actionCode`, `fromStep`/`toStep`, `fromStatus`/`toStatus`, `remarks`, and `attachmentRef` and `detail` when present, with `timeInStepMs` formatted as a duration if shown; actor via `displayName(actorName, actorId)`; interpolation only (no `innerHTML`).
     - _Requirements: 11.7, 11.8, 11.10, 11.16, 20.5_
 
-  - [ ] 14.4 Implement the authenticated form page
+  - [x] 14.4 Implement the authenticated form page
     - `AuthedFormPage` at `/app/:app/forms/:form/new` for the "New" menu entries, using `DynamicFormComponent` and `submitForm`, showing the `referenceNo` confirmation and server errors as in the public form.
     - _Requirements: 5.3, 7.1, 12.7_
 

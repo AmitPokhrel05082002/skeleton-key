@@ -1,0 +1,66 @@
+/*
+ * Primary_Override. Reads --sk-primary / --sk-on-primary (set by ThemeService.applyBranding)
+ * and applies them to branded surfaces only: header, primary buttons, focus ring,
+ * Kanban column headers and status chips. Nothing else in NG-ZORRO is recoloured.
+ */
+:root {
+  --sk-accent: #ff7a1a;
+  --sk-on-accent: #000000;
+}
+
+/* Focus ring: 2px outline, brand colour when set, accent otherwise. */
+:focus-visible {
+  outline: 2px solid var(--sk-primary, var(--sk-accent));
+  outline-offset: 2px;
+}
+
+/* Header */
+.sk-header {
+  background: var(--sk-primary, #141414);
+  color: var(--sk-on-primary, #ffffff);
+}
+
+/* Primary buttons */
+.ant-btn-primary:not(:disabled):not(.ant-btn-disabled) {
+  background: var(--sk-primary, var(--ant-primary-color, #1677ff));
+  border-color: var(--sk-primary, var(--ant-primary-color, #1677ff));
+  color: var(--sk-on-primary, #ffffff);
+}
+
+/* Kanban column headers: a status colour set inline wins over the brand colour. */
+.sk-kanban-header {
+  background: var(--sk-primary, #434343);
+  color: var(--sk-on-primary, #ffffff);
+}
+
+/* Status chips: the status colour is set inline with its own text colour. */
+.sk-status-chip {
+  background: var(--sk-primary, #434343);
+  color: var(--sk-on-primary, #ffffff);
+}
+
+/* Skeleton Key mark and name. The accent is for highlights, not for body text. */
+.sk-mark {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--sk-accent);
+  color: var(--sk-on-accent);
+  font-weight: 700;
+  line-height: 24px;
+  text-align: center;
+}
+
+.sk-name {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  .sk-name-accent {
+    color: var(--sk-accent);
+  }
+}
+
+.sk-highlight {
+  border-left: 3px solid var(--sk-accent);
+}

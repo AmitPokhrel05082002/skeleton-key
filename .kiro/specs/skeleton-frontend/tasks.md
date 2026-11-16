@@ -29,7 +29,7 @@ Constraints that apply to every task:
     - Scan `skeleton/frontend` sources: no `innerHTML` bindings, no `localStorage` or `document.cookie`, no app-specific codes other than `PLATFORM_ADMIN`, no `^` or `~` in `package.json`, no BOM and no CRLF.
     - _Requirements: 1.3, 1.5, 1.8, 2.8, 20.5_
 
-- [ ] 2. Runtime configuration and host resolution
+- [x] 2. Runtime configuration and host resolution
   - [x] 2.1 Implement runtime config, host resolution and the app initializer
     - Create `core/config/host-resolver.ts` with pure `resolveDefaultApp(hosts, host)` (strip port, lower-case, own-property exact match) and `validateRuntimeConfig(value)`.
     - Create `RuntimeConfigService.load()` using `fetch('assets/config.json', { cache: 'no-store' })`, with `configError`, a config signal and an `apiBase` computed signal defaulting to `/api`.
@@ -37,7 +37,7 @@ Constraints that apply to every task:
     - Add `public/assets/config.json` with a localhost mapping, and `ConfigErrorPage`, `NoAppPage` (host not mapped, with app-code input navigating to `/app/<code>`), and the root `/` redirect component in `app.routes.ts`. The explicit `:app` route value always wins.
     - _Requirements: 1.6, 21.1, 21.2, 21.3, 21.4, 21.5, 21.6, 21.7, 21.8_
 
-  - [ ] 2.2 Write unit tests for host resolution
+  - [x] 2.2 Write unit tests for host resolution
     - Cover exact match, upper-case input, host with port, no match, empty mapping.
     - _Requirements: 21.9_
 
@@ -116,18 +116,18 @@ Constraints that apply to every task:
 - [x] 5. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run build`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Theme and accessibility
+- [x] 6. Theme and accessibility
   - [x] 6.1 Implement contrast helpers and theme tokens
     - `core/pure/contrast.ts` (`contrastRatio` using WCAG luminance, `onColor`), `core/theme/theme-tokens.ts` (`THEME_TOKEN_PAIRS` for dark, light and the orange accent) and pure `resolveTheme(mode, prefersDark)`.
     - _Requirements: 6.3, 6.4, 6.5, 6.8_
 
-  - [ ] 6.2 Implement ThemeService and the Primary_Override
+  - [x] 6.2 Implement ThemeService and the Primary_Override
     - `ThemeService` owns one `<link id="sk-theme">`; `apply(mode)` swaps its `href` between `assets/themes/dark.css` and `light.css` and sets `data-theme`; `auto` listens to `prefers-color-scheme` and removes the listener when another mode is applied. Dark is the default. No `NzConfigService` theming.
     - `applyBranding(primaryColor?)` sets or removes `--sk-primary` and `--sk-on-primary` (from `onColor`) on `<html>`.
     - `primary-override.scss` applies the variables to header, primary buttons, focus ring, Kanban headers and status chips only. Add the global `:focus-visible` outline and the Skeleton Key mark/name styles with the orange accent for highlights.
     - _Requirements: 5.5, 6.1, 6.2, 6.3, 6.5, 6.6_
 
-  - [ ] 6.3 Write the theme contrast unit test
+  - [x] 6.3 Write the theme contrast unit test
     - Iterate every pair in `THEME_TOKEN_PAIRS` and fail below its minimum; check `onColor` against a sample of primary colours.
     - _Requirements: 6.4, 6.8_
 
@@ -139,16 +139,16 @@ Constraints that apply to every task:
     - `apply` swaps the single link `href`; `auto` reacts to a simulated setting change and stops after another mode; `applyBranding` sets and removes both variables.
     - _Requirements: 6.1, 6.2, 6.5_
 
-- [ ] 7. Dynamic form and widget registry
-  - [ ] 7.1 Implement the widget token and registry
+- [x] 7. Dynamic form and widget registry
+  - [x] 7.1 Implement the widget token and registry
     - `shared/widgets/field-widget.token.ts` and `field-widget.types.ts`: `FIELD_WIDGETS` multi token, widget contract (field, control, rule, disabled signal inputs), `WidgetRegistry` keeping the first registration per key and logging `console.error` naming each duplicate key.
     - _Requirements: 8.1, 8.2, 8.4, 8.6_
 
-  - [ ] 7.2 Implement shared presentation components
+  - [x] 7.2 Implement shared presentation components
     - `StatusChip` (always shows label text, text colour via `onColor`), `SlaBadge` (icon plus text, nothing for `NONE`), `ErrorAlert` (message, generic text with `requestId` for 5xx, Retry output for status 0), `EmptyState`. All with `OnPush` and `aria-label` where icon-only.
     - _Requirements: 6.5, 6.7, 10.14, 12.9, 20.1_
 
-  - [ ] 7.3 Implement DynamicFormComponent
+  - [x] 7.3 Implement DynamicFormComponent
     - Inputs `fields`, `sections`, `rules`, `initial`, `disabled`; outputs `submitted`; signals `values` and `valid`.
     - Build the reactive `FormGroup` from `planControls`, rebuilt when inputs change while keeping values of unchanged codes. Hidden fields get no control.
     - Layout: sections with `columns` 1/2/3 grid, a single column under 576 px, and a default single section when `sections` is not given.
@@ -156,22 +156,22 @@ Constraints that apply to every task:
     - Render each control through the `FieldControlComponent` selector (`<sk-field-control>`). Until task 7.4 lands, create a minimal placeholder stub of that selector (same selector and inputs, no behaviour) in the file task 7.4 will own, so 7.3 compiles; task 7.4 replaces the stub.
     - _Requirements: 7.1, 7.4, 7.6, 7.8, 7.9, 7.10, 7.11, 7.12, 7.15, 7.16, 7.18_
 
-  - [ ] 7.4 Implement FieldControlComponent
+  - [x] 7.4 Implement FieldControlComponent
     - Built-in NG-ZORRO controls for all 15 field types: LOCATION as two numeric inputs, USER and REFERENCE as text inputs, FILE as a disabled control with the hint "File upload is not yet available".
     - Labels bound with `for`/`id` or `aria-label`; `help` shown via `nz-form-extra`; limit validators and type conversion applied through the form model helpers.
     - Resolve the widget through `WidgetRegistry` from the field `widget` string, falling back to the built-in control when it is not registered.
     - Replace the placeholder stub from task 7.3 with this component, keeping the `<sk-field-control>` selector and inputs.
     - _Requirements: 6.7, 7.2, 7.3, 7.5, 7.7, 7.13, 7.17, 8.3, 8.5_
 
-  - [ ] 7.5 Write property test for controls following effective rules
+  - [x] 7.5 Write property test for controls following effective rules
     - **Property 1: Controls follow effective rules**
     - **Validates: Requirements 7.8, 7.9, 7.10, 7.11, 7.12, 18.2, 18.3, 18.4**
 
-  - [ ] 7.6 Write property test for limit validators
+  - [x] 7.6 Write property test for limit validators
     - **Property 2: Limit validators match declared constraints**
     - **Validates: Requirements 7.13, 7.14, 18.5**
 
-  - [ ] 7.7 Write the unit test rendering all 15 field types
+  - [x] 7.7 Write the unit test rendering all 15 field types
     - FILE is disabled and shows the explanatory text; every type renders its control.
     - _Requirements: 7.2, 7.3, 7.4, 18.8_
 
@@ -184,28 +184,28 @@ Constraints that apply to every task:
     - **Property 22: Initial values and section layout**
     - **Validates: Requirements 7.6, 7.15**
 
-- [ ] 8. Error mapping
-  - [ ] 8.1 Implement the Error_Mapper
+- [x] 8. Error mapping
+  - [x] 8.1 Implement the Error_Mapper
     - `core/pure/rule-messages.ts` (rule lookup table) and `core/pure/error-mapper.ts` with `mapErrors(err, controlNames)` and `violationMessage(v)` (message, else lookup, else rule text, else `Invalid value`; never empty). Single pass keeping order, no loss or duplication.
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6_
 
-  - [ ] 8.2 Write property test for violation assignment
+  - [x] 8.2 Write property test for violation assignment
     - **Property 5: Error mapping assigns every violation exactly once**
     - **Validates: Requirements 12.1, 12.2, 12.5, 12.6, 19.2, 19.3, 19.4**
 
-  - [ ] 8.3 Write property test for order, messages and determinism
+  - [x] 8.3 Write property test for order, messages and determinism
     - **Property 6: Error mapping preserves order, yields non-empty messages and is deterministic**
     - **Validates: Requirements 12.3, 12.4, 19.5, 19.6, 19.9**
 
-  - [ ] 8.4 Wire server errors into the Dynamic_Form
+  - [x] 8.4 Wire server errors into the Dynamic_Form
     - Add the `serverError` input and `unmatchedErrors` signal to `DynamicFormComponent`: run `mapErrors` over rendered control names, call `setErrors({ server })`, mark touched, show messages in an element referenced by `aria-describedby` with `aria-invalid="true"`, show unmatched messages in the form-level `ErrorAlert`, and clear a control's server error when the user edits it.
     - _Requirements: 12.5, 12.7, 12.8, 12.9_
 
-  - [ ] 8.5 Write property test for applied server errors
+  - [x] 8.5 Write property test for applied server errors
     - **Property 7: Applied server errors reach the right controls**
     - **Validates: Requirements 12.7, 12.8, 19.7, 19.8**
 
-- [ ] 9. Checkpoint - Ensure all tests pass
+- [x] 9. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run lint`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Public form page

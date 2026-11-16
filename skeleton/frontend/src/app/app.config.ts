@@ -1,6 +1,7 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { Router, provideRouter, withDisabledInitialNavigation } from '@angular/router';
+import { provideNzNativeDateAdapter } from 'ng-zorro-antd/core/time';
 import { provideNzI18n, en_US } from 'ng-zorro-antd/i18n';
 import { firstValueFrom } from 'rxjs';
 
@@ -15,6 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withDisabledInitialNavigation()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideNzI18n(en_US),
+    provideNzNativeDateAdapter(),
     provideAppInitializer(async () => {
       const config = inject(RuntimeConfigService);
       const router = inject(Router);

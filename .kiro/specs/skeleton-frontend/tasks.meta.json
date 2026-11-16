@@ -3,6 +3,10 @@
     "4.3 Write property test for submitted values": {
       "status": "passed",
       "lastRunTimestamp": 1794634719891
+    },
+    "8.5 Write property test for applied server errors": {
+      "status": "passed",
+      "lastRunTimestamp": 1794638753669
     }
   },
   "executionHistory": {
@@ -174,6 +178,226 @@
         "executionId": "7c9e2be4-7c93-45c9-b1b4-0c5760ad01d6",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794634841348
+      }
+    ],
+    "2.2 Write unit tests for host resolution": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794635821892
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636179951
+      }
+    ],
+    "6.2 Implement ThemeService and the Primary_Override": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794635823149
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636180871
+      }
+    ],
+    "6.3 Write the theme contrast unit test": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794635824652
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636181318
+      }
+    ],
+    "7.1 Implement the widget token and registry": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794635825217
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636181898
+      }
+    ],
+    "8.1 Implement the Error_Mapper": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794635825802
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636183805
+      }
+    ],
+    "2. Runtime configuration and host resolution": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636180280
+      }
+    ],
+    "6. Theme and accessibility": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636181502
+      }
+    ],
+    "7.2 Implement shared presentation components": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636200026
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636573027
+      }
+    ],
+    "7.3 Implement DynamicFormComponent": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636201830
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636573305
+      }
+    ],
+    "8.2 Write property test for violation assignment": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636202484
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636573640
+      }
+    ],
+    "8.3 Write property test for order, messages and determinism": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636204587
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636573976
+      }
+    ],
+    "7.4 Implement FieldControlComponent": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636574327
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638596326
+      }
+    ],
+    "8.4 Wire server errors into the Dynamic_Form": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794636574519
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638596682
+      }
+    ],
+    "7.5 Write property test for controls following effective rules": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638597023
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285004
+      }
+    ],
+    "7.6 Write property test for limit validators": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638597269
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285274
+      }
+    ],
+    "7.7 Write the unit test rendering all 15 field types": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638597547
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285459
+      }
+    ],
+    "8.5 Write property test for applied server errors": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794638597949
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285849
+      }
+    ],
+    "7. Dynamic form and widget registry": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285577
+      }
+    ],
+    "8. Error mapping": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639285968
+      }
+    ],
+    "9. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639291797
+      },
+      {
+        "executionId": "97cbe215-e3bd-409d-9ca0-f9f2e2893e46",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794639402328
       }
     ]
   }

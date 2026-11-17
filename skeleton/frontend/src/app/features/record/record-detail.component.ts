@@ -376,8 +376,10 @@ export class RecordDetailComponent implements OnInit {
     );
     this.pending.set(true);
     this.actionError.set(null);
+    const key = this.currentKey();
     this.api.runAction(inst.instanceId, action.code, body).subscribe({
       next: (view) => {
+        if (key !== this.currentKey()) return;
         this.pending.set(false);
         this.openAction.set(null);
         this.instance.set(view);
@@ -386,13 +388,14 @@ export class RecordDetailComponent implements OnInit {
         this.message.success(`${action.label}: done`);
       },
       error: (err: ApiError) => {
+        if (key !== this.currentKey()) return;
         this.pending.set(false);
-        this.onActionError(err, inst.instanceId);
+        this.onActionError(err, inst.instanceId, key);
       },
     });
   }
 
-  private onActionError(err: ApiError, instanceId: string): void {
+  private onActionError(err: ApiError, instanceId: string, key: string): void {
     if (err.status === 422 || err.status === 403) {
       this.actionError.set(err);
       if (err.violations.length === 0) {
@@ -402,8 +405,12 @@ export class RecordDetailComponent implements OnInit {
       this.message.error(errorText(err));
       this.openAction.set(null);
       this.api.getInstance(instanceId).subscribe({
-        next: (view) => this.instance.set(view),
-        error: (e: ApiError) => this.handleLoadError(e),
+        next: (view) => {
+          if (key === this.currentKey()) this.instance.set(view);
+        },
+        error: (e: ApiError) => {
+          if (key === this.currentKey()) this.handleLoadError(e);
+        },
       });
     } else if (err.status === 404) {
       this.notFound.set(true);

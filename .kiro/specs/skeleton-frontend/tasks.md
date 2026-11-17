@@ -308,16 +308,16 @@ Constraints that apply to every task:
 - [x] 15. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run build`. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Admin area
-  - [ ] 16.1 Implement JSON editor helpers
+- [x] 16. Admin area
+  - [x] 16.1 Implement JSON editor helpers
     - Pure `formatJson`, `jsonState`, `pointerToOffset(text, pointer)`, `lineColumnToOffset(text, line, column)`, `chooseSave(state)` (POST for new, PUT for DRAFT, edit for PUBLISHED), `canPublish(state)` and `minimalDefinitionTemplate()`.
     - _Requirements: 12.10, 13.6, 14.1, 14.2, 14.4, 14.5, 14.6, 14.8, 14.12_
 
-  - [ ] 16.2 Implement the admin shell and definitions list
+  - [x] 16.2 Implement the admin shell and definitions list
     - `/admin` route with `authGuard` and `adminGuard`; list app codes, versions per app (version, status, content hash, id), open a version into the editor, New definition from the template; a 403 shows the "not authorised" message.
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7_
 
-  - [ ] 16.3 Implement the JsonEditorComponent
+  - [x] 16.3 Implement the JsonEditorComponent
     - Monospaced textarea bound to a signal; parse error disables Save; after 500 ms of no change `validateDefinition` runs through `debounceTime` and `switchMap`; Validator_Report list with `field`, `rule`, `message`; clicking a pointer violation moves the caret; 400 with `line`/`column` shows them and moves the caret.
     - Save by state (POST, PUT, edit), Publish only for a saved DRAFT with no unsaved changes, 422 shows the report, 409 on publish shows the message, `canDeactivate` guard confirms unsaved changes. Register the editor route.
     - _Requirements: 12.10, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10, 14.11, 14.12, 14.13_
@@ -326,11 +326,11 @@ Constraints that apply to every task:
     - **Property 17: JSON editor helpers**
     - **Validates: Requirements 12.10, 14.1, 14.2, 14.4, 14.5, 14.6, 14.8, 14.12**
 
-  - [ ] 16.5 Implement the form builder model
+  - [x] 16.5 Implement the form builder model
     - `features/admin/builder-model.ts`: `BuilderModel`, `extractModel`, `applyModel` (returns a new object, touches only the selected entity fields and form sections, writes only schema-defined properties and removes `undefined` ones), `generateFieldCode`, `validateFieldCode`, `validateField`, `moveField`.
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.6, 15.9, 15.10, 15.12_
 
-  - [ ] 16.6 Write property test for the builder round trip and isolation
+  - [x] 16.6 Write property test for the builder round trip and isolation
     - **Property 19: Form builder model round trip and isolation**
     - **Validates: Requirements 15.9, 15.10, 15.11**
 
@@ -338,7 +338,7 @@ Constraints that apply to every task:
     - **Property 18: Form builder field operations**
     - **Validates: Requirements 15.2, 15.3, 15.4, 15.6, 15.12**
 
-  - [ ] 16.8 Implement the form builder UI
+  - [x] 16.8 Implement the form builder UI
     - Panel beside the editor reading and writing the editor text: entity and form selector, Add field with type choice, options editor for SELECT/MULTISELECT, target entity for REFERENCE, edit of label, `required`, `help`, `min`, `max`, `maxLength`, `pattern`; reorder with CDK `DragDrop` plus keyboard-operable move-up/down buttons with `aria-label`; remove from form, and delete from entity with `nz-popconfirm`; field code errors shown on the input and refused.
     - Live preview with `<sk-dynamic-form>` driven by computed signals from the same model; apply writes via `applyModel` into the editor text.
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 15.10, 15.12_

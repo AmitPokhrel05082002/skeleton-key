@@ -584,6 +584,16 @@
         "executionId": "b6ce6191-8f00-401e-8a18-dfeffe7630cd",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794825683327
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794887715873
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794889037593
       }
     ],
     "14. Record detail and workflow actions": [
@@ -603,6 +613,85 @@
         "executionId": "dcda392b-635d-442c-9bdb-484445b4e146",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794886677559
+      }
+    ],
+    "16.1 Implement JSON editor helpers": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794889037942
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794889710315
+      }
+    ],
+    "16.2 Implement the admin shell and definitions list": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794889710901
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794890385425
+      }
+    ],
+    "16.3 Implement the JsonEditorComponent": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794890386708
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794893551181
+      }
+    ],
+    "16.5 Implement the form builder model": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794893551952
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794895121897
+      }
+    ],
+    "16.6 Write property test for the builder round trip and isolation": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794895122463
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794896265874
+      }
+    ],
+    "16.8 Implement the form builder UI": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794896266545
+      },
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794897804102
+      }
+    ],
+    "16. Admin area": [
+      {
+        "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794897804556
       }
     ]
   }

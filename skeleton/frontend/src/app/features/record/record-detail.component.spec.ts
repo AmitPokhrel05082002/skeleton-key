@@ -241,6 +241,73 @@ describe('RecordDetailComponent', () => {
     expect(el(f).querySelector('a')?.getAttribute('href')).toBe('/app/GRV');
   });
 
+  describe('late action response after navigating away', () => {
+    function navigated() {
+      const params = new BehaviorSubject(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }));
+      const late = new Subject<InstanceView>();
+      const message = { success: vi.fn(), error: vi.fn(), remove: vi.fn() };
+      const r2 = record({ id: 'r2', referenceNo: 'GRV-2', instanceId: 'i2', data: { title: 'Second' } });
+      const i2 = instance({
+        instanceId: 'i2',
+        recordId: 'r2',
+        status: 'Waiting',
+        actions: [act('SAVE', 'default')],
+      });
+      const getRecord = vi.fn((_a: string, _e: string, id: string) => of(id === 'r1' ? record() : r2));
+      const getInstance = vi.fn((id: string) => of(id === 'i1' ? instance() : i2));
+      const history = vi.fn((id: string) => of(id === 'i2' ? [entry('STARTED')] : []));
+      const runAction = vi.fn(() => late);
+      TestBed.configureTestingModule({
+        providers: [
+          provideRouter([]),
+          { provide: ApiService, useValue: { definition: () => of(def), getRecord, getInstance, history, runAction } },
+          { provide: NzMessageService, useValue: message },
+          {
+            provide: ActivatedRoute,
+            useValue: { paramMap: params, parent: { paramMap: of(convertToParamMap({ app: 'GRV' })) } },
+          },
+        ],
+      });
+      const f = TestBed.createComponent(RecordDetailComponent);
+      f.detectChanges();
+      buttons(f)[1].click();
+      params.next(convertToParamMap({ entity: 'GRIEVANCE', id: 'r2' }));
+      f.detectChanges();
+      return { f, late, message, getRecord, getInstance, history };
+    }
+
+    function expectUntouched(
+      f: ComponentFixture<RecordDetailComponent>,
+      c: ReturnType<typeof navigated>,
+    ) {
+      expect(el(f).textContent).toContain('GRV-2');
+      expect(el(f).textContent).toContain('Waiting');
+      expect(buttons(f).map((b) => b.textContent?.trim())).toEqual(['save']);
+      expect(buttons(f)[0].disabled).toBe(false);
+      expect(el(f).querySelectorAll('.sk-h-kind')).toHaveLength(1);
+      expect(c.getRecord).toHaveBeenCalledTimes(2);
+      expect(c.history).toHaveBeenCalledTimes(2);
+      expect(c.message.success).not.toHaveBeenCalled();
+      expect(c.message.error).not.toHaveBeenCalled();
+    }
+
+    it('ignores a late success response', () => {
+      const c = navigated();
+      c.late.next(instance({ status: 'Done', ended: true, actions: [] }));
+      c.f.detectChanges();
+      expectUntouched(c.f, c);
+      expect(c.getInstance).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores a late 409 error and does not reload the instance', () => {
+      const c = navigated();
+      c.late.error(apiErr(409));
+      c.f.detectChanges();
+      expectUntouched(c.f, c);
+      expect(c.getInstance).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it('shows the new record after navigating and drops a late response for the previous one', () => {
     const params = new BehaviorSubject(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }));
     const a = new Subject<RecordSummary>();

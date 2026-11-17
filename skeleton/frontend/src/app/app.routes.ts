@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/auth/admin.guard';
 import { authGuard } from './core/auth/auth.guard';
 import { NotAuthorisedPage } from './features/errors/not-authorised.page';
 import { NotFoundPage } from './features/errors/not-found.page';
@@ -18,6 +19,13 @@ export const routes: Routes = [
     path: 'public/:app/:form',
     loadComponent: () =>
       import('./features/public-form/public-form.page').then((m) => m.PublicFormPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () =>
+      import('./features/admin/admin-shell.component').then((m) => m.AdminShellComponent),
+    loadChildren: () => import('./features/admin/admin.routes').then((m) => m.adminChildren),
   },
   {
     path: 'login',

@@ -68,6 +68,22 @@ describe('JsonEditorComponent', () => {
     f.detectChanges();
   }
 
+  it('styles the textarea from the theme variables', () => {
+    const f = create(null);
+    expect(area(f).classList.contains('sk-json-text')).toBe(true);
+    const css = Array.from(document.querySelectorAll('style'))
+      .map((s) => s.textContent ?? '')
+      .join('\n');
+    const rule = (sel: string): string => new RegExp(`${sel}[^{]*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
+    const base = rule('\\.sk-json-text');
+    expect(base).toContain('background: var(--sk-code-bg)');
+    expect(base).toContain('color: var(--sk-code-fg)');
+    expect(base).toContain('caret-color: var(--sk-code-caret)');
+    expect(base).toContain('border: 1px solid var(--sk-code-border)');
+    expect(rule('\\.sk-json-text[^{]*::selection')).toContain('var(--sk-code-selection-bg)');
+    expect(rule('\\.sk-json-text[^{]*::selection')).toContain('var(--sk-code-selection-fg)');
+  });
+
   it('opens /new with the formatted template, unsaved and not publishable', () => {
     const f = create(null);
     expect(area(f).value).toBe(formatJson(minimalDefinitionTemplate()));

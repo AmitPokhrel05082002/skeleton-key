@@ -1,9 +1,13 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import type { FieldDef, FieldType, SectionDef } from '../../core/api/api.types';
 import { DynamicFormComponent } from '../form/dynamic-form.component';
 import {
@@ -40,7 +44,19 @@ function list(v: unknown): Record<string, unknown>[] {
 @Component({
   selector: 'sk-form-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CdkDropList, CdkDrag, DynamicFormComponent, NzAlertModule, NzButtonModule, NzInputModule, NzPopconfirmModule],
+  imports: [
+    CdkDropList,
+    CdkDrag,
+    DynamicFormComponent,
+    FormsModule,
+    NzAlertModule,
+    NzButtonModule,
+    NzCheckboxModule,
+    NzInputModule,
+    NzInputNumberModule,
+    NzPopconfirmModule,
+    NzSelectModule,
+  ],
   template: `
     <h3>Form builder</h3>
     @if (!enabled()) {
@@ -52,31 +68,46 @@ function list(v: unknown): Record<string, unknown>[] {
       />
     } @else if (working(); as m) {
       <div class="sk-pick">
-        <label>
-          Entity
-          <select class="sk-entity" aria-label="Entity" (change)="pickEntity(val($event))">
-            @for (e of entities(); track e.code) {
-              <option [value]="e.code" [selected]="e.code === entityCode()">{{ e.label }}</option>
-            }
-          </select>
-        </label>
-        <label>
-          Form
-          <select class="sk-form" aria-label="Form" (change)="pickForm(val($event))">
-            <option value="" [selected]="formCode() === null">New form</option>
-            @for (f of forms(); track f.code) {
-              <option [value]="f.code" [selected]="f.code === formCode()">{{ f.label }}</option>
-            }
-          </select>
-        </label>
+        <label for="sk-entity-select">Entity</label>
+        <nz-select
+          class="sk-entity sk-select"
+          nzId="sk-entity-select"
+          aria-label="Entity"
+          [ngModel]="entityCode()"
+          (ngModelChange)="pickEntity($event)"
+        >
+          @for (e of entities(); track e.code) {
+            <nz-option [nzValue]="e.code" [nzLabel]="e.label" />
+          }
+        </nz-select>
+        <label for="sk-form-select">Form</label>
+        <nz-select
+          class="sk-form sk-select"
+          nzId="sk-form-select"
+          aria-label="Form"
+          [ngModel]="formCode() ?? newForm"
+          (ngModelChange)="pickForm($event)"
+        >
+          <nz-option [nzValue]="newForm" nzLabel="New form" />
+          @for (f of forms(); track f.code) {
+            <nz-option [nzValue]="f.code" [nzLabel]="f.label" />
+          }
+        </nz-select>
       </div>
 
       <div class="sk-add">
-        <select class="sk-add-type" aria-label="Field type" (change)="addType.set(val($event))">
+        <label for="sk-add-type-select" class="sk-sr">Field type</label>
+        <nz-select
+          class="sk-add-type sk-select"
+          nzId="sk-add-type-select"
+          aria-label="Field type"
+          [ngModel]="addType()"
+          (ngModelChange)="addType.set($event)"
+        >
           @for (t of types; track t) {
-            <option [value]="t" [selected]="t === addType()">{{ t }}</option>
+            <nz-option [nzValue]="t" [nzLabel]="t" />
           }
-        </select>
+        </nz-select>
         <button nz-button type="button" class="sk-add-field" (click)="addField()">Add field</button>
       </div>
 
@@ -114,13 +145,14 @@ function list(v: unknown): Record<string, unknown>[] {
             [value]="f.label"
             (input)="patch(i, { label: val($event) })"
           />
-          <label>
-            <input
-              type="checkbox"
-              class="sk-required"
-              [checked]="f.required === true"
-              (change)="patch(i, { required: checked($event) })"
-            />
+          <!-- nz-checkbox renders its own <input type="checkbox"> inside this label. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
+          <label
+            nz-checkbox
+            class="sk-required"
+            [ngModel]="f.required === true"
+            (ngModelChange)="patch(i, { required: $event === true })"
+          >
             Required
           </label>
           <input
@@ -132,22 +164,29 @@ function list(v: unknown): Record<string, unknown>[] {
             (input)="patch(i, { help: val($event) || undefined })"
           />
           @if (numeric(f)) {
-            <input nz-input class="sk-min" type="number" aria-label="Min" placeholder="Min" [value]="f.min ?? ''" (input)="setNum(i, 'min', val($event))" />
-            <input nz-input class="sk-max" type="number" aria-label="Max" placeholder="Max" [value]="f.max ?? ''" (input)="setNum(i, 'max', val($event))" />
+            <nz-input-number class="sk-min" [nzId]="'sk-min-' + i" aria-label="Min" nzPlaceHolder="Min" [ngModel]="f.min ?? null" (ngModelChange)="setNum(i, 'min', $event)" />
+            <nz-input-number class="sk-max" [nzId]="'sk-max-' + i" aria-label="Max" nzPlaceHolder="Max" [ngModel]="f.max ?? null" (ngModelChange)="setNum(i, 'max', $event)" />
           }
           @if (textual(f)) {
-            <input nz-input class="sk-maxlength" type="number" aria-label="Max length" placeholder="Max length" [value]="f.maxLength ?? ''" (input)="setNum(i, 'maxLength', val($event))" />
+            <nz-input-number class="sk-maxlength" [nzId]="'sk-maxlength-' + i" aria-label="Max length" nzPlaceHolder="Max length" [nzMin]="1" [nzPrecision]="0" [ngModel]="f.maxLength ?? null" (ngModelChange)="setNum(i, 'maxLength', $event)" />
           }
           @if (f.type === 'TEXT') {
             <input nz-input class="sk-pattern" aria-label="Pattern" placeholder="Pattern" [value]="f.pattern ?? ''" (input)="patch(i, { pattern: val($event) || undefined })" />
           }
           @if (f.type === 'REFERENCE') {
-            <select class="sk-ref" aria-label="Target entity" (change)="patch(i, { ref: val($event) || undefined })">
-              <option value="" [selected]="!f.ref">Choose entity</option>
+            <nz-select
+              class="sk-ref sk-select"
+              [nzId]="'sk-ref-' + i"
+              aria-label="Target entity"
+              nzPlaceHolder="Choose entity"
+              nzAllowClear
+              [ngModel]="f.ref ?? null"
+              (ngModelChange)="patch(i, { ref: $event || undefined })"
+            >
               @for (e of entities(); track e.code) {
-                <option [value]="e.code" [selected]="e.code === f.ref">{{ e.label }}</option>
+                <nz-option [nzValue]="e.code" [nzLabel]="e.label" />
               }
-            </select>
+            </nz-select>
           }
           @if (f.type === 'SELECT' || f.type === 'MULTISELECT') {
             @for (o of f.options ?? []; track $index; let oi = $index) {
@@ -195,9 +234,33 @@ function list(v: unknown): Record<string, unknown>[] {
   styles: `
     .sk-field,
     .sk-item {
-      border: 1px solid #eee;
+      border: 1px solid var(--sk-divider);
       padding: 8px;
       margin-bottom: 8px;
+    }
+    .sk-field {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .sk-field > .sk-row,
+    .sk-field > input {
+      align-self: stretch;
+    }
+    .sk-row > input {
+      flex: 1;
+    }
+    .sk-select {
+      min-width: 12rem;
+    }
+    .sk-sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
     .sk-row,
     .sk-pick,
@@ -211,7 +274,7 @@ function list(v: unknown): Record<string, unknown>[] {
       flex: 1;
     }
     .sk-error {
-      color: #cf1322;
+      color: var(--sk-error-fg);
     }
   `,
 })
@@ -222,6 +285,8 @@ export class FormBuilderComponent {
   readonly applied = output<string>();
 
   protected readonly types = FIELD_TYPES;
+  /** Option value of "New form" in the form select (a real form code never starts with underscores). */
+  protected readonly newForm = '__NEW_FORM__';
   protected readonly addType = signal<string>('TEXT');
 
   private readonly def = computed<AppDefinitionJson | null>(() => {
@@ -295,10 +360,7 @@ export class FormBuilderComponent {
   });
 
   protected val(e: Event): string {
-    return (e.target as HTMLInputElement | HTMLSelectElement).value;
-  }
-  protected checked(e: Event): boolean {
-    return (e.target as HTMLInputElement).checked;
+    return (e.target as HTMLInputElement).value;
   }
   protected numeric(f: FieldDef): boolean {
     return NUMERIC.includes(f.type);
@@ -314,8 +376,8 @@ export class FormBuilderComponent {
     this.pickedEntity.set(code);
     this.pickedForm.set(undefined);
   }
-  protected pickForm(code: string): void {
-    this.pickedForm.set(code === '' ? null : code);
+  protected pickForm(code: string | null): void {
+    this.pickedForm.set(code === null || code === this.newForm ? null : code);
   }
 
   private edit(fn: (m: BuilderModel) => BuilderModel): void {
@@ -349,9 +411,8 @@ export class FormBuilderComponent {
     this.withFields((fields) => fields.map((f, k) => (k === i ? { ...f, ...change } : f)));
   }
 
-  protected setNum(i: number, key: NumKey, raw: string): void {
-    const n = raw.trim() === '' ? undefined : Number(raw);
-    this.patch(i, { [key]: n === undefined || Number.isNaN(n) ? undefined : n });
+  protected setNum(i: number, key: NumKey, n: number | null): void {
+    this.patch(i, { [key]: n === null || Number.isNaN(n) ? undefined : n });
   }
 
   /** Renames a field when the new code is valid and unique; otherwise shows the error and changes nothing. */

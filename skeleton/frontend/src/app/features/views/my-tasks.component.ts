@@ -31,7 +31,7 @@ export const MY_TASKS_DEFAULT_SORT = { field: '$dueAt', direction: 'ASC' as cons
       @if (!loading() && !error() && records().length === 0) {
         <sk-empty-state message="No tasks" />
       } @else {
-        <nz-table #t nzSize="middle" [nzData]="records()" [nzFrontPagination]="false" [nzShowPagination]="false">
+        <nz-table #t nzSize="middle" [nzData]="records()" [nzFrontPagination]="false" [nzShowPagination]="false" [nzScroll]="scroll">
           <thead>
             <tr>
               <th>Reference</th>
@@ -86,6 +86,8 @@ export class MyTasksComponent {
   readonly view = input.required<ViewDef>();
   readonly entity = input<EntityDef | null | undefined>(null);
 
+  /** Wide tables scroll inside their own container instead of widening the page. */
+  protected readonly scroll = { x: 'max-content' };
   protected readonly records = signal<RecordSummary[]>([]);
   protected readonly total = signal(0);
   protected readonly page = signal(0);

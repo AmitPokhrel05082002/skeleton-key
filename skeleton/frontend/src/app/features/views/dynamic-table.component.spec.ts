@@ -97,6 +97,15 @@ describe('DynamicTableComponent', () => {
     expect(el.querySelectorAll('sk-status-chip').length).toBe(1);
   });
 
+  it('renders the table inside a horizontally scrollable container', () => {
+    const { el } = setup();
+    const content = el.querySelector('.ant-table-content') as HTMLElement;
+    const table = el.querySelector('table') as HTMLElement;
+    expect(content).not.toBeNull();
+    expect(content.style.overflowX).toBe('auto');
+    expect(table.style.width).toBe('max-content');
+  });
+
   it('sort resets to page 1 and sends the user sort instead of the default', () => {
     const { cmp, listRecords, tick } = setup();
     cmp.onPage(3);

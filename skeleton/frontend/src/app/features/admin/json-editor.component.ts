@@ -151,7 +151,7 @@ type ValidationResult = { report: ValidatorReport } | { error: ApiError } | null
     }
     .sk-dirty {
       margin-left: 8px;
-      color: #d46b08;
+      color: var(--sk-warn-fg);
     }
     .sk-json-text {
       width: 100%;
@@ -163,6 +163,19 @@ type ValidationResult = { report: ValidatorReport } | { error: ApiError } | null
       white-space: pre;
       padding: 8px;
       box-sizing: border-box;
+      background: var(--sk-code-bg);
+      color: var(--sk-code-fg);
+      caret-color: var(--sk-code-caret);
+      border: 1px solid var(--sk-code-border);
+      border-radius: 6px;
+    }
+    .sk-json-text:focus,
+    .sk-json-text:focus-visible {
+      border-color: var(--sk-primary, var(--sk-accent));
+    }
+    .sk-json-text::selection {
+      background: var(--sk-code-selection-bg);
+      color: var(--sk-code-selection-fg);
     }
     .sk-violations {
       list-style: none;
@@ -175,7 +188,8 @@ type ValidationResult = { report: ValidatorReport } | { error: ApiError } | null
       text-align: left;
       background: none;
       border: 0;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--sk-divider);
+      color: inherit;
       padding: 6px 4px;
       cursor: pointer;
     }

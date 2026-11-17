@@ -21,6 +21,48 @@ export interface TokenPair {
 export const ACCENT = '#ff7a1a';
 
 /**
+ * Values of the `--sk-*` admin colour variables. primary-override.scss declares the same values
+ * (`:root` is light, `[data-theme="dark"]` overrides); a spec asserts the two stay equal.
+ */
+export const THEME_VARIABLES: Readonly<Record<ResolvedTheme, Readonly<Record<string, string>>>> = {
+  light: {
+    '--sk-code-bg': '#ffffff',
+    '--sk-code-fg': '#1f2328',
+    '--sk-code-caret': '#1f2328',
+    '--sk-code-selection-bg': '#b6d7ff',
+    '--sk-code-selection-fg': '#000000',
+    '--sk-code-border': '#8c8c8c',
+    '--sk-warn-fg': '#ad4e00',
+    '--sk-error-fg': '#cf1322',
+    '--sk-divider': '#eeeeee',
+  },
+  dark: {
+    '--sk-code-bg': '#0d1117',
+    '--sk-code-fg': '#e6edf3',
+    '--sk-code-caret': '#e6edf3',
+    '--sk-code-selection-bg': '#264f78',
+    '--sk-code-selection-fg': '#ffffff',
+    '--sk-code-border': '#6b6b6b',
+    '--sk-warn-fg': '#ffa940',
+    '--sk-error-fg': '#ff7875',
+    '--sk-divider': '#303030',
+  },
+};
+
+function codePairs(theme: ResolvedTheme): TokenPair[] {
+  const v = THEME_VARIABLES[theme];
+  const surface = theme === 'dark' ? '#141414' : '#ffffff';
+  return [
+    { name: `${theme} code text on code background`, fg: v['--sk-code-fg'], bg: v['--sk-code-bg'], min: 4.5, theme },
+    { name: `${theme} code caret on code background`, fg: v['--sk-code-caret'], bg: v['--sk-code-bg'], min: 3, theme },
+    { name: `${theme} code selection text on selection background`, fg: v['--sk-code-selection-fg'], bg: v['--sk-code-selection-bg'], min: 4.5, theme },
+    { name: `${theme} code border on code background`, fg: v['--sk-code-border'], bg: v['--sk-code-bg'], min: 3, theme },
+    { name: `${theme} warning text on surface`, fg: v['--sk-warn-fg'], bg: surface, min: 4.5, theme },
+    { name: `${theme} error text on surface`, fg: v['--sk-error-fg'], bg: surface, min: 4.5, theme },
+  ];
+}
+
+/**
  * Foreground/background pairs (opaque equivalents of the NG-ZORRO prebuilt themes) with the
  * minimum WCAG ratio each must reach. 4.5 for text, 3 for large text and component borders.
  */
@@ -38,6 +80,9 @@ export const THEME_TOKEN_PAIRS: readonly TokenPair[] = [
   { name: 'light text on layout', fg: '#262626', bg: '#f5f5f5', min: 4.5, theme: 'light' },
   { name: 'light border on surface', fg: '#8c8c8c', bg: '#ffffff', min: 3, theme: 'light' },
   { name: 'light text on accent', fg: onColor(ACCENT), bg: ACCENT, min: 4.5, theme: 'light' },
+  // Admin code editor and status colours
+  ...codePairs('dark'),
+  ...codePairs('light'),
 ];
 
 /** Decides the theme to apply. Dark is the default when no mode is given. */

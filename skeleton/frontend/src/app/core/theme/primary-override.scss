@@ -6,6 +6,29 @@
 :root {
   --sk-accent: #ff7a1a;
   --sk-on-accent: #000000;
+
+  /* Admin code editor and status colours: light values. Keep equal to THEME_VARIABLES in theme-tokens.ts. */
+  --sk-code-bg: #ffffff;
+  --sk-code-fg: #1f2328;
+  --sk-code-caret: #1f2328;
+  --sk-code-selection-bg: #b6d7ff;
+  --sk-code-selection-fg: #000000;
+  --sk-code-border: #8c8c8c;
+  --sk-warn-fg: #ad4e00;
+  --sk-error-fg: #cf1322;
+  --sk-divider: #eeeeee;
+}
+
+[data-theme='dark'] {
+  --sk-code-bg: #0d1117;
+  --sk-code-fg: #e6edf3;
+  --sk-code-caret: #e6edf3;
+  --sk-code-selection-bg: #264f78;
+  --sk-code-selection-fg: #ffffff;
+  --sk-code-border: #6b6b6b;
+  --sk-warn-fg: #ffa940;
+  --sk-error-fg: #ff7875;
+  --sk-divider: #303030;
 }
 
 /* Focus ring: 2px outline, brand colour when set, accent otherwise. */

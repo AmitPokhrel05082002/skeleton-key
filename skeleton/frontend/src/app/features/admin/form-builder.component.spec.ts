@@ -44,6 +44,13 @@ describe('FormBuilderComponent', () => {
     fixture.detectChanges();
   }
 
+  /** Drives an NG-ZORRO control the way its ControlValueAccessor does: fires ngModelChange on the host. */
+  function emit(selector: string, value: unknown, index = 0): void {
+    const hosts = fixture.debugElement.queryAll((d) => d.nativeElement.matches?.(selector) === true);
+    hosts[index].triggerEventHandler('ngModelChange', value);
+    fixture.detectChanges();
+  }
+
   function labels(): string[] {
     return all('.sk-item-label').map((e) => e.textContent?.trim() ?? '');
   }
@@ -82,9 +89,7 @@ describe('FormBuilderComponent', () => {
 
   it('shows validateField errors for a SELECT without options and blocks Apply', () => {
     create(formatJson(DEF));
-    const type = q<HTMLSelectElement>('select.sk-add-type');
-    type.value = 'SELECT';
-    type.dispatchEvent(new Event('change'));
+    emit('.sk-add-type', 'SELECT');
     q('.sk-add-field').click();
     fixture.detectChanges();
     expect(q('.sk-field-error').textContent).toContain('option');
@@ -95,6 +100,38 @@ describe('FormBuilderComponent', () => {
     typeInto(value, 'a');
     typeInto(label, 'A');
     expect((q('.sk-apply') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('uses NG-ZORRO controls and no native select, checkbox or number input', () => {
+    create(formatJson(DEF));
+    emit('.sk-add-type', 'DECIMAL');
+    q('.sk-add-field').click();
+    fixture.detectChanges();
+    expect(el().querySelectorAll('nz-select').length).toBeGreaterThanOrEqual(3);
+    expect(el().querySelectorAll('label[nz-checkbox]').length).toBeGreaterThan(0);
+    expect(el().querySelectorAll('section.sk-field > nz-input-number').length).toBe(4);
+    expect(el().querySelectorAll('select')).toHaveLength(0);
+    expect(el().querySelectorAll('input[type=checkbox]:not(.ant-checkbox-input)')).toHaveLength(0);
+    expect(el().querySelectorAll('input[type=number]:not(.ant-input-number-input)')).toHaveLength(0);
+  });
+
+  it('applies required, min, max and the reference target chosen in the NG-ZORRO controls', () => {
+    create(formatJson(DEF));
+    emit('.sk-add-type', 'DECIMAL');
+    q('.sk-add-field').click();
+    fixture.detectChanges();
+    emit('.sk-required', true, 2);
+    emit('.sk-min', 1);
+    emit('.sk-max', 9);
+    emit('.sk-add-type', 'REFERENCE');
+    q('.sk-add-field').click();
+    fixture.detectChanges();
+    expect((q('.sk-apply') as HTMLButtonElement).disabled).toBe(true);
+    emit('.sk-ref', 'THING');
+    q('.sk-apply').click();
+    const fields = (JSON.parse(emitted[0]) as typeof DEF).entities[0].fields as Record<string, unknown>[];
+    expect(fields[2]).toMatchObject({ type: 'DECIMAL', required: true, min: 1, max: 9 });
+    expect(fields[3]).toMatchObject({ type: 'REFERENCE', ref: 'THING' });
   });
 
   it('moves a field up and down with the buttons', () => {

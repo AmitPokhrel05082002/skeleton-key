@@ -460,6 +460,16 @@
         "executionId": "869533c1-133f-456f-8683-66e934897cde",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794823534852
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794899126528
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794900263779
       }
     ],
     "13.2 Write property test for Kanban grouping": [
@@ -594,6 +604,16 @@
         "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794889037593
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794899127134
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794900265044
       }
     ],
     "14. Record detail and workflow actions": [
@@ -685,6 +705,16 @@
         "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794897804102
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794899125867
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794900263078
       }
     ],
     "16. Admin area": [
@@ -692,6 +722,25 @@
         "executionId": "32e6f1c3-dae0-436b-8bd5-e8628cbc1e7e",
         "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
         "timestamp": 1794897804556
+      }
+    ],
+    "17.1 Create the Dockerfile and nginx configuration": [
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794900265849
+      },
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794909326153
+      }
+    ],
+    "17.2 Add the frontend service to docker-compose.yml": [
+      {
+        "executionId": "bbc38b12-16a4-45d5-9cbc-7d99669b56d0",
+        "chatSessionId": "sess_ca168d29-8b94-40ef-ba3b-9fd50c62ee58",
+        "timestamp": 1794909326683
       }
     ]
   }

@@ -128,6 +128,7 @@ function pad(n: number): string {
           nzSize="middle"
           [nzData]="items()"
           [nzFrontPagination]="false"
+          [nzScroll]="scroll"
           [nzTotal]="total()"
           [nzPageIndex]="state().page"
           [nzPageSize]="state().size"
@@ -219,6 +220,8 @@ export class DynamicTableComponent {
   readonly entity = input.required<EntityDef>();
 
   protected readonly pageSizes: number[] = [...TABLE_PAGE_SIZES];
+  /** Wide tables scroll inside their own container instead of widening the page. */
+  protected readonly scroll = { x: 'max-content' };
 
   /** Page, size, sort and filters. Resets whenever the app or view input changes. */
   protected readonly state = linkedSignal<{ app: string; view: ViewDef }, ListState>({

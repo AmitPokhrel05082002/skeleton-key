@@ -348,12 +348,12 @@ Constraints that apply to every task:
     - _Requirements: 13.1, 13.2, 13.4, 14.4, 14.5, 14.6, 14.12, 14.13, 15.10_
 
 - [ ] 17. Dockerfile, nginx and compose
-  - [ ] 17.1 Create the Dockerfile and nginx configuration
+  - [x] 17.1 Create the Dockerfile and nginx configuration
     - `skeleton/frontend/Dockerfile`: multi-stage, Node (pinned LTS) running `npm ci` and `npm run build -- --configuration production`, then pinned `nginx:<version>-alpine` with the output path confirmed against `angular.json`.
     - `nginx.conf` and `security-headers.conf`: `/api/` proxied to `http://app:8080` with `Host` and `X-Request-Id`; SPA fallback to `index.html`; `no-cache` for `index.html` and `assets/config.json`; immutable long cache for hashed assets; `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` included in every location. Add `.dockerignore`.
     - _Requirements: 16.1, 16.2, 16.3, 16.6, 16.7, 16.8_
 
-  - [ ] 17.2 Add the frontend service to docker-compose.yml
+  - [x] 17.2 Add the frontend service to docker-compose.yml
     - Read the existing `docker-compose.yml` and extend it in place with a `frontend` service built from `./skeleton/frontend`, `restart: unless-stopped`, published on `${FRONTEND_PORT:-80}:80`, `depends_on` the `app` service healthy, a `wget` healthcheck on the Nginx root, and the host `skeleton/frontend/public/assets/config.json` mounted read-only onto `/usr/share/nginx/html/assets/config.json`. Do not add a second reverse proxy.
     - Verify the file with `docker compose config` and the image with `docker build skeleton\frontend`.
     - _Requirements: 16.3, 16.4, 16.5, 16.9_

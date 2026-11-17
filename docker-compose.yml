@@ -42,5 +42,22 @@ services:
     volumes:
       - ./examples:/data/definitions:ro
 
+  frontend:
+    build: ./skeleton/frontend
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    volumes:
+      - ./skeleton/frontend/public/assets/config.json:/usr/share/nginx/html/assets/config.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
 volumes:
   pgdata:

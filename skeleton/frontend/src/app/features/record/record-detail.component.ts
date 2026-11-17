@@ -425,7 +425,9 @@ export class RecordDetailComponent implements OnInit {
       next: (rec) => {
         if (key === this.currentKey()) this.record.set(rec);
       },
-      error: (e: ApiError) => this.handleLoadError(e),
+      error: (e: ApiError) => {
+        if (key === this.currentKey()) this.handleLoadError(e);
+      },
     });
   }
 
@@ -439,7 +441,9 @@ export class RecordDetailComponent implements OnInit {
       next: (h) => {
         if (key === this.currentKey()) this.history.set(h);
       },
-      error: (e: ApiError) => this.handleLoadError(e),
+      error: (e: ApiError) => {
+        if (key === this.currentKey()) this.handleLoadError(e);
+      },
     });
   }
 

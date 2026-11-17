@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
+import { NzSiderComponent } from 'ng-zorro-antd/layout';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -45,7 +47,12 @@ describe('buildMenu', () => {
     const labels = buildMenu(def(), ['STAFF'])
       .filter((i) => i.kind === 'new')
       .map((i) => i.label);
-    expect(labels).toEqual(['New F_PUB', 'New Staff form']);
+    expect(labels).toEqual(['F_PUB', 'Staff form']);
+  });
+
+  it('keeps the new-form links', () => {
+    const items = buildMenu(def(), ['STAFF']).filter((i) => i.kind === 'new');
+    expect(items[1].link).toEqual(['/app', 'DEMO', 'forms', 'F_STAFF', 'new']);
   });
 
   it('adds Admin only for the platform admin', () => {
@@ -121,6 +128,52 @@ describe('ShellComponent', () => {
     expect(theme.apply).toHaveBeenCalledWith('light');
     expect(theme.applyBranding).toHaveBeenCalledWith('#336699');
     expect(el.querySelectorAll('li[nz-menu-item]').length).toBe(4);
+  });
+
+  it('groups the submittable forms under "New" without a "New " prefix', async () => {
+    const { el, harness } = await open();
+    definition$.next(def());
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const items = Array.from(el.querySelectorAll('li[nz-menu-item]')).map((i) => (i.textContent ?? '').trim());
+    expect(items.some((t) => t.startsWith('New '))).toBe(false);
+    const group = el.querySelector('li[nz-menu-group]') as HTMLElement;
+    expect(group).not.toBeNull();
+    expect(group.querySelector('.ant-menu-item-group-title')?.textContent?.trim()).toBe('New');
+    const inGroup = Array.from(group.querySelectorAll('li[nz-menu-item]')).map((i) => (i.textContent ?? '').trim());
+    expect(inGroup).toEqual(['F_PUB', 'Staff form']);
+  });
+
+  it('has a responsive sider, a toggle button and a shrinkable content area', async () => {
+    const { el, harness } = await open();
+    definition$.next(def());
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    const siderDebug = harness.fixture.debugElement.query(By.directive(NzSiderComponent));
+    const sc = siderDebug.componentInstance as NzSiderComponent;
+    expect(sc.nzBreakpoint).toBe('md');
+    expect(sc.nzCollapsedWidth).toBe(0);
+    expect(sc.nzCollapsible).toBe(true);
+    expect(sc.nzTrigger).toBeNull();
+
+    const btn = el.querySelector('button.sk-nav-toggle') as HTMLButtonElement;
+    expect(btn.getAttribute('aria-label')).toBe('Toggle navigation');
+    expect(btn.getAttribute('aria-controls')).toBe('sk-nav-menu');
+    expect(el.querySelector('#sk-nav-menu')).not.toBeNull();
+    // The initial state depends on the (jsdom) viewport; assert the flip relative to it.
+    const initial = sc.nzCollapsed;
+    expect(btn.getAttribute('aria-expanded')).toBe(String(!initial));
+    btn.click();
+    harness.detectChanges();
+    expect(sc.nzCollapsed).toBe(!initial);
+    expect(btn.getAttribute('aria-expanded')).toBe(String(initial));
+    btn.click();
+    harness.detectChanges();
+    expect(sc.nzCollapsed).toBe(initial);
+    expect(btn.getAttribute('aria-expanded')).toBe(String(!initial));
+
+    expect((el.querySelector('nz-content.sk-content') as HTMLElement).style.minWidth).toBe('0px');
+    expect((el.querySelector('nz-layout.sk-main') as HTMLElement).style.minWidth).toBe('0px');
   });
 
   it('shows "app not available" and no menu on 404', async () => {

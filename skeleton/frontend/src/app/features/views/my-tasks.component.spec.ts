@@ -70,6 +70,14 @@ describe('MyTasksComponent', () => {
     expect(el.querySelectorAll('sk-sla-badge').length).toBe(1);
   });
 
+  it('renders the table inside a horizontally scrollable container', () => {
+    const { el } = setup(view, [rec('1')]);
+    const content = el.querySelector('.ant-table-content') as HTMLElement;
+    expect(content).not.toBeNull();
+    expect(content.style.overflowX).toBe('auto');
+    expect((el.querySelector('table') as HTMLElement).style.width).toBe('max-content');
+  });
+
   it('shows an empty state when there are no tasks', () => {
     const { el } = setup(view, []);
     expect(el.textContent).toContain('No tasks');

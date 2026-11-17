@@ -25,8 +25,8 @@ export function canSubmitForm(form: FormDef, roles: readonly string[]): boolean 
 }
 
 /**
- * Pure. Menu in order: one entry per view (label or code), one "New" entry per submittable form,
- * then "Admin" for a platform admin.
+ * Pure. Menu in order: one entry per view (label or code), one `new` entry per submittable form
+ * (label = form label or code; the shell renders them under a "New" group), then "Admin" for a platform admin.
  */
 export function buildMenu(def: RestrictedDefinition, roles: readonly string[]): MenuItem[] {
   const app = def.app.code;
@@ -44,7 +44,7 @@ export function buildMenu(def: RestrictedDefinition, roles: readonly string[]): 
       items.push({
         key: 'new:' + f.code,
         kind: 'new',
-        label: 'New ' + (f.label || f.code),
+        label: f.label || f.code,
         link: ['/app', app, 'forms', f.code, 'new'],
       });
     }

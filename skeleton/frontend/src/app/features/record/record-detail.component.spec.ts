@@ -308,6 +308,68 @@ describe('RecordDetailComponent', () => {
     });
   });
 
+  describe('reload errors after a successful action', () => {
+    function reloading() {
+      const params = new BehaviorSubject(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }));
+      const lateRecord = new Subject<RecordSummary>();
+      const lateHistory = new Subject<HistoryEntry[]>();
+      const r2 = record({ id: 'r2', referenceNo: 'GRV-2', instanceId: 'i2', data: { title: 'Second' } });
+      const i2 = instance({ instanceId: 'i2', recordId: 'r2', status: 'Waiting', actions: [act('SAVE', 'default')] });
+      let r1Loads = 0;
+      let h1Loads = 0;
+      const getRecord = vi.fn((_a: string, _e: string, id: string) =>
+        id === 'r1' ? (r1Loads++ === 0 ? of(record()) : lateRecord) : of(r2),
+      );
+      const history = vi.fn((id: string) =>
+        id === 'i1' ? (h1Loads++ === 0 ? of<HistoryEntry[]>([]) : lateHistory) : of([entry('STARTED')]),
+      );
+      const getInstance = vi.fn((id: string) => of(id === 'i1' ? instance() : i2));
+      const runAction = vi.fn(() => of(instance()));
+      TestBed.configureTestingModule({
+        providers: [
+          provideRouter([]),
+          { provide: ApiService, useValue: { definition: () => of(def), getRecord, getInstance, history, runAction } },
+          { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn(), remove: vi.fn() } },
+          {
+            provide: ActivatedRoute,
+            useValue: { paramMap: params, parent: { paramMap: of(convertToParamMap({ app: 'GRV' })) } },
+          },
+        ],
+      });
+      const f = TestBed.createComponent(RecordDetailComponent);
+      f.detectChanges();
+      buttons(f)[1].click();
+      f.detectChanges();
+      return { f, params, lateRecord, lateHistory };
+    }
+
+    it('ignores late reload failures for a record the route has left', () => {
+      const c = reloading();
+      c.params.next(convertToParamMap({ entity: 'GRIEVANCE', id: 'r2' }));
+      c.f.detectChanges();
+      c.lateRecord.error(apiErr(404));
+      c.lateHistory.error(apiErr(500));
+      c.f.detectChanges();
+      expect(el(c.f).textContent).toContain('GRV-2');
+      expect(el(c.f).textContent).not.toContain('Not found');
+      expect(el(c.f).querySelector('[role="alert"]')).toBeNull();
+    });
+
+    it('still shows a reload 404 for the current record', () => {
+      const c = reloading();
+      c.lateRecord.error(apiErr(404));
+      c.f.detectChanges();
+      expect(el(c.f).textContent).toContain('Not found');
+    });
+
+    it('still shows a history reload error for the current record', () => {
+      const c = reloading();
+      c.lateHistory.error(apiErr(500));
+      c.f.detectChanges();
+      expect(el(c.f).querySelector('[role="alert"]')).not.toBeNull();
+    });
+  });
+
   it('shows the new record after navigating and drops a late response for the previous one', () => {
     const params = new BehaviorSubject(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }));
     const a = new Subject<RecordSummary>();

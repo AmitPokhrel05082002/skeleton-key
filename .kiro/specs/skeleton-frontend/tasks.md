@@ -305,7 +305,7 @@ Constraints that apply to every task:
     - Button order and style, dialog gating, confirm text, success refresh, 409 refresh, null `instanceId`, ended instance, history order (entries rendered in the returned order, with `eventTime`, `actionCode`, `attachmentRef`, `detail` and `timeInStepMs` shown as specified).
     - _Requirements: 11.4, 11.6, 11.9, 11.11, 11.13, 11.16, 11.17, 11.18_
 
-- [ ] 15. Checkpoint - Ensure all tests pass
+- [x] 15. Checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run test` and `npm run build`. Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 16. Admin area

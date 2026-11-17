@@ -1,4 +1,5 @@
 import type { ActionBody, ActionInfo, FieldRule } from '../api/api.types';
+import { isEmptyValue } from './empty-value';
 
 function isBlank(v: string | null | undefined): boolean {
   return v == null || v.trim() === '';
@@ -31,7 +32,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
 /**
  * Builds the action request body: only editable fields (rule `optional` or `required`)
- * whose value differs from the initial one; `remarks` and `attachment` only when non-blank.
+ * whose value differs from the initial one (a cleared value is sent as null); `remarks` and `attachment` only when non-blank.
  */
 export function buildActionBody(
   initial: Record<string, unknown>,
@@ -41,12 +42,17 @@ export function buildActionBody(
   attachment?: string | null,
 ): ActionBody {
   const fields: Record<string, unknown> = {};
-  for (const code of Object.keys(current)) {
-    if (!Object.prototype.hasOwnProperty.call(rules, code)) continue;
+  for (const code of Object.keys(rules)) {
     const rule = rules[code];
     if (rule !== 'optional' && rule !== 'required') continue;
     const before = Object.prototype.hasOwnProperty.call(initial, code) ? initial[code] : undefined;
-    if (!deepEqual(before, current[code])) fields[code] = current[code];
+    const now = Object.prototype.hasOwnProperty.call(current, code) ? current[code] : undefined;
+    if (isEmptyValue(now)) {
+      // Cleared: the backend removes a field sent as null.
+      if (!isEmptyValue(before)) fields[code] = null;
+    } else if (!deepEqual(before, now)) {
+      fields[code] = now;
+    }
   }
   const body: ActionBody = { fields };
   if (!isBlank(remarks)) body.remarks = remarks as string;

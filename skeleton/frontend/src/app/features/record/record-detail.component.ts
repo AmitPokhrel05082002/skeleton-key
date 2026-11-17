@@ -15,7 +15,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
-import { forkJoin, of, switchMap } from 'rxjs';
+import { Subject, catchError, combineLatest, forkJoin, map, of, switchMap } from 'rxjs';
 import { ApiService } from '../../core/api/api.service';
 import type {
   ActionInfo,
@@ -189,11 +189,12 @@ export class RecordDetailComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly store = inject(DefinitionStore);
 
-  protected readonly app = signal(
-    this.route.parent?.snapshot.paramMap.get('app') ?? this.route.snapshot.paramMap.get('app') ?? '',
-  );
-  private readonly entityCode = this.route.snapshot.paramMap.get('entity') ?? '';
-  private readonly recordId = this.route.snapshot.paramMap.get('id') ?? '';
+  protected readonly app = signal('');
+  private readonly entityCode = signal('');
+  private readonly recordId = signal('');
+
+  /** Emits to (re)load the current record; switchMap cancels the previous load. */
+  private readonly load$ = new Subject<void>();
 
   protected readonly record = signal<RecordSummary | null>(null);
   protected readonly instance = signal<InstanceView | null>(null);
@@ -206,10 +207,12 @@ export class RecordDetailComponent implements OnInit {
   protected readonly openAction = signal<ActionInfo | null>(null);
   private readonly actionError = signal<ApiError | null>(null);
 
+  private started = false;
+
   private readonly form = viewChild(DynamicFormComponent);
 
   protected readonly entity = computed<EntityDef | null>(
-    () => this.store.definition()?.entities.find((e) => e.code === this.entityCode) ?? null,
+    () => this.store.definition()?.entities.find((e) => e.code === this.entityCode()) ?? null,
   );
 
   protected readonly fields = computed(() => this.entity()?.fields ?? []);
@@ -262,42 +265,75 @@ export class RecordDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    if (this.app()) {
-      this.store.load(this.app());
-    }
-    this.load();
+    this.load$
+      .pipe(
+        switchMap(() =>
+          this.api.getRecord(this.app(), this.entityCode(), this.recordId()).pipe(
+            switchMap((rec) =>
+              rec.instanceId
+                ? forkJoin({
+                    record: of(rec),
+                    instance: this.api.getInstance(rec.instanceId),
+                    history: this.api.history(rec.instanceId),
+                  })
+                : of({ record: rec, instance: null as InstanceView | null, history: [] as HistoryEntry[] }),
+            ),
+            map((r) => ({ ok: true as const, ...r })),
+            catchError((err: ApiError) => of({ ok: false as const, err })),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((res) => {
+        this.loading.set(false);
+        if (res.ok) {
+          this.record.set(res.record);
+          this.instance.set(res.instance);
+          this.history.set(res.history);
+        } else {
+          this.handleLoadError(res.err);
+        }
+      });
+
+    combineLatest([this.route.parent?.paramMap ?? of(null), this.route.paramMap])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([parent, own]) => {
+        const app = parent?.get('app') ?? own.get('app') ?? '';
+        const entity = own.get('entity') ?? '';
+        const id = own.get('id') ?? '';
+        if (app === this.app() && entity === this.entityCode() && id === this.recordId() && this.started) {
+          return;
+        }
+        this.started = true;
+        const appChanged = app !== this.app();
+        this.app.set(app);
+        this.entityCode.set(entity);
+        this.recordId.set(id);
+        this.resetState();
+        if (appChanged && app) {
+          this.store.load(app);
+        }
+        this.load();
+      });
+  }
+
+  private resetState(): void {
+    this.record.set(null);
+    this.instance.set(null);
+    this.history.set([]);
+    this.openAction.set(null);
+    this.pending.set(false);
+    this.actionError.set(null);
+    this.loadError.set(null);
+    this.notFound.set(false);
+    this.message.remove();
   }
 
   protected load(): void {
     this.loading.set(true);
     this.loadError.set(null);
     this.notFound.set(false);
-    this.api
-      .getRecord(this.app(), this.entityCode, this.recordId)
-      .pipe(
-        switchMap((rec) =>
-          rec.instanceId
-            ? forkJoin({
-                record: of(rec),
-                instance: this.api.getInstance(rec.instanceId),
-                history: this.api.history(rec.instanceId),
-              })
-            : of({ record: rec, instance: null as InstanceView | null, history: [] as HistoryEntry[] }),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: ({ record, instance, history }) => {
-          this.record.set(record);
-          this.instance.set(instance);
-          this.history.set(history);
-          this.loading.set(false);
-        },
-        error: (err: ApiError) => {
-          this.loading.set(false);
-          this.handleLoadError(err);
-        },
-      });
+    this.load$.next();
   }
 
   protected onAction(action: ActionInfo): void {
@@ -377,15 +413,25 @@ export class RecordDetailComponent implements OnInit {
   }
 
   private reloadRecord(): void {
-    this.api.getRecord(this.app(), this.entityCode, this.recordId).subscribe({
-      next: (rec) => this.record.set(rec),
+    const key = this.currentKey();
+    this.api.getRecord(this.app(), this.entityCode(), this.recordId()).subscribe({
+      next: (rec) => {
+        if (key === this.currentKey()) this.record.set(rec);
+      },
       error: (e: ApiError) => this.handleLoadError(e),
     });
   }
 
+  private currentKey(): string {
+    return [this.app(), this.entityCode(), this.recordId()].join('/');
+  }
+
   private reloadHistory(instanceId: string): void {
+    const key = this.currentKey();
     this.api.history(instanceId).subscribe({
-      next: (h) => this.history.set(h),
+      next: (h) => {
+        if (key === this.currentKey()) this.history.set(h);
+      },
       error: (e: ApiError) => this.handleLoadError(e),
     });
   }

@@ -34,4 +34,26 @@ describe('buildActionBody', () => {
     expect(buildActionBody({}, {}, {}, ' ', '')).toEqual({ fields: {} });
     expect(buildActionBody({}, {}, {}, 'r', 'ref')).toEqual({ fields: {}, remarks: 'r', attachment: 'ref' });
   });
+
+  it('sends null for a cleared field (missing, empty string or empty array)', () => {
+    const r = { a: 'optional', b: 'optional', c: 'required' } as const;
+    const body = buildActionBody({ a: 'x', b: 'y', c: ['z'] }, { b: '', c: [] }, { ...r });
+    expect(body.fields).toEqual({ a: null, b: null, c: null });
+  });
+
+  it('does not send a field that is empty before and after', () => {
+    const r = { a: 'optional', b: 'optional', c: 'optional' } as const;
+    const body = buildActionBody({ a: '', c: null }, { a: '', b: [] }, { ...r });
+    expect(body.fields).toEqual({});
+  });
+
+  it('never sends readonly or hidden fields, changed or cleared', () => {
+    const r = { c: 'readonly', d: 'hidden' } as const;
+    expect(buildActionBody({ c: 1, d: 1 }, { c: 2, d: 2 }, { ...r }).fields).toEqual({});
+    expect(buildActionBody({ c: 1, d: 1 }, {}, { ...r }).fields).toEqual({});
+  });
+
+  it('still sends a changed non-empty value', () => {
+    expect(buildActionBody({ a: 'x' }, { a: 'y' }, { a: 'optional' }).fields).toEqual({ a: 'y' });
+  });
 });

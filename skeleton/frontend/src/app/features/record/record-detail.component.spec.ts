@@ -1,7 +1,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiService } from '../../core/api/api.service';
 import type {
@@ -80,7 +80,7 @@ const apiErr = (status: number, extra: Partial<ApiError> = {}): ApiError => ({
 });
 
 function setup(api: Record<string, unknown>) {
-  const message = { success: vi.fn(), error: vi.fn() };
+  const message = { success: vi.fn(), error: vi.fn(), remove: vi.fn() };
   const calls = {
     getRecord: vi.fn(() => of(record())),
     getInstance: vi.fn(() => of(instance())),
@@ -100,7 +100,11 @@ function setup(api: Record<string, unknown>) {
         provide: ActivatedRoute,
         useValue: {
           snapshot: { paramMap: convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }) },
-          parent: { snapshot: { paramMap: convertToParamMap({ app: 'GRV' }) } },
+          paramMap: of(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' })),
+          parent: {
+            snapshot: { paramMap: convertToParamMap({ app: 'GRV' }) },
+            paramMap: of(convertToParamMap({ app: 'GRV' })),
+          },
         },
       },
     ],
@@ -235,5 +239,48 @@ describe('RecordDetailComponent', () => {
     const { fixture: f } = setup({ getRecord: () => throwError(() => apiErr(404)) });
     expect(el(f).textContent).toContain('Not found');
     expect(el(f).querySelector('a')?.getAttribute('href')).toBe('/app/GRV');
+  });
+
+  it('shows the new record after navigating and drops a late response for the previous one', () => {
+    const params = new BehaviorSubject(convertToParamMap({ entity: 'GRIEVANCE', id: 'r1' }));
+    const a = new Subject<RecordSummary>();
+    const b = new Subject<RecordSummary>();
+    const getRecord = vi.fn((_app: string, _entity: string, id: string) => (id === 'r1' ? a : b));
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: ApiService,
+          useValue: {
+            definition: () => of(def),
+            getRecord,
+            getInstance: () => of(instance()),
+            history: () => of<HistoryEntry[]>([]),
+          },
+        },
+        { provide: NzMessageService, useValue: { success: vi.fn(), error: vi.fn(), remove: vi.fn() } },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: params,
+            parent: { paramMap: of(convertToParamMap({ app: 'GRV' })) },
+          },
+        },
+      ],
+    });
+    const f = TestBed.createComponent(RecordDetailComponent);
+    f.detectChanges();
+    params.next(convertToParamMap({ entity: 'GRIEVANCE', id: 'r2' }));
+    f.detectChanges();
+    expect(getRecord).toHaveBeenCalledTimes(2);
+    b.next(record({ id: 'r2', referenceNo: 'GRV-2', data: { title: 'Second' } }));
+    b.complete();
+    f.detectChanges();
+    a.next(record({ id: 'r1', referenceNo: 'GRV-1', data: { title: 'First' } }));
+    a.complete();
+    f.detectChanges();
+    expect(el(f).textContent).toContain('GRV-2');
+    expect(el(f).textContent).not.toContain('GRV-1');
+    expect(titleInput(f).value).toBe('Second');
   });
 });

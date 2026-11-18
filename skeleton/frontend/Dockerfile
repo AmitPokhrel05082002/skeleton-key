@@ -4,7 +4,9 @@
 FROM node:22.23.2-alpine AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
-RUN npm ci
+# The lock file is written by the npm version pinned in package.json ("packageManager"); the npm 10 bundled with
+# this Node image rejects it (missing optional @emnapi entries), so install the pinned npm first.
+RUN npm install -g npm@11.6.2 && npm ci
 COPY . .
 RUN npm run build -- --configuration production
 

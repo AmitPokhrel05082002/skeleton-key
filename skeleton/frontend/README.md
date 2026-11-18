@@ -12,6 +12,20 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Choosing the app by hostname
+
+`public/assets/config.json` maps the hostname the browser used to an app code. The port is ignored.
+
+```json
+{ "apiBasePath": "/api", "hosts": { "localhost": "GRIEVANCE", "asset.localhost": "ASSET" } }
+```
+
+The backend publishes every file in `examples/` at startup, so both apps are always available. To open the asset
+register instead of the grievance tracker, browse to `http://asset.localhost` (with `docker compose up`, or
+`http://asset.localhost:4200` with `ng serve`). Browsers resolve `*.localhost` to 127.0.0.1 without any setup. Any
+other hostname works too: add it to `hosts` and point DNS or the Windows `hosts` file at the machine.
+`http://localhost/app/ASSET` also opens the asset register directly.
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

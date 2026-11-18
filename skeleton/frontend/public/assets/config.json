@@ -1,6 +1,7 @@
 {
   "apiBasePath": "/api",
   "hosts": {
-    "localhost": "GRIEVANCE"
+    "localhost": "GRIEVANCE",
+    "asset.localhost": "ASSET"
   }
 }

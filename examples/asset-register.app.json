@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "app": {
+    "code": "ASSET",
+    "name": "Asset Register",
+    "description": "IT and office equipment: request, approve, buy, set up, use, maintain and retire.",
+    "branding": { "primaryColor": "#0d9488", "theme": "light" }
+  },
+  "roles": [
+    { "code": "REQUESTER", "label": "Staff member" },
+    { "code": "ASSET_MANAGER", "label": "Asset manager" },
+    { "code": "APPROVER", "label": "Approver" },
+    { "code": "TECHNICIAN", "label": "Technician" }
+  ],
+  "entities": [
+    {
+      "code": "ASSET",
+      "label": "Asset",
+      "titleField": "name",
+      "referencePrefix": "AST",
+      "fields": [
+        { "code": "name", "label": "Name", "type": "TEXT", "required": true, "maxLength": 120 },
+        { "code": "category", "label": "Category", "type": "SELECT", "required": true,
+          "options": [
+            { "value": "LAPTOP", "label": "Laptop" },
+            { "value": "MONITOR", "label": "Monitor" },
+            { "value": "PHONE", "label": "Phone" },
+            { "value": "FURNITURE", "label": "Furniture" },
+            { "value": "OTHER", "label": "Other" }
+          ] },
+        { "code": "serialNumber", "label": "Serial number", "type": "TEXT", "maxLength": 40,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9-]{3,39}$",
+          "help": "Letters, digits and dashes, 4 to 40 characters." },
+        { "code": "purchaseDate", "label": "Purchase date", "type": "DATE",
+          "help": "Fill in only for equipment you already own. Such assets skip approval and procurement." },
+        { "code": "cost", "label": "Cost", "type": "DECIMAL", "min": 0,
+          "help": "Estimated cost on a request, actual cost once purchased." },
+        { "code": "location", "label": "Location", "type": "TEXT", "maxLength": 120 },
+        { "code": "condition", "label": "Condition", "type": "SELECT",
+          "options": [
+            { "value": "NEW", "label": "New" },
+            { "value": "GOOD", "label": "Good" },
+            { "value": "FAIR", "label": "Fair" },
+            { "value": "POOR", "label": "Poor" }
+          ] },
+        { "code": "assignedTo", "label": "Assigned to", "type": "USER" },
+        { "code": "warrantyEnd", "label": "Warranty ends", "type": "DATE" },
+        { "code": "notes", "label": "Notes", "type": "TEXTAREA" },
+        { "code": "maintenanceNotes", "label": "Maintenance notes", "type": "TEXTAREA" }
+      ]
+    }
+  ],
+  "forms": [
+    {
+      "code": "REGISTER_ASSET",
+      "label": "Register asset",
+      "entity": "ASSET",
+      "roles": ["ASSET_MANAGER"],
+      "startsWorkflow": "ASSET_FLOW",
+      "sections": [
+        { "title": "Asset", "columns": 2, "fields": ["name", "category", "serialNumber", "condition"] },
+        { "title": "Purchase", "columns": 3, "fields": ["purchaseDate", "cost", "warrantyEnd"] },
+        { "title": "Where and who", "columns": 2, "fields": ["location", "assignedTo"] },
+        { "fields": ["notes"] }
+      ]
+    },
+    {
+      "code": "REQUEST_EQUIPMENT",
+      "label": "Request equipment",
+      "entity": "ASSET",
+      "roles": ["REQUESTER"],
+      "startsWorkflow": "ASSET_FLOW",
+      "sections": [
+        { "title": "What do you need?", "columns": 2, "fields": ["name", "category", "cost"] },
+        { "title": "Details", "fields": ["location", "notes"] }
+      ]
+    }
+  ],
+  "views": [
+    { "code": "ALL_ASSETS", "label": "All assets", "type": "TABLE", "entity": "ASSET",
+      "roles": ["ASSET_MANAGER", "APPROVER"],
+      "columns": ["$reference", "name", "category", "$status", "assignedTo", "location", "$updatedAt"],
+      "filters": ["category", "$status"],
+      "defaultSort": { "field": "$createdAt", "direction": "DESC" } },
+    { "code": "BOARD", "label": "Board", "type": "KANBAN", "entity": "ASSET",
+      "roles": ["ASSET_MANAGER", "APPROVER", "TECHNICIAN"],
+      "columns": ["$reference", "name", "category", "$assignee", "$dueAt"] },
+    { "code": "MY_REQUESTS", "label": "My requests", "type": "TABLE", "entity": "ASSET",
+      "roles": ["REQUESTER"], "scope": "MINE",
+      "columns": ["$reference", "name", "category", "$status", "$createdAt"],
+      "defaultSort": { "field": "$createdAt", "direction": "DESC" } },
+    { "code": "INBOX", "label": "My tasks", "type": "MY_TASKS", "entity": "ASSET",
+      "roles": ["ASSET_MANAGER", "APPROVER", "TECHNICIAN"],
+      "columns": ["$reference", "name", "$step", "$dueAt"] }
+  ],
+  "workflows": [
+    {
+      "code": "ASSET_FLOW",
+      "label": "Asset lifecycle",
+      "entity": "ASSET",
+      "startStep": "APPROVAL",
+      "initialStatus": "Requested",
+      "statuses": [
+        { "label": "Requested", "category": "OPEN", "color": "#64748b" },
+        { "label": "Procurement", "category": "IN_PROGRESS", "color": "#f59e0b" },
+        { "label": "Setting up", "category": "IN_PROGRESS", "color": "#0ea5e9" },
+        { "label": "In use", "category": "DONE", "color": "#22c55e" },
+        { "label": "Under maintenance", "category": "IN_PROGRESS", "color": "#f97316" },
+        { "label": "Retired", "category": "DONE", "color": "#475569" },
+        { "label": "Rejected", "category": "REJECTED", "color": "#ef4444" }
+      ],
+      "steps": [
+        {
+          "code": "APPROVAL", "label": "Approval", "type": "APPROVAL",
+          "assignee": { "strategy": "ROLE_QUEUE", "role": "APPROVER" },
+          "skipWhen": { "!!": [{ "var": "data.purchaseDate" }] },
+          "slaHours": 48, "remindBeforeHours": 8,
+          "actions": [
+            { "code": "APPROVE", "label": "Approve", "roles": ["APPROVER"], "to": "SECOND_APPROVAL",
+              "style": "primary" },
+            { "code": "REJECT", "label": "Reject", "roles": ["APPROVER"], "to": "END_REJECTED",
+              "status": "Rejected", "style": "danger", "remarks": "required",
+              "confirm": "Reject this request?" }
+          ]
+        },
+        {
+          "code": "SECOND_APPROVAL", "label": "Second approval (over 1000)", "type": "APPROVAL",
+          "assignee": { "strategy": "ROLE_QUEUE", "role": "APPROVER" },
+          "skipWhen": { "or": [
+            { "!!": [{ "var": "data.purchaseDate" }] },
+            { "!": [{ ">": [{ "var": "data.cost" }, 1000] }] }
+          ] },
+          "slaHours": 48, "remindBeforeHours": 8,
+          "actions": [
+            { "code": "APPROVE", "label": "Approve", "roles": ["APPROVER"], "to": "PROCUREMENT",
+              "style": "primary" },
+            { "code": "REJECT", "label": "Reject", "roles": ["APPROVER"], "to": "END_REJECTED",
+              "status": "Rejected", "style": "danger", "remarks": "required",
+              "confirm": "Reject this request?" }
+          ]
+        },
+        {
+          "code": "PROCUREMENT", "label": "Procurement", "type": "TASK",
+          "assignee": { "strategy": "LEAST_LOADED", "role": "ASSET_MANAGER" },
+          "status": "Procurement",
+          "skipWhen": { "!!": [{ "var": "data.purchaseDate" }] },
+          "fields": { "purchaseDate": "required", "cost": "required", "warrantyEnd": "optional",
+                      "serialNumber": "optional", "notes": "optional" },
+          "actions": [
+            { "code": "RECEIVED", "label": "Mark received", "roles": ["ASSET_MANAGER"], "to": "SETUP",
+              "style": "primary", "attachment": "optional" },
+            { "code": "CANCEL", "label": "Cancel purchase", "roles": ["ASSET_MANAGER"], "to": "END_REJECTED",
+              "status": "Rejected", "style": "danger", "remarks": "required",
+              "confirm": "Cancel this purchase?" }
+          ]
+        },
+        {
+          "code": "SETUP", "label": "Setup", "type": "TASK",
+          "assignee": { "strategy": "ROUND_ROBIN", "role": "TECHNICIAN" },
+          "status": "Setting up",
+          "slaHours": 72, "remindBeforeHours": 12, "escalateTo": "ASSET_MANAGER",
+          "fields": { "serialNumber": "required", "condition": "required", "location": "required",
+                      "assignedTo": "optional", "warrantyEnd": "optional", "notes": "optional" },
+          "actions": [
+            { "code": "HAND_OVER", "label": "Hand over", "roles": ["TECHNICIAN", "ASSET_MANAGER"],
+              "to": "IN_USE", "status": "In use", "style": "primary" }
+          ]
+        },
+        {
+          "code": "IN_USE", "label": "In use", "type": "TASK",
+          "assignee": { "strategy": "ROLE_QUEUE", "role": "ASSET_MANAGER" },
+          "fields": { "assignedTo": "optional", "location": "optional", "condition": "optional",
+                      "notes": "optional" },
+          "actions": [
+            { "code": "SEND_TO_MAINTENANCE", "label": "Send to maintenance", "roles": ["ASSET_MANAGER"],
+              "to": "MAINTENANCE", "status": "Under maintenance" },
+            { "code": "RETIRE", "label": "Retire", "roles": ["ASSET_MANAGER"], "to": "END_RETIRED",
+              "style": "danger", "remarks": "required", "confirm": "Retire this asset?" }
+          ]
+        },
+        {
+          "code": "MAINTENANCE", "label": "Maintenance", "type": "TASK",
+          "assignee": { "strategy": "LEAST_LOADED", "role": "TECHNICIAN" },
+          "fields": { "maintenanceNotes": "required", "condition": "required" },
+          "actions": [
+            { "code": "REPAIRED", "label": "Return to service", "roles": ["TECHNICIAN"], "to": "IN_USE",
+              "status": "In use", "style": "primary" },
+            { "code": "WRITE_OFF", "label": "Cannot repair, retire", "roles": ["TECHNICIAN"],
+              "to": "END_RETIRED", "style": "danger", "remarks": "required",
+              "confirm": "Retire this asset?" }
+          ]
+        },
+        { "code": "END_RETIRED", "label": "Retired", "type": "END", "outcome": "Retired" },
+        { "code": "END_REJECTED", "label": "Rejected", "type": "END", "outcome": "Rejected" }
+      ]
+    }
+  ]
+}

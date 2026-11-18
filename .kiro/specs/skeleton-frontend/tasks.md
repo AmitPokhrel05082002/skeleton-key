@@ -359,8 +359,9 @@ Constraints that apply to every task:
     - _Requirements: 16.3, 16.4, 16.5, 16.9_
     - Verified 2026-11-18: `docker compose config` OK; `docker build -t skeleton-frontend ./skeleton/frontend` OK after the build stage was changed to install the npm version pinned in `package.json` (11.6.2; the image's npm 10 rejected the lock file). `nginx -t` passes with `--add-host app:127.0.0.1`; without it nginx stops with `host not found in upstream "app"`, which is expected outside the compose network. Headers checked with `curl -I` on the image run alone (`app` mapped to a dummy address): `index.html` and `assets/config.json` `Cache-Control: no-cache`, hashed `chunk-*.js` `public, max-age=31536000, immutable`, `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` on every response including a 502 from `/api/`. Not verified under `docker compose up`: the `postgres:16` pull was blocked by the network, so the stack could not start.
 
-- [ ] 18. Final checkpoint - Ensure all tests pass
+- [x] 18. Final checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run lint`, `npm run test` and `npm run build`; from the repository root run `docker compose config`. Ensure all tests pass, ask the user if questions arise.
+  - Verified 2026-11-18: `npm run lint` clean, `npm test` 344/344, `npm run build` OK, `docker compose config` OK, frontend image builds and `nginx -t` passes. `docker compose up -d --build` builds both images (Maven Central reachable) but the stack does not start: the local `postgres:16` image is corrupt (`libc.so.6: invalid ELF header`, container restarts in a loop), so `http://localhost/` and `/api/actuator/health` were not checked.
 
 ## Notes
 

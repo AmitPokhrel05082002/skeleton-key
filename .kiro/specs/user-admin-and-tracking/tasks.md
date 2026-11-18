@@ -112,4 +112,4 @@ Status note (2026-11-18): every Testcontainers test is in `web/UserAdminAndTrack
 - [ ] 12. Final checkpoint
   - [x] `mvnw.cmd test` for the Docker-based tests: `UserAdminAndTrackingIT` 5/5, `FrontendBackendSupportIT` 7/7, `ApplicationContextTest` 6/6 (2026-11-18)
   - [x] `npx ng test --watch=false` (331/331), `npx ng build`, `npx ng lint`
-  - [ ] Manual smoke test on the full stack (create user, deactivate, login fails; submit, track, 429). Blocked: `docker compose up` could not pull `postgres:16` on this network
+  - [ ] Manual smoke test on the full stack (create user, deactivate, login fails; submit, track, 429). Blocked (2026-11-18): the `postgres:16` image is now pulled but corrupt on this machine (`/lib/x86_64-linux-gnu/libc.so.6: invalid ELF header`), so the postgres container never becomes healthy. Fix: `docker rmi postgres:16` then `docker pull postgres:16`, then rerun `docker compose up -d --build`

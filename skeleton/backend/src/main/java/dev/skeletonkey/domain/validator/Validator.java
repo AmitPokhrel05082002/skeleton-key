@@ -33,7 +33,7 @@ public class Validator {
 
     public static List<RuleGroup> structuralGroups() {
         return List.of(new CollectionRules(), new EntityFieldRules(), new FormViewRules(),
-                new WorkflowGraphRules());
+                new WorkflowGraphRules(), new TrackingRules());
     }
 
     public ValidationReport validate(AppDefinition def) {

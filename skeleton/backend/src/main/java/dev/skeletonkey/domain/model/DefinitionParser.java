@@ -32,8 +32,11 @@ public class DefinitionParser {
     }
 
     private Entity entity(JsonNode n, String p) {
+        JsonNode tracking = n.get("tracking");
         return new Entity(str(n, "code", p), str(n, "label", p), optStr(n, "titleField"), optStr(n, "referencePrefix"),
-                list(n, "fields", p, true, this::field));
+                list(n, "fields", p, true, this::field),
+                tracking == null || !tracking.isObject() ? null
+                        : new Entity.Tracking(str(tracking, "contactField", p + ".tracking")));
     }
 
     private Field field(JsonNode n, String p) {

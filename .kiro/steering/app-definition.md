@@ -78,3 +78,18 @@ Reject a definition (with every error listed, not just the first) unless:
 - each `PARALLEL` names a `JOIN` step, and all of its branches can reach that join;
 - `SUBWORKFLOW` references do not form a cycle;
 - at most one role is `public`, and only `public` forms are open to it.
+- an entity with `tracking` names an existing field in `contactField` (`BAD_TRACKING_FIELD`), that field has type
+  `EMAIL` (`TRACKING_FIELD_NOT_EMAIL`), and the entity has a `referencePrefix` (`TRACKING_NEEDS_REFERENCE`).
+
+## Public tracking
+- An entity with `"tracking": { "contactField": "<EMAIL field>" }` lets a citizen look up a record without logging in:
+  `POST /api/public/{app}/track` with `{ reference, email }`. Tracking is on when the latest PUBLISHED version of the
+  app declares it.
+- A lookup matches only when a record of that app has the reference (trimmed, compared upper-case), its entity has
+  tracking, the record has a workflow instance, and the contact field equals the email ignoring case and surrounding
+  whitespace. Every other case returns the same 404 (`No matching request found`), so references cannot be enumerated.
+- The answer holds only: reference, title (`titleField`), the current status label with its colour and category,
+  created and last-updated times, and a timeline of status changes (date and status label of the `START` row and of
+  every movement row, `ACTION`, `SKIPPED` or `AUTO`, that changed the status). No remarks, actors, assignees, steps or other fields.
+- The endpoint is rate-limited per client IP (`skeletonkey.track.rate-limit.per-minute`, default 10; 429 when over).
+- Public forms of tracked entities carry `trackingEnabled: true` in the public subset; `contactField` is not exposed.

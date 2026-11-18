@@ -206,6 +206,10 @@ public final class DefinitionArbitraries {
                 }
                 if (rnd.nextBoolean()) {
                     e.put("referencePrefix", "E" + (char) ('A' + i));
+                    // Valid public tracking needs a reference prefix and an EMAIL contact field.
+                    if (rnd.nextBoolean()) {
+                        e.putObject("tracking").put("contactField", "fEmail");
+                    }
                 }
                 ArrayNode fields = e.putArray("fields");
                 List<String> codes = new ArrayList<>();

@@ -14,6 +14,7 @@ import { SessionService } from '../../core/auth/session.service';
       <nz-header class="sk-header">
         <div class="sk-header-inner">
           <a class="sk-admin-title" routerLink="/admin">Administration</a>
+          <a nz-button routerLink="/admin/users">Users</a>
           <span class="sk-spacer"></span>
           <a nz-button routerLink="/">Back to apps</a>
           <span class="sk-user">{{ session.session()?.displayName }}</span>

@@ -106,6 +106,19 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(base.getBody(), headers, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
+    @ExceptionHandler(TooManyRequests.class)
+    ResponseEntity<ApiError> tooMany(TooManyRequests e) {
+        ResponseEntity<ApiError> base = build(429, "RATE_LIMITED", "Too many requests", List.of());
+        return ResponseEntity.status(429).contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.retryAfterSeconds()))
+                .body(base.getBody());
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiError> badArgument(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException e) {
+        return build(400, "BAD_REQUEST", "Invalid value for '" + e.getName() + "'", List.of());
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ApiError> unreadable(HttpMessageNotReadableException e) {
         return build(400, "BAD_REQUEST", "Malformed request body", List.of());

@@ -15,6 +15,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/shell/shell.component').then((m) => m.ShellComponent),
     loadChildren: () => import('./features/shell/shell.routes').then((m) => m.shellChildren),
   },
+  // Must stay before 'public/:app/:form' so "track" is not read as a form code.
+  {
+    path: 'public/:app/track',
+    loadComponent: () => import('./features/public-track/track.page').then((m) => m.TrackPage),
+  },
   {
     path: 'public/:app/:form',
     loadComponent: () =>

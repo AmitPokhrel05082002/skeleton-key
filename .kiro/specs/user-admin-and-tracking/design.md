@@ -7,7 +7,7 @@ Two independent slices that share only the existing security setup and `ApiExcep
 - Part A adds a user-management feature: `web/UserAdminController` -> `app/UserAdminService` -> `persistence/UserRepository` (extended). A role-options service reads the latest published definitions.
 - Part B adds a public lookup: `web/TrackController` -> `app/TrackingService` -> `persistence/TrackingRepository`, with a per-IP rate-limit interceptor in front, one new optional schema property and one Validator rule group.
 
-No Flyway migration is needed. Every column used already exists (`V1__init.sql`): `app_user(username unique, active, display_name, created_at)`, `user_role`, `record(unique (app_code, reference_no), data jsonb, created_at)`, `workflow_instance(updated_at, version, workflow_code, status)`, `history_entry(kind, from_status, to_status, event_time, seq)`.
+One Flyway migration is added: `V3__username_case_insensitive.sql` = `CREATE UNIQUE INDEX uq_app_user_username_lower ON app_user (lower(username));`. Only demo data exists, so it cannot conflict. The old exact-match constraint `uq_app_user_username` stays (harmless). Every column used already exists (`V1__init.sql`): `app_user(username unique, active, display_name, created_at)`, `user_role`, `record(unique (app_code, reference_no), data jsonb, created_at)`, `workflow_instance(updated_at, version, workflow_code, status)`, `history_entry(kind, from_status, to_status, event_time, seq)`.
 
 ## Architecture
 
@@ -41,7 +41,9 @@ Part B
 | Tracking config source | Latest PUBLISHED definition. Status colour and category come from the definition version the instance is pinned to. | Pinned version for tracking: authors could not switch tracking off. Latest version for colours: a renamed or removed status would lose its colour. |
 | Email comparison | In SQL: `lower(btrim(data ->> :field)) = :email`. | Load the data and compare in Java: puts the contact value in application memory and makes the 404 paths differ. |
 | Same 404 | One `NotFound("No matching request found")` thrown from one place at the end of the service. | Separate messages per cause: lets a caller enumerate references. |
-| Roles in JWT | Left alone (stateless). `/me` already checks the user is active. | Token denylist or per-request user lookup: extra DB read on every request, outside the asked scope. Mentioned as a limitation in Requirement 5.5. |
+| Revoking access of a deactivated user | `JwtAuthFilter` checks `active` after validating the token, via `ActiveUserCache` (`ConcurrentHashMap`, TTL 30 s, max 10 000 entries, evicted by `UserAdminService` on `active` changes). The check is one `SELECT active ... WHERE id = :id`. | Check on every request without cache: one query per request. Token denylist: needs storage and cleanup. Caffeine: a new dependency for a 30-line class. Roles in the token still come from the token (out of scope). |
+| Username case | Unique index on `lower(username)`; all lookups use `lower(username) = lower(:u)`. Stored value keeps its case for display. | Lower-casing on write: changes how names are shown and existing seeded names. `citext`: needs an extension. |
+| Trusting `X-Real-IP` | `ClientIp` uses the header only when the direct peer is in `skeletonkey.trusted-proxies` (default loopback + RFC 1918). Compose binds the backend to `127.0.0.1`. | Always trusting the header: a client reaching the backend port can pick any IP and dodge the limit. `server.forward-headers-strategy`: applies globally and trusts `X-Forwarded-For`, whose leftmost value a client can forge. |
 
 ## Components and Interfaces
 
@@ -210,7 +212,7 @@ SELECT event_time, to_status
 FROM history_entry
 WHERE instance_id = :iid
   AND to_status IS NOT NULL
-  AND (kind = 'START' OR (kind = 'ACTION' AND to_status IS DISTINCT FROM from_status))
+  AND (kind = 'START' OR (kind IN ('ACTION', 'SKIPPED', 'AUTO') AND to_status IS DISTINCT FROM from_status))
 ORDER BY event_time, seq;
 ```
 
@@ -231,20 +233,26 @@ State: access-ordered `LinkedHashMap<String, ArrayDeque<Long>>` capped at `maxKe
 
 Requirement 10.1 says "every request counts, whatever the outcome": allowed requests are recorded whether they end in 200, 404 or 422. Denied requests are not recorded, which keeps the deque bounded by `limit`.
 
-Client IP: `ClientIp.resolve(HttpServletRequest, String headerName)`: if `headerName` is non-blank and the header has a value that parses as an IP literal (no DNS lookup; use a small regex-free check with `InetAddresses`-style parsing of IPv4/IPv6 literals), use it, else `request.getRemoteAddr()`. Only the first comma-separated element is read.
+Client IP: `ClientIp.resolve(HttpServletRequest)`: let `peer = request.getRemoteAddr()`. If `peer` is inside `TrustedProxies` and `X-Real-IP` holds an IP literal (parsed without DNS: IPv4 dotted quad or IPv6 literal through `InetAddress.getByAddress` after a syntax check), return it; otherwise return `peer`. Only a single value is accepted (a comma means invalid).
 
-Trust note: the header is only trustworthy when the backend is reachable only through the reverse proxy, as in `docker-compose.yml`. `nginx.conf` already sets `X-Real-IP $remote_addr`, overwriting any client-supplied value. This is documented next to the property in `application.properties`.
+`config/TrustedProxies` parses `skeletonkey.trusted-proxies` (comma-separated IPs and CIDR ranges, IPv4 and IPv6, bit-mask match on the address bytes) and fails startup with a message naming the property on any invalid entry.
 
-Configuration (`application.properties`, bound in `SkeletonProperties`):
+Trust note: with the compose file binding the backend to `127.0.0.1:8080`, the only peers are nginx (a private docker network address, trusted) and processes on the host (loopback, trusted). A client cannot reach the backend directly, and nginx overwrites `X-Real-IP` with `$remote_addr`.
+
+Configuration (`application.properties`, read with `@Value` in small components so `SkeletonProperties`' constructors stay unchanged):
 
 ```properties
+skeletonkey.trusted-proxies=127.0.0.0/8,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
 skeletonkey.track.rate-limit.per-minute=10
 skeletonkey.track.rate-limit.max-clients=10000
-# Header carrying the real client address when behind the reverse proxy. Blank = use the socket address.
-skeletonkey.track.client-ip-header=X-Real-IP
+skeletonkey.auth.active-cache-seconds=30
 ```
 
-Properties are validated at startup (per-minute >= 1, max-clients >= 100), like the admin role.
+Values are validated at startup (per-minute >= 1, max-clients >= 100, active-cache-seconds 0 to 30).
+
+**Active check in `JwtAuthFilter`.** `JwtAuthFilter(JwtService, ActiveUserCheck)` where `ActiveUserCheck` is an interface `boolean isActive(UUID)`. After `jwt.parse` succeeds, the filter sets the authentication only if `isActive(p.userId())`. `ActiveUserCache` (a `@Component`) implements it over `UserRepository.isActive(UUID)` with a `ConcurrentHashMap<UUID, Entry(boolean, long expiresAtMillis)>` and an injectable `Clock`; when the map exceeds 10 000 entries it is cleared. `evict(UUID)` removes one entry. `SecurityConfig` receives `ObjectProvider<ActiveUserCheck>`; when no bean exists (the slim MockMvc test contexts) the filter runs without the check, so existing tests keep working. Production always has the bean (component scan). A database error during the check fails closed (request stays unauthenticated, logged without detail).
+
+**Case-insensitive usernames.** `JdbcUserRepository.findByUsername` uses `WHERE lower(username) = lower(:u)`; `InMemoryUserRepository` compares with `equalsIgnoreCase`. `AuthService.login` is unchanged apart from that lookup. `UserAdminService.create` pre-checks `findByUsername` and also maps `DuplicateKeyException` to `USERNAME_TAKEN`. `SeedLoader` goes through the same lookup, so a seed with `Asha` and `asha` is treated as one user.
 
 `ApiExceptionHandler` gets `@ExceptionHandler(TooManyRequests.class)` -> 429 `RATE_LIMITED`, with `Retry-After`.
 
@@ -338,7 +346,7 @@ Each property is its own test. Backend properties use jqwik (200 tries unless no
 
 **Property 7: Admins cannot lock themselves out.** For any admin actor and any PATCH to their own id: the call fails with `SELF_LOCKOUT` and leaves the stored user unchanged iff the patch sets `active=false` or sets a role set without the admin role; otherwise it succeeds. PATCHes to other users never raise `SELF_LOCKOUT`. Validates 5.4.
 
-**Property 8: The track response contains only public-safe data.** For records with random remarks, actors, assignees, history kinds (including `SKIPPED`, `EVENT_FAILED`) and random extra fields, the serialised response has exactly the keys `reference,title,status,createdAt,updatedAt,timeline` (status: `label,color,category`; entries: `at,status`), the timeline equals the status changes of `START`/`ACTION` rows in order, and the serialised text contains none of the generated remarks, actor names, assignee names, step codes or the contact email. Validates 8.7 to 8.9.
+**Property 8: The track response contains only public-safe data.** For records with random remarks, actors, assignees, history kinds (including `SKIPPED`, `EVENT_FAILED`) and random extra fields, the serialised response has exactly the keys `reference,title,status,createdAt,updatedAt,timeline` (status: `label,color,category`; entries: `at,status`), the timeline equals the status changes of `START` and movement (`ACTION`/`SKIPPED`/`AUTO`) rows in order, and the serialised text contains none of the generated remarks, actor names, assignee names, step codes or the contact email. Validates 8.7 to 8.9.
 
 **Property 9: The rate limiter allows exactly `limit` requests per window per address.** For any limit `n`, any sequence of (address, time) events: per address, an event is allowed iff fewer than `n` allowed events of that address fall in the previous 60 s; a denied event never changes the state; addresses do not affect each other; `retryAfter >= 1` and the request is allowed again after `retryAfter` seconds; the number of tracked addresses never exceeds `maxKeys`. Compared against a simple reference model. Validates 10.1, 10.3, 10.5, 10.6.
 
@@ -352,6 +360,12 @@ Each property is its own test. Backend properties use jqwik (200 tries unless no
 
 **Property 14 (frontend, fast-check): Timeline and chip rendering.** For any `TrackResponse`, `toTimelineItems` keeps the order and the count of entries and exposes only `at` and `status`; `statusChipColor` returns the given colour when it is a `#rrggbb` string, else a colour from the category map, and never throws. For any `UserView` edit, `toPatch` is empty iff nothing changed, and applying it to the original gives the edited values. Validates 7.4, 11.4.
 
+**Property 15: A deactivated user's token is rejected on the next request.** For any user, roles and token issued before the change: before deactivation the token authenticates; after `UserAdminService.update(active=false)` (cache primed by an earlier request) the very next request with the same token gets 401 `UNAUTHENTICATED`; after reactivation the same token works again. Without eviction, the token is rejected once the cache time has passed (controlled `Clock`). Tokens of other users are unaffected. Validates 5.5.
+
+**Property 16: Usernames are case-insensitive.** For any username `u` and any recasing `v` of it (ASCII upper/lower mixes): creating `u` then `v` gives 409 `USERNAME_TAKEN` and one user; login succeeds with `u`, `v` and any other recasing; `findByUsername` returns the same user for all of them. Runs on PostgreSQL for the unique-index part. Validates 3.4, 5.7.
+
+**Property 17: Client IP resolution trusts only trusted proxies.** For any peer address, any `X-Real-IP` value and any trusted-proxy list: the result is the header value iff the peer is inside the list and the value is a valid IP literal, otherwise the peer address. Two requests from an untrusted peer with different headers share one limiter bucket. Validates 10.2.
+
 ## Testing Strategy
 
 - **Unit and web tests (MockMvc, in-memory repositories already used by `AuthSecurityTest`)**: 401/403/404/409/422 mapping for every endpoint; admin gate on every method; `Retry-After` header; `Cache-Control: no-store`; `/api/public/*/track` works without a JWT and ignores a bad one; login of a deactivated user is indistinguishable from a wrong password.
@@ -362,6 +376,7 @@ Each property is its own test. Backend properties use jqwik (200 tries unless no
 
 ## Open points for the author to confirm
 
-1. JWTs issued before a deactivation or role change stay valid until they expire (Requirement 5.5). If this is not acceptable, the next step is a per-request `active` check in `JwtAuthFilter`, which costs one indexed lookup per request.
-2. Usernames are unique case-sensitively (the existing constraint). `Asha` and `asha` can both exist. A case-insensitive unique index would be `V3__username_ci.sql` and could fail on existing data.
-3. Rate limiting is per backend instance, in memory. With several backend replicas the effective limit multiplies.
+Decided by the author:
+1. Deactivation takes effect on the next request (Active_Cache, at most 30 s on other instances, immediate on the instance that made the change). Role changes in the token still apply until the token expires.
+2. Usernames are case-insensitive (V3 migration).
+3. Rate limiting is per backend instance, in memory. `X-Real-IP` is trusted only from trusted proxies, and compose binds the backend to loopback.

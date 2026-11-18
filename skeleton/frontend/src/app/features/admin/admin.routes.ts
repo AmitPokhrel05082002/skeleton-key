@@ -17,6 +17,10 @@ export const adminChildren: Routes = [
       import('./definitions-list.component').then((m) => m.DefinitionsListComponent),
   },
   {
+    path: 'users',
+    loadComponent: () => import('./users/users-page.component').then((m) => m.UsersPageComponent),
+  },
+  {
     path: 'editor/new',
     loadComponent: () => import('./editor-page.component').then((m) => m.EditorPageComponent),
     canDeactivate: [unsavedChangesGuard],

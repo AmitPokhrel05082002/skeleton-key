@@ -341,7 +341,11 @@ class DefinitionReadTest {
         assertThat(keys(pub.get("app"))).isSubsetOf("code", "name", "description", "branding");
         assertThat(keys(pub.get("app").get("branding"))).isSubsetOf("primaryColor", "logo", "theme");
         pub.get("forms").forEach(f -> {
-            assertThat(keys(f)).isSubsetOf("code", "label", "entity", "sections", "fields");
+            assertThat(keys(f)).isSubsetOf("code", "label", "entity", "trackingEnabled", "sections", "fields");
+            assertThat(f.toString()).doesNotContain("contactField");
+            if (f.has("trackingEnabled")) {
+                assertThat(f.get("trackingEnabled").asBoolean()).isTrue();
+            }
             f.get("fields").forEach(fd -> assertThat(keys(fd)).isSubsetOf("code", "label", "type", "required",
                     "help", "default", "options", "ref", "min", "max", "maxLength", "pattern", "accept",
                     "maxFiles", "widget"));

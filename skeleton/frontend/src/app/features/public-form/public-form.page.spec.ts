@@ -1,5 +1,5 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Subject, of, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiService } from '../../core/api/api.service';
@@ -40,6 +40,7 @@ const apiErr = (status: number, extra: Partial<ApiError> = {}): ApiError => ({
 function setup(api: Partial<Record<'publicApp' | 'submitForm', unknown>>, form = 'REPORT') {
   TestBed.configureTestingModule({
     providers: [
+      provideRouter([]),
       { provide: ApiService, useValue: api },
       { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ app: 'GRV', form }) } } },
     ],
@@ -105,6 +106,31 @@ describe('PublicFormPage', () => {
     expect(el(f).textContent).toContain('req-7');
     expect(el(f).textContent).not.toContain('secret detail');
     expect((el(f).querySelector('input') as HTMLInputElement).value).toBe('abc');
+  });
+
+  it('offers "Track this request" with only the reference when the form is trackable', () => {
+    const tracked: PublicSubset = { ...subset, forms: [{ ...subset.forms[0], trackingEnabled: true }] };
+    const submitForm = () => of<SubmitResult>({ recordId: 'r', referenceNo: 'GRV-2026-000001', instanceId: 'i' });
+    const f = setup({ publicApp: () => of(tracked), submitForm });
+    fill(f, 'person@example.org');
+    button(f).click();
+    f.detectChanges();
+    const link = el(f).querySelector('a.sk-public-track-link') as HTMLAnchorElement;
+    expect(link).not.toBeNull();
+    expect(link.textContent).toContain('Track this request');
+    expect(link.getAttribute('href')).toBe('/public/GRV/track?reference=GRV-2026-000001');
+    expect(link.getAttribute('href')).not.toContain('example.org');
+    expect(el(f).textContent).toContain('You will need the email address you gave on the form.');
+  });
+
+  it('shows no tracking link when the form is not trackable', () => {
+    const submitForm = () => of<SubmitResult>({ recordId: 'r', referenceNo: 'GRV-1', instanceId: null });
+    const f = setup({ publicApp: () => of(subset), submitForm });
+    fill(f, 'abc');
+    button(f).click();
+    f.detectChanges();
+    expect(el(f).querySelector('a.sk-public-track-link')).toBeNull();
+    expect(el(f).textContent).not.toContain('email address you gave');
   });
 
   it('disables the submit button while the request is pending', () => {

@@ -21,9 +21,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String PREFIX = "Bearer ";
     private final JwtService jwt;
+    private final ActiveUserCheck activeCheck;
 
     public JwtAuthFilter(JwtService jwt) {
+        this(jwt, null);
+    }
+
+    /** @param activeCheck rejects tokens of deactivated or deleted users; null skips the check */
+    public JwtAuthFilter(JwtService jwt, ActiveUserCheck activeCheck) {
         this.jwt = jwt;
+        this.activeCheck = activeCheck;
     }
 
     @Override
@@ -31,7 +38,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String header = req.getHeader("Authorization");
         if (header != null && header.startsWith(PREFIX)) {
-            jwt.parse(header.substring(PREFIX.length()).trim()).ifPresent(p -> {
+            jwt.parse(header.substring(PREFIX.length()).trim())
+                    .filter(p -> activeCheck == null || activeCheck.isActive(p.userId()))
+                    .ifPresent(p -> {
                 List<SimpleGrantedAuthority> authorities =
                         p.roles().stream().sorted().map(r -> new SimpleGrantedAuthority("ROLE_" + r)).toList();
                 SecurityContextHolder.getContext().setAuthentication(

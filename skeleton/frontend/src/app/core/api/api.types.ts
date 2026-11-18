@@ -72,6 +72,75 @@ export interface ApiError {
   violations: Violation[];
   line?: number;
   column?: number;
+  /** Seconds from the Retry-After header, set only by the track call on 429. */
+  retryAfterSeconds?: number;
+}
+
+export interface UserView {
+  id: string;
+  username: string;
+  displayName: string;
+  active: boolean;
+  roles: string[];
+  createdAt: string;
+}
+
+export interface UserPage {
+  items: UserView[];
+  page: number;
+  size: number;
+  total: number;
+  sort?: string | null;
+}
+
+export interface RoleOption {
+  code: string;
+  label: string;
+  apps: string[];
+}
+
+export interface CreateUserRequest {
+  username: string;
+  displayName: string;
+  password: string;
+  roles: string[];
+  active: boolean;
+}
+
+/** Only the changed properties are sent. */
+export interface UpdateUserRequest {
+  displayName?: string;
+  roles?: string[];
+  active?: boolean;
+}
+
+export interface UserListQuery {
+  q?: string;
+  role?: string;
+  active?: boolean;
+  page: number;
+  size: number;
+  sort?: string;
+}
+
+export interface TrackRequest {
+  reference: string;
+  email: string;
+}
+
+export interface TrackStatus {
+  label: string;
+  color: string | null;
+  category: string | null;
+}
+
+export interface TrackResponse {
+  reference: string;
+  title: string | null;
+  status: TrackStatus;
+  createdAt: string;
+  updatedAt: string;
+  timeline: { at: string; status: string }[];
 }
 
 export interface LoginResponse {
@@ -109,6 +178,8 @@ export interface FormDef {
   public?: boolean;
   roles?: string[];
   startsWorkflow?: string;
+  /** Public subset only: the app lets citizens track records of this form's entity. */
+  trackingEnabled?: boolean;
   sections: SectionDef[];
   fields?: FieldDef[];
 }
@@ -135,6 +206,7 @@ export interface EntityDef {
   label: string;
   titleField?: string;
   referencePrefix?: string;
+  tracking?: { contactField: string };
   fields: FieldDef[];
 }
 

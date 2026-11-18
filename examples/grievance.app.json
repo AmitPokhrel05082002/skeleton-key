@@ -19,6 +19,7 @@
       "label": "Grievance",
       "titleField": "subject",
       "referencePrefix": "GRV",
+      "tracking": { "contactField": "contactEmail" },
       "fields": [
         { "code": "subject", "label": "Subject", "type": "TEXT", "required": true, "maxLength": 120 },
         { "code": "details", "label": "Details", "type": "TEXTAREA", "required": true },

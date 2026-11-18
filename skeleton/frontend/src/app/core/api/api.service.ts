@@ -1,10 +1,11 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { RuntimeConfigService } from '../config/runtime-config.service';
 import { toApiError } from './api-error';
 import {
   ActionBody,
+  CreateUserRequest,
   HistoryEntry,
   InstanceView,
   ListQuery,
@@ -14,7 +15,14 @@ import {
   PublicSubset,
   RecordSummary,
   RestrictedDefinition,
+  RoleOption,
   SubmitResult,
+  TrackRequest,
+  TrackResponse,
+  UpdateUserRequest,
+  UserListQuery,
+  UserPage,
+  UserView,
   ValidatorReport,
   VersionRef,
 } from './api.types';
@@ -65,6 +73,58 @@ export class ApiService {
   // public
   publicApp(app: string): Observable<PublicSubset> {
     return this.wrap(this.http.get<PublicSubset>(`${this.base}/public/apps/${this.seg(app)}`));
+  }
+
+  /** Public status lookup. No auth header (public URL). On 429 the error carries retryAfterSeconds. */
+  track(app: string, body: TrackRequest): Observable<TrackResponse> {
+    return this.http.post<TrackResponse>(`${this.base}/public/${this.seg(app)}/track`, body).pipe(
+      catchError((e: unknown) => {
+        const apiError = toApiError(e);
+        if (e instanceof HttpErrorResponse && e.status === 429) {
+          const raw = Number(e.headers.get('Retry-After'));
+          apiError.retryAfterSeconds = Number.isFinite(raw) && raw >= 1 ? Math.ceil(raw) : 60;
+        }
+        return throwError(() => apiError);
+      }),
+    );
+  }
+
+  // admin users
+  listUsers(q: UserListQuery): Observable<UserPage> {
+    let params = new HttpParams().set('page', String(q.page)).set('size', String(q.size));
+    if (q.q && q.q.trim() !== '') {
+      params = params.set('q', q.q.trim());
+    }
+    if (q.role) {
+      params = params.set('role', q.role);
+    }
+    if (q.active !== undefined) {
+      params = params.set('active', String(q.active));
+    }
+    if (q.sort) {
+      params = params.set('sort', q.sort);
+    }
+    return this.wrap(this.http.get<UserPage>(`${this.base}/admin/users`, { params }));
+  }
+
+  getUser(id: string): Observable<UserView> {
+    return this.wrap(this.http.get<UserView>(`${this.base}/admin/users/${this.seg(id)}`));
+  }
+
+  createUser(body: CreateUserRequest): Observable<UserView> {
+    return this.wrap(this.http.post<UserView>(`${this.base}/admin/users`, body));
+  }
+
+  updateUser(id: string, patch: UpdateUserRequest): Observable<UserView> {
+    return this.wrap(this.http.patch<UserView>(`${this.base}/admin/users/${this.seg(id)}`, patch));
+  }
+
+  resetPassword(id: string, password: string): Observable<void> {
+    return this.wrap(this.http.post<void>(`${this.base}/admin/users/${this.seg(id)}/password`, { password }));
+  }
+
+  roleOptions(): Observable<RoleOption[]> {
+    return this.wrap(this.http.get<RoleOption[]>(`${this.base}/admin/users/role-options`));
   }
 
   // definition

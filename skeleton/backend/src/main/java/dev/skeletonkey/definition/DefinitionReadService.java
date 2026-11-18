@@ -77,6 +77,10 @@ public class DefinitionReadService {
             f.put("code", form.code());
             putIfNotNull(f, "label", form.label());
             f.put("entity", form.entity());
+            if (entity != null && entity.tracking() != null) {
+                // The contact field's name is not exposed; the page only needs to know tracking exists.
+                f.put("trackingEnabled", true);
+            }
             f.set("sections", sectionsNode(form));
             ArrayNode fields = f.putArray("fields");
             for (String code : exposedFields(form)) {
@@ -120,6 +124,9 @@ public class DefinitionReadService {
             n.put("label", e.label());
             putIfNotNull(n, "titleField", e.titleField());
             putIfNotNull(n, "referencePrefix", e.referencePrefix());
+            if (e.tracking() != null) {
+                n.putObject("tracking").put("contactField", e.tracking().contactField());
+            }
             ArrayNode fields = n.putArray("fields");
             e.fields().forEach(fd -> fields.add(fieldNode(fd)));
         });

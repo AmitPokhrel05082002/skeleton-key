@@ -1,6 +1,7 @@
 package dev.skeletonkey.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.skeletonkey.web.ActiveUserCheck;
 import dev.skeletonkey.web.ApiError;
 import dev.skeletonkey.web.JwtAuthFilter;
 import dev.skeletonkey.web.JwtService;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,7 +41,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, ObjectMapper mapper)
+    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtService jwtService, ObjectMapper mapper,
+                                            ObjectProvider<ActiveUserCheck> activeCheck)
             throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
@@ -54,11 +57,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(a -> a
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/public/apps/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/public/*/track").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/apps/*/forms/*/submit").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers("/v3/api-docs", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .anyRequest().authenticated())
-            .addFilterBefore(new JwtAuthFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthFilter(jwtService, activeCheck.getIfAvailable()), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

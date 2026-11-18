@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal, viewChild, type OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzResultModule } from 'ng-zorro-antd/result';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
@@ -10,6 +10,8 @@ import { ThemeService } from '../../core/theme/theme.service';
 import { DynamicFormComponent } from '../form/dynamic-form.component';
 
 type LoadState = 'loading' | 'ready' | 'unavailable';
+
+export const TRACK_HINT = 'You will need the email address you gave on the form.';
 
 /** Builds the FieldDef list of a form from the fields it lists, in section order, from the Public_Subset only. */
 export function publicFormFields(subset: PublicSubset, form: FormDef): FieldDef[] {
@@ -33,7 +35,7 @@ export function publicFormFields(subset: PublicSubset, form: FormDef): FieldDef[
   selector: 'sk-public-form-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DynamicFormComponent, NzButtonModule, NzResultModule, NzSpinModule],
+  imports: [DynamicFormComponent, NzButtonModule, NzResultModule, NzSpinModule, RouterLink],
   template: `
     <main class="sk-public">
       @switch (state()) {
@@ -52,7 +54,22 @@ export function publicFormFields(subset: PublicSubset, form: FormDef): FieldDef[
             <span class="sk-public-app">{{ appName() }}</span>
           </header>
           @if (confirmation(); as done) {
-            <nz-result nzStatus="success" nzTitle="Submitted" [nzSubTitle]="'Reference number: ' + done.referenceNo" />
+            <nz-result nzStatus="success" nzTitle="Submitted" [nzSubTitle]="'Reference number: ' + done.referenceNo">
+              @if (trackingEnabled() && done.referenceNo) {
+                <div nz-result-extra class="sk-public-track">
+                  <a
+                    nz-button
+                    nzType="primary"
+                    class="sk-public-track-link"
+                    [routerLink]="['/public', app(), 'track']"
+                    [queryParams]="{ reference: done.referenceNo }"
+                  >
+                    Track this request
+                  </a>
+                  <p class="sk-public-track-hint">{{ trackHint }}</p>
+                </div>
+              }
+            </nz-result>
           } @else {
             <h1 class="sk-public-title">{{ formTitle() }}</h1>
             <sk-dynamic-form
@@ -142,6 +159,9 @@ export class PublicFormPage implements OnInit {
     return s && f ? publicFormFields(s, f) : [];
   });
   protected readonly sections = computed(() => this.formDef()?.sections);
+  /** True when the app lets citizens track records of this form's entity (Public_Subset `trackingEnabled`). */
+  protected readonly trackingEnabled = computed(() => this.formDef()?.trackingEnabled === true);
+  protected readonly trackHint = TRACK_HINT;
   protected readonly formTitle = computed(() => this.formDef()?.label ?? this.formDef()?.code ?? '');
   protected readonly appName = computed(() => this.subset()?.app.name ?? '');
   protected readonly logo = computed(() => safeLogoUrl(this.subset()?.app.branding?.logo));

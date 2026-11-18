@@ -35,6 +35,8 @@ export const THEME_VARIABLES: Readonly<Record<ResolvedTheme, Readonly<Record<str
     '--sk-warn-fg': '#ad4e00',
     '--sk-error-fg': '#cf1322',
     '--sk-divider': '#eeeeee',
+    '--sk-header-bg': '#ffffff',
+    '--sk-header-fg': '#262626',
   },
   dark: {
     '--sk-code-bg': '#0d1117',
@@ -46,6 +48,8 @@ export const THEME_VARIABLES: Readonly<Record<ResolvedTheme, Readonly<Record<str
     '--sk-warn-fg': '#ffa940',
     '--sk-error-fg': '#ff7875',
     '--sk-divider': '#303030',
+    '--sk-header-bg': '#141414',
+    '--sk-header-fg': '#dcdcdc',
   },
 };
 
@@ -59,6 +63,7 @@ function codePairs(theme: ResolvedTheme): TokenPair[] {
     { name: `${theme} code border on code background`, fg: v['--sk-code-border'], bg: v['--sk-code-bg'], min: 3, theme },
     { name: `${theme} warning text on surface`, fg: v['--sk-warn-fg'], bg: surface, min: 4.5, theme },
     { name: `${theme} error text on surface`, fg: v['--sk-error-fg'], bg: surface, min: 4.5, theme },
+    { name: `${theme} header text on header background`, fg: v['--sk-header-fg'], bg: v['--sk-header-bg'], min: 4.5, theme },
   ];
 }
 

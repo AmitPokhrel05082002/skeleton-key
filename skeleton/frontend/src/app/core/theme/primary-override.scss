@@ -17,6 +17,8 @@
   --sk-warn-fg: #ad4e00;
   --sk-error-fg: #cf1322;
   --sk-divider: #eeeeee;
+  --sk-header-bg: #ffffff;
+  --sk-header-fg: #262626;
 }
 
 [data-theme='dark'] {
@@ -29,6 +31,8 @@
   --sk-warn-fg: #ffa940;
   --sk-error-fg: #ff7875;
   --sk-divider: #303030;
+  --sk-header-bg: #141414;
+  --sk-header-fg: #dcdcdc;
 }
 
 /* Focus ring: 2px outline, brand colour when set, accent otherwise. */
@@ -37,10 +41,23 @@
   outline-offset: 2px;
 }
 
-/* Header */
-.sk-header {
-  background: var(--sk-primary, #141414);
-  color: var(--sk-on-primary, #ffffff);
+/*
+ * Header. The brand colour and its contrasting text win when the app sets a primary colour. Otherwise the
+ * theme's own header variables apply. `nz-header.sk-header` outranks NG-ZORRO's `.ant-layout-header` (navy
+ * background, light text), which the theme stylesheet loads after this file. Everything inside the header
+ * inherits the header text colour so links and labels stay readable on either background.
+ */
+nz-header.sk-header {
+  background: var(--sk-primary, var(--sk-header-bg));
+  color: var(--sk-on-primary, var(--sk-header-fg));
+  border-bottom: 1px solid var(--sk-divider);
+
+  a:not(.ant-btn),
+  .sk-app-name,
+  .sk-user,
+  .sk-admin-title {
+    color: inherit;
+  }
 }
 
 /* Primary buttons */

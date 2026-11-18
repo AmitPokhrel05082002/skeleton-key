@@ -347,7 +347,7 @@ Constraints that apply to every task:
     - Guard behaviour, versions list, save endpoint per state, publish enabled states, unsaved-changes confirmation, builder apply keeps other content.
     - _Requirements: 13.1, 13.2, 13.4, 14.4, 14.5, 14.6, 14.12, 14.13, 15.10_
 
-- [ ] 17. Dockerfile, nginx and compose
+- [x] 17. Dockerfile, nginx and compose
   - [x] 17.1 Create the Dockerfile and nginx configuration
     - `skeleton/frontend/Dockerfile`: multi-stage, Node (pinned LTS) running `npm ci` and `npm run build -- --configuration production`, then pinned `nginx:<version>-alpine` with the output path confirmed against `angular.json`.
     - `nginx.conf` and `security-headers.conf`: `/api/` proxied to `http://app:8080` with `Host` and `X-Request-Id`; SPA fallback to `index.html`; `no-cache` for `index.html` and `assets/config.json`; immutable long cache for hashed assets; `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` included in every location. Add `.dockerignore`.
@@ -357,6 +357,7 @@ Constraints that apply to every task:
     - Read the existing `docker-compose.yml` and extend it in place with a `frontend` service built from `./skeleton/frontend`, `restart: unless-stopped`, published on `${FRONTEND_PORT:-80}:80`, `depends_on` the `app` service healthy, a `wget` healthcheck on the Nginx root, and the host `skeleton/frontend/public/assets/config.json` mounted read-only onto `/usr/share/nginx/html/assets/config.json`. Do not add a second reverse proxy.
     - Verify the file with `docker compose config` and the image with `docker build skeleton\frontend`.
     - _Requirements: 16.3, 16.4, 16.5, 16.9_
+    - Verified 2026-11-18: `docker compose config` OK; `docker build -t skeleton-frontend ./skeleton/frontend` OK after the build stage was changed to install the npm version pinned in `package.json` (11.6.2; the image's npm 10 rejected the lock file). `nginx -t` passes with `--add-host app:127.0.0.1`; without it nginx stops with `host not found in upstream "app"`, which is expected outside the compose network. Headers checked with `curl -I` on the image run alone (`app` mapped to a dummy address): `index.html` and `assets/config.json` `Cache-Control: no-cache`, hashed `chunk-*.js` `public, max-age=31536000, immutable`, `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` on every response including a 502 from `/api/`. Not verified under `docker compose up`: the `postgres:16` pull was blocked by the network, so the stack could not start.
 
 - [ ] 18. Final checkpoint - Ensure all tests pass
   - Run `cd skeleton\frontend` then `npm run lint`, `npm run test` and `npm run build`; from the repository root run `docker compose config`. Ensure all tests pass, ask the user if questions arise.
